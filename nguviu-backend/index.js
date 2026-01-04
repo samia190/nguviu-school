@@ -21,15 +21,15 @@ const app = express();
 // ✅ CORS (adjust origin if needed)
 const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(",")
-  : ["http://localhost:5173", "http://127.0.0.1:5173"];
+  : ["http://localhost:5173", "https://st-angela-nguviu-girls-senior-schoool.netlify.app"];
 
+// Use CORS middleware to allow cross-origin requests
 app.use(
   cors({
-    origin: allowedOrigins,
-    credentials: true,
+    origin: allowedOrigins, // Set allowed origins
+    credentials: true, // If your frontend uses cookies or other credentials
   })
 );
-
 app.use(express.json());
 
 // Ensure static folders exist
