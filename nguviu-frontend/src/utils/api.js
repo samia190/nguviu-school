@@ -1,5 +1,6 @@
-// Simple fetch helper with upload support and automatic Authorization header
+// api.js
 
+// Simple fetch helper with upload support and automatic Authorization header
 const API_ORIGIN = (() => {
   try {
     if (typeof window !== "undefined" && window.__API_ORIGIN) return window.__API_ORIGIN;
@@ -17,7 +18,7 @@ const API_ORIGIN = (() => {
     }
   } catch {}
 
-  return "http://localhost:4000";
+  return "http://localhost:4000"; // Default API origin for local testing
 })();
 
 function getToken() {
@@ -144,6 +145,11 @@ export async function login(email, password) {
 
 export async function signup(name, email, password) {
   return post("/api/auth/register", { name, email, password });
+}
+
+// New function to fetch footer links
+export async function fetchFooterLinks() {
+  return get("/api/footer-links");  // Fetch footer links using the existing `get` function
 }
 
 export { apiFetch };

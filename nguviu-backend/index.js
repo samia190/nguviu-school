@@ -7,6 +7,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import path from "path";
 import fs from "fs";
+import footerLinksRoutes from "./routes/footerLinks.js"; 
 
 // ✅ default imports (route files must use: export default router)
 import authRoutes from "./routes/auth.js";
@@ -50,6 +51,8 @@ app.use("/api/files", filesRoutes);
 app.use("/api/downloads", downloadRoutes);
 app.use("/api/content/gallery", galleryRoutes);
 app.use("/api/admin", adminRoutes);
+// Use the /api/footer-links route
+app.use("/api/footer-links", footerLinksRoutes);
 
 // Connect to MongoDB
 const mongoUri = process.env.MONGO_URI;
