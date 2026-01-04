@@ -1,0 +1,444 @@
+import React, { useState, useEffect } from "react";
+import './App.css'; 
+import Header from "./components/Header";
+import Home from "./components/Home";
+import About from "./components/About";
+import Contact from "./components/Contact";
+import Admissions from "./components/Admissions";
+import Student from "./components/Student";
+import Newsletter from "./components/Newsletter";
+import Gallery from "./components/Gallery";
+import Events from "./components/Events";
+import Footer from "./components/Footer";
+import Loader from "./components/Loader";
+import Login from "./components/Login";
+import SignUp from "./components/SignUp";
+import AdminDashboard from "./components/AdminDashboard";
+import Curriculum from "./components/Curriculum";
+import Performance from "./components/Performance";
+import Policies from "./components/Policies";
+import Parents from "./components/Parents";
+import Staff from "./components/Staff";
+import Legal from "./components/Legal";
+import SearchResults from "./components/SearchResults";
+import FeeStructure from "./components/FeeStructure";
+import HomeworkPortal from "./components/HomeworkPortal"; // ✅ keep this one
+
+import CurriculumOverview from "./components/subpages/CurriculumOverview.jsx";
+import CurriculumPrimary from "./components/subpages/CurriculumPrimary.jsx";
+import CurriculumSecondary from "./components/subpages/CurriculumSecondary.jsx";
+import CurriculumSyllabus from "./components/subpages/CurriculumSyllabus.jsx";
+import CurriculumExtracurricular from "./components/subpages/CurriculumExtracurricular.jsx";
+import CurriculumAssessment from "./components/subpages/CurriculumAssessment.jsx";
+
+import StaffLeadership from "./components/subpages/StaffLeadership.jsx";
+import StaffTeaching from "./components/subpages/StaffTeaching.jsx";
+import StaffSupport from "./components/subpages/StaffSupport.jsx";
+import CurriculumDynamicSection from "./components/subpages/CurriculumDynamicSection.jsx";
+
+
+import StudentAdmissionsGuide from "./components/subpages/StudentAdmissionsGuide.jsx";
+import StudentFees from "./components/subpages/StudentFees.jsx";
+import StudentExams from "./components/subpages/StudentExams.jsx";
+import StudentClubs from "./components/subpages/StudentClubs.jsx";
+import StudentSupportServices from "./components/subpages/StudentSupportServices.jsx";
+import CurriculumCareers from "./components/subpages/CurriculumCareers.jsx";
+import PageBackgroundManagement from "./components/PageBackgroundManagement";
+
+
+
+// ❌ REMOVE this duplicate import (pages version)
+// import HomeworkPortal from "./pages/HomeworkPortal";
+
+function MenuButton({ route, setRoute, setLoading }) {
+  const [open, setOpen] = useState(false);
+  const HIDDEN = ["login", "signup"];
+
+  if (HIDDEN.includes((route || "").toLowerCase())) return null;
+
+  const links = [
+    { key: "home", label: "Home" },
+    { key: "about", label: "About" },
+    { key: "admissions", label: "Admissions" },
+    { key: "events", label: "Events" },
+    { key: "feestructure", label: "Fee Structure" },
+
+    // Curriculum subpages
+    { key: "curriculum/careers", label: "Curriculum Careers" },
+
+    { key: "curriculum/overview", label: "Curriculum Overview" },
+    { key: "curriculum/primary", label: "Curriculum Primary" },
+    { key: "curriculum/secondary", label: "Curriculum Secondary" },
+    { key: "curriculum/syllabus", label: "Curriculum Syllabus" },
+    { key: "curriculum/extracurricular", label: "Curriculum Extracurricular" },
+    { key: "curriculum/assessment", label: "Curriculum Assessment" },
+
+    { key: "performance", label: "Performance" },
+    { key: "policies", label: "Policies" },
+    { key: "parents", label: "Parents" },
+
+    { key: "student", label: "Student" },
+    // Student subpages
+    { key: "student/admissions-guide", label: "Student Admissions Guide" },
+    { key: "student/fees", label: "Student Fees" },
+    { key: "student/exams", label: "Student Exams" },
+    { key: "student/clubs", label: "Student Clubs" },
+    { key: "student/support-services", label: "Student Support Services" },
+
+    { key: "staff", label: "Staff" },
+
+    // Staff subpages
+    { key: "staff/leadership", label: "Staff Leadership" },
+    { key: "staff/teaching", label: "Staff Teaching" },
+    { key: "staff/support", label: "Staff Support" },
+
+    { key: "gallery", label: "Gallery" },
+    { key: "legal", label: "Legal" },
+    { key: "feestructure", label: "Fee Structure" },
+    { key: "events", label: "Events" },
+    { key: "newsletter", label: "Newsletter" },
+  
+    { key: "contact", label: "Contact" },
+    { key: "portal/homework", label: "Homework Portal" },
+
+    
+  ];
+
+  const handleClick = (key) => {
+    setOpen(false);
+    if (typeof setLoading === "function") setLoading(true);
+    setRoute(key);
+  };
+
+  return (
+    <>
+      {/* Toggle Button */}
+      <button
+        aria-expanded={open}
+        aria-label={open ? "Close menu" : "Open menu"}
+        onClick={() => setOpen((s) => !s)}
+        style={{
+          position: "fixed",
+          left: 5,
+          top: 90,
+          zIndex: 1000,
+          width: 44,
+          height: 44,
+          borderRadius: 8,
+          border: "1px solid rgba(13, 236, 39, 0.93)",
+          background: "brown",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#f60f0fe3",
+          fontSize: 20,
+          fontWeight: "bold",
+          cursor: "pointer",
+          boxShadow: "0 2px 6px rgba(65, 15, 231, 0.25)",
+        }}
+      >
+        {open ? "×" : "≡"}
+      </button>
+
+      {/* Panel */}
+      {open && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => setOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.4)",
+              zIndex: 999,
+            }}
+          />
+          {/* Drawer */}
+          <nav
+            aria-label="Sidebar menu"
+            style={{
+              position: "fixed",
+              left: 0,
+              top: 70,
+              bottom: 0,
+              width: 260,
+              background: "#f7081cb9",
+              zIndex: 1000,
+              boxShadow: "2px 0 8px rgba(116, 221, 17, 0.43)",
+              padding: "16px 12px",
+              overflowY: "auto",
+            }}
+          >
+            <h3 style={{ margin: "00 0 00px 0px", textAlign: "right" }}></h3>
+            <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+              {links.map((item) => {
+                const isActive = route === item.key;
+                return (
+                  <li key={item.key} style={{ marginBottom: 4 }}>
+                    <button
+                      onClick={() => handleClick(item.key)}
+                      style={{
+                        width: "100%",
+                        textAlign: "left",
+                        padding: "6px 8px",
+                        borderRadius: 6,
+                        border: "none",
+                        background: isActive ? "#10e929ff" : "transparent",
+                        color: isActive ? "#210202ff" : "#d0f408ff",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        </>
+      )}
+    </>
+  );
+}
+
+export default function App() {
+  const [route, setRoute] = useState("home");
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
+  // Loader + expose global router
+  useEffect(() => {
+    const handleLoad = () => setLoading(false);
+
+    if (document.readyState === "complete") {
+      setLoading(false);
+    } else {
+      window.addEventListener("load", handleLoad);
+    }
+
+    // make router globally available
+    window.setRoute = setRoute;
+    window.__route = route;
+
+    return () => {
+      window.removeEventListener("load", handleLoad);
+    };
+  }, [route]);
+
+  // Decode user from token (if any)
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const [header, payload] = token.split(".");
+        if (payload) {
+          const data = JSON.parse(atob(payload));
+          setUser({ email: data.email, role: data.role, id: data.id });
+        }
+      } catch (err) {
+        console.error("Failed to decode token", err);
+      }
+    }
+  }, []);
+
+  function handleAuth(u) {
+    setUser(u);
+    if (u?.role === "admin") setRoute("admin");
+    else if (u?.role === "teacher") setRoute("teacher");
+    else if (u?.role === "student") setRoute("student");
+    else setRoute("staff");
+  }
+
+  function logout() {
+    localStorage.removeItem("token");
+    setUser(null);
+    setRoute("home");
+  }
+
+  // Soft fade loader
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading) setLoading(false);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [loading, route]);
+
+  return (
+    <>
+      {/* Loader overlay */}
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "#481010ff",
+          zIndex: 9999,
+          display: loading ? "flex" : "none",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "opacity 0.5s ease",
+        }}
+      >
+        <Loader />
+      </div>
+
+      {/* Page content */}
+      <Header
+        route={route}
+        setRoute={setRoute}
+        setLoading={setLoading}
+        user={user}
+        logout={logout}
+      />
+      <MenuButton route={route} setRoute={setRoute} setLoading={setLoading} />
+
+      <main
+        style={{
+          padding: 20,
+          minHeight: "60vh",
+         opacity: loading ? 0.6 : 1,
+          transition: "opacity 0.5s ease",
+        }} 
+      >
+       
+     
+        {(() => {
+          const [mainRoute, subRoute] = route.split("/");
+
+          switch (mainRoute) {
+     
+            case "home":
+              return <Home user={user} setRoute={setRoute} />;
+
+            case "about":
+              return <About user={user} />;
+
+            case "contact":
+              return <Contact user={user} />;
+
+            case "admissions":
+              return <Admissions user={user} />;
+
+            case "curriculum": {
+            const parts = route.split("/");
+            const subRoute = parts[1]; // "overview", "primary", "careers", etc.
+
+  switch (subRoute) {
+    case undefined:
+      return <Curriculum user={user} />;
+    case "overview":
+      return <CurriculumOverview user={user} />;
+    case "primary":
+      return <CurriculumPrimary user={user} />;
+    case "secondary":
+      return <CurriculumSecondary user={user} />;
+    case "syllabus":
+      return <CurriculumSyllabus user={user} />;
+    case "extracurricular":
+      return <CurriculumExtracurricular user={user} />;
+    case "assessment":
+      return <CurriculumAssessment user={user} />;
+    case "careers":
+      // if you want the static Careers component:
+      return <CurriculumCareers user={user} />;
+
+    default:
+      // any other slug -> dynamic admin-created subpage
+      return <CurriculumDynamicSection slug={subRoute} />;
+  }
+}
+
+            case "performance":
+              return <Performance user={user} />;
+
+            case "policies":
+              return <Policies user={user} />;
+
+            case "parents":
+              return <Parents user={user} />;
+
+            case "feestructure":
+              return <FeeStructure user={user} />;
+
+            case "staff":
+              switch (subRoute) {
+                case "leadership":
+                  return <StaffLeadership user={user} />;
+                case "teaching":
+                  return <StaffTeaching user={user} />;
+                case "support":
+                  return <StaffSupport user={user} />;
+                default:
+                  return <Staff user={user} />;
+              }
+
+            case "gallery":
+              return <Gallery user={user} />;
+
+            case "legal":
+              return <Legal user={user} />;
+
+            case "student":
+              switch (subRoute) {
+                case "admissions-guide":
+                  return <StudentAdmissionsGuide user={user} />;
+                case "fees":
+                  return <StudentFees user={user} />;
+                case "exams":
+                  return <StudentExams user={user} />;
+                case "clubs":
+                  return <StudentClubs user={user} />;
+                case "support-services":
+                  return <StudentSupportServices user={user} />;
+                default:
+                  return <Student user={user} />;
+              }
+
+            case "portal":
+              // ✅ Homework portal route handled here
+              if (subRoute === "homework") {
+                return <HomeworkPortal user={user} />;
+              }
+              // fallback if someone navigates to just "portal"
+              return <Home user={user} setRoute={setRoute} />;
+
+            case "events":
+              return <Events user={user} />;
+
+            case "newsletter":
+              return <Newsletter user={user} />;
+
+            case "search":
+              return <SearchResults user={user} />;
+
+            case "login":
+              return <Login onAuth={handleAuth} user={user} />;
+
+            case "signup":
+              return <SignUp onAuth={handleAuth} user={user} />;
+
+            case "admin":
+              if (user?.role === "admin")
+                return <AdminDashboard user={user} />;
+              return <div>Access denied — admin only</div>;
+
+            default:
+              return <Home user={user} setRoute={setRoute} />;
+            
+            
+               
+               
+
+               case "page-backgrounds":
+              if (user?.role === "admin")
+                return <PageBackgroundManagement user={user} />;
+              return <div>Access denied — admin only</div>;
+
+          }
+        })()}
+      </main>
+
+      <Footer />
+    </>
+  );
+}
