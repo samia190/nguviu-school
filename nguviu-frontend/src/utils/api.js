@@ -2,23 +2,33 @@
 
 // Simple fetch helper with upload support and automatic Authorization header
 const API_ORIGIN = (() => {
+  // Priority: explicit runtime window override -> Vite env var -> Node env var -> sensible defaults
   try {
     if (typeof window !== "undefined" && window.__API_ORIGIN) return window.__API_ORIGIN;
   } catch {}
 
   try {
-    if (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_ORIGIN) {
-      return import.meta.env.VITE_API_ORIGIN;
+    if (typeof import.meta !== "undefined") {
+      if (import.meta.env?.VITE_API_URL) return import.meta.env.VITE_API_URL;
+      if (import.meta.env?.VITE_API_ORIGIN) return import.meta.env.VITE_API_ORIGIN;
     }
   } catch {}
 
   try {
-    if (typeof process !== "undefined" && process.env?.REACT_APP_API_ORIGIN) {
-      return process.env.REACT_APP_API_ORIGIN;
+    if (typeof process !== "undefined" && process.env?.REACT_APP_API_URL) {
+      return process.env.REACT_APP_API_URL;
     }
   } catch {}
 
-  return "http://"; // Default API origin for local testing
+  // If we're in a production build and no env was provided, default to the Render backend
+  try {
+    if (typeof import.meta !== "undefined" && import.meta.env?.MODE === "production") {
+      return "https://nguviu-school.onrender.com";
+    }
+  } catch {}
+
+  // Local development: use empty origin so relative `/api/...` hits the Vite proxy
+  return "";
 })();
 
 function getToken() {
@@ -36,7 +46,10 @@ async function apiFetch(url, options = {}) {
 
   const isFormData = options.body instanceof FormData;
 
-  const res = await fetch(url.startsWith("http") ? url : `${API_ORIGIN}${url}`, {
+  // Ensure we correctly concatenate origin + path
+  const resolvedUrl = url.startsWith("http") ? url : `${API_ORIGIN.replace(/\/+$/,'')}${url.startsWith("/")?"":'/'}${url}`;
+
+  const res = await fetch(resolvedUrl, {
     method: options.method || "GET",
     headers: isFormData ? headers : { "Content-Type": "application/json", ...headers },
     body: isFormData ? options.body : options.body ? JSON.stringify(options.body) : undefined,
@@ -81,7 +94,7 @@ export async function del(path) {
 }
 
 export function upload(url, formData, extraHeaders = {}, options = {}) {
-  const fullUrl = url.startsWith("http") ? url : `${API_ORIGIN}${url}`;
+  const fullUrl = url.startsWith("http") ? url : `${API_ORIGIN.replace(/\/+$/,'')}${url.startsWith("/")?"":'/'}${url}`;
   const token = getToken();
   const headers = { ...extraHeaders };
   if (token) headers["Authorization"] = `Bearer ${token}`;
