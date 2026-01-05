@@ -102,7 +102,7 @@ export default function Footer() {
           >
             <img
               alt="NGUVIU logo"
-              src={safePath("/header/logo.png")}
+              src={safePath("/header/logo.PNG")}
               style={{ width: 60, height: 60 }}
             />
             <div>

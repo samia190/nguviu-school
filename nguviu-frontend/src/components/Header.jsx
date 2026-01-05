@@ -39,7 +39,7 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
       >
         <img
           alt="NGUVIU Girls Logo"
-          src={safePath("/header/logo.png")}
+          src={safePath("/header/logo.PNG")}
           style={{
             width: 70,
             height: 70,

@@ -9,7 +9,7 @@ export default function Loader({ size = 140 }) {
     <div className="site-loader" style={{ ["--loader-size"]: px }}>
       <div className="loader-ring" />
       <div className="loader-inner">
-        <img src={safePath("/header/logo.svg")} alt="NGUVIU logo" className="loader-logo" />
+        <img src={safePath("/header/logo.PNG")} alt="NGUVIU logo" className="loader-logo" />
       </div>
     </div>
   );
