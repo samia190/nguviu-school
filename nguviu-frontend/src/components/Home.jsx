@@ -386,31 +386,9 @@ export default function Home({ user, setRoute }) {
                 {/* Loop through each child container for the section */}
                 {sec.childContainers &&
                   sec.childContainers.map((child, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        width: "19.7%", // Each container takes 16.5% width to fit six containers in landscape
-                        backgroundColor: "#47080ab3",
-                        padding: "1px",
-                        borderRadius: "5px",
-                        boxShadow: "0 3px 10px rgba(244, 41, 10, 1)",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        
-                      }}
-                    >
+                    <div key={index} className="section-child">
                       {child.image && (
-                        <div
-                          style={{
-                            width: "100%",
-                            height: "250px",
-                            overflow: "hidden",
-                            borderRadius: "8px",
-                            marginBottom: "10px",
-                          }}
-                        >
+                        <div className="section-image">
                           <img
                             src={safePath(child.image || "/images/hike.jpg")}
                             alt=""
@@ -422,27 +400,11 @@ export default function Home({ user, setRoute }) {
                           />
                         </div>
                       )}
-                      <h3 style={{ textAlign: "center" }}>{child.title}</h3>
-                      <p
-                        style={{
-                          fontSize: "18px",
-                          color: "#f0f00aff",
-                          textAlign: "center",
-                        }}
-                      >
-                        {child.text}
-                      </p>
+                      <h3 className="section-child-title">{child.title}</h3>
+                      <p className="section-child-text">{child.text}</p>
                       <button
                         onClick={() => setRoute(sec.key)}
-                        style={{
-                          padding: "8px 12px",
-                          background: "#32f40bff",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "6px",
-                          cursor: "pointer",
-                          marginTop: "10px",
-                        }}
+                        className="section-child-button"
                       >
                         Visit →
                       </button>

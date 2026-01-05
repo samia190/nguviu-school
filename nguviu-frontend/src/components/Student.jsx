@@ -186,6 +186,40 @@ export default function Student({ user }) {
   const cocurricularGalleryFiles =
     content.cocurricularGalleryFiles  ||defaultCocurricularGallery
 
+  // Lightbox / viewer state
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
+  const [viewerList, setViewerList] = useState([]);
+
+  function openViewer(list, index) {
+    setViewerList(list || []);
+    setViewerIndex(index || 0);
+    setViewerOpen(true);
+  }
+
+  function closeViewer() {
+    setViewerOpen(false);
+  }
+
+  function nextImage() {
+    setViewerIndex((i) => (viewerList.length ? (i + 1) % viewerList.length : i));
+  }
+
+  function prevImage() {
+    setViewerIndex((i) => (viewerList.length ? (i - 1 + viewerList.length) % viewerList.length : i));
+  }
+
+  useEffect(() => {
+    if (!viewerOpen) return;
+    function onKey(e) {
+      if (e.key === "Escape") closeViewer();
+      if (e.key === "ArrowRight") nextImage();
+      if (e.key === "ArrowLeft") prevImage();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [viewerOpen, viewerList]);
+
   return (
     <div>
       {/* ================= HERO VIDEO SECTION ================= */}
@@ -494,52 +528,17 @@ export default function Student({ user }) {
           isAdmin={isAdmin}
         />
 
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 16,
-            marginTop: 12,
-          }}
-        >
-          {academicGalleryFiles.map((file) => (
-            <div
-              key={file.url}
-              style={{
-                width: "180px",
-                borderRadius: 10,
-                overflow: "hidden",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
-                background: "#fff",
-              }}
-            >
-              <div
-                style={{
-                  width: "100%",
-                  height: "140px",
-                  overflow: "hidden",
-                }}
+        <div className="gallery-grid" style={{ marginTop: 12 }}>
+          {academicGalleryFiles.map((file, idx) => (
+            <div key={file.url} className="gallery-item">
+              <button
+                className="gallery-thumb"
+                onClick={() => openViewer(academicGalleryFiles, idx)}
+                aria-label={`Open image ${idx + 1}`}
               >
-                <img
-                  src={safePath(file.url)}
-                  alt={file.name}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
-                />
-              </div>
-              <div
-                style={{
-                  padding: "8px 10px",
-                  fontSize: 13,
-                  fontWeight: 500,
-                  textAlign: "center",
-                }}
-              >
-                {file.name}
-              </div>
+                <img src={safePath(file.url)} alt={file.name} />
+              </button>
+              <div className="gallery-caption">{file.name}</div>
             </div>
           ))}
         </div>
@@ -560,55 +559,69 @@ export default function Student({ user }) {
           isAdmin={isAdmin}
         />
 
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 16,
-            marginTop: 12,
-          }}
-        >
-          {cocurricularGalleryFiles.map((file) => (
-            <div
-              key={file.url}
-              style={{
-                width: "180px",
-                borderRadius: 10,
-                overflow: "hidden",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
-                background: "#fff",
-              }}
-            >
-              <div
-                style={{
-                  width: "100%",
-                  height: "140px",
-                  overflow: "hidden",
-                }}
+        <div className="gallery-grid" style={{ marginTop: 12 }}>
+          {cocurricularGalleryFiles.map((file, idx) => (
+            <div key={file.url} className="gallery-item">
+              <button
+                className="gallery-thumb"
+                onClick={() => openViewer(cocurricularGalleryFiles, idx)}
+                aria-label={`Open image ${idx + 1}`}
               >
-                <img
-                  src={safePath(file.url)}
-                  alt={file.name}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
-                />
-              </div>
-              <div
-                style={{
-                  padding: "8px 10px",
-                  fontSize: 13,
-                  fontWeight: 500,
-                  textAlign: "center",
-                }}
-              >
-                {file.name}
-              </div>
+                <img src={safePath(file.url)} alt={file.name} />
+              </button>
+              <div className="gallery-caption">{file.name}</div>
             </div>
           ))}
         </div>
+
+        {/* Lightbox viewer */}
+        {viewerOpen && viewerList && viewerList.length > 0 && (
+          <div className="lightbox-overlay" onClick={closeViewer}>
+            <button
+              className="lightbox-close"
+              onClick={(e) => {
+                e.stopPropagation();
+                closeViewer();
+              }}
+              aria-label="Close viewer"
+            >
+              ×
+            </button>
+
+            <button
+              className="lightbox-prev"
+              onClick={(e) => {
+                e.stopPropagation();
+                prevImage();
+              }}
+              aria-label="Previous image"
+            >
+              ‹
+            </button>
+
+            <div
+              className="lightbox-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={safePath(viewerList[viewerIndex].url)}
+                alt={viewerList[viewerIndex].name}
+                className="lightbox-image"
+              />
+            </div>
+
+            <button
+              className="lightbox-next"
+              onClick={(e) => {
+                e.stopPropagation();
+                nextImage();
+              }}
+              aria-label="Next image"
+            >
+              ›
+            </button>
+          </div>
+        )}
 
         {error && <p style={{ color: "red" }}>{error}</p>}
       </section>

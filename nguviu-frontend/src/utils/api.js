@@ -57,6 +57,16 @@ async function apiFetch(url, options = {}) {
 
   const text = await res.text();
   let data;
+  const contentType = res.headers.get("content-type") || "";
+  // If the server returned HTML (for example index.html) instead of JSON,
+  // treat it as an error so callers don't try to parse/consume HTML as JSON.
+  if (contentType.includes("text/html") || (text && text.trim().startsWith("<"))) {
+    const err = new Error(`Expected JSON but received HTML response from ${resolvedUrl}`);
+    err.status = res.status;
+    err.body = text;
+    err.url = resolvedUrl;
+    throw err;
+  }
   try {
     data = text ? JSON.parse(text) : null;
   } catch {
@@ -64,9 +74,10 @@ async function apiFetch(url, options = {}) {
   }
 
   if (!res.ok) {
-    const err = new Error(data?.error || res.statusText || "Request failed");
+    const err = new Error(`${data?.error || res.statusText || "Request failed"} (url: ${resolvedUrl})`);
     err.status = res.status;
     err.body = data;
+    err.url = resolvedUrl;
     throw err;
   }
 
