@@ -1,4 +1,5 @@
 import React from "react";
+import { safePath } from "../utils/paths";
 
 export default function Header({ route, setRoute, setLoading, user, logout }) {
   const go = (r) => {
@@ -38,7 +39,7 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
       >
         <img
           alt="NGUVIU Girls Logo"
-          src="public/header/logo.png"
+          src={safePath("/header/logo.svg")}
           style={{
             width: 70,
             height: 70,

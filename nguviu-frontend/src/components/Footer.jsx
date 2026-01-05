@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { safePath } from "../utils/paths";
 import { get } from "../utils/api";
 
 const defaultLinks = {
@@ -101,7 +102,7 @@ export default function Footer() {
           >
             <img
               alt="NGUVIU logo"
-              src="public/header/logo.png"
+              src={safePath("/header/logo.svg")}
               style={{ width: 60, height: 60 }}
             />
             <div>
@@ -129,7 +130,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
               >
                 <img
-                  src="public/header/knec.png"
+                  src={safePath("/header/knec.PNG")}
                   alt="KNEC"
                   style={{ width: 80, height: 40, objectFit: "contain" }}
                 />
@@ -140,7 +141,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
               >
                 <img
-                  src="public/header/tsc.png"
+                  src={safePath("/header/tsc.PNG")}
                   alt="TSC"
                   style={{ width: 80, height: 40, objectFit: "contain" }}
                 />
@@ -151,7 +152,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
               >
                 <img
-                  src="public/header/MOF E.png"
+                  src={safePath("/header/MOF E.PNG")}
                   alt="Ministry of Education"
                   style={{ width: 80, height: 40, objectFit: "contain" }}
                 />
@@ -162,7 +163,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
               >
                 <img
-                  src="public/header/kicd.png"
+                  src={safePath("/header/kicd.PNG")}
                   alt="KICD"
                   style={{ width: 80, height: 40, objectFit: "contain" }}
                 />
@@ -173,7 +174,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
               >
                 <img
-                  src="public/header/CBE.PNG"
+                  src={safePath("/header/CBE.PNG")}
                   alt="CBC Kenya"
                   style={{ width: 80, height: 40, objectFit: "contain" }}
                 />
