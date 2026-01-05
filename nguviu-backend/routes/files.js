@@ -24,7 +24,7 @@ const upload = multer({ storage });
 function toAbsoluteUrl(req, relativePath) {
   const origin =
     process.env.PUBLIC_ORIGIN ||
-    `${req.protocol}://${req.get("host")}`; // e.g. http://localhost:4000
+    `${req.protocol}://${req.get("host")}`; // e.g. http://
   return `${origin}${relativePath}`;
 }
 

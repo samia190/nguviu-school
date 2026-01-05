@@ -18,7 +18,7 @@ const API_ORIGIN = (() => {
     }
   } catch {}
 
-  return "http://localhost:4000"; // Default API origin for local testing
+  return "http://"; // Default API origin for local testing
 })();
 
 function getToken() {

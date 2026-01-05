@@ -18,7 +18,7 @@ const attachmentSchema = new mongoose.Schema({
   // Relative URL (served by Express static middleware), e.g. "/uploads/file.pdf"
   url: { type: String, required: true },
 
-  // Full absolute URL, e.g. "http://localhost:4000/uploads/file.pdf"
+  // Full absolute URL, e.g. "http:///uploads/file.pdf"
   downloadUrl: { type: String },
 
   mimetype: { type: String },

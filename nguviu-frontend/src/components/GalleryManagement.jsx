@@ -21,7 +21,7 @@ export default function GalleryManagement() {
         return import.meta.env.VITE_API_ORIGIN;
       }
     } catch {}
-    return "http://localhost:4000";
+    return "http:///localhost:4000";
   }, []);
 
   function absUrl(u) {
