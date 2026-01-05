@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { get, patch } from "../utils/api";
 import EditableHeading from "../components/EditableHeading";
 import EditableText from "../components/EditableText";
+import { safePath } from "../utils/paths";
 
 export default function Home({ user, setRoute }) {
   const [content, setContent] = useState({});
@@ -411,7 +412,7 @@ export default function Home({ user, setRoute }) {
                           }}
                         >
                           <img
-                            src={child.image || "/images/hike.jpg"}
+                            src={safePath(child.image || "/images/hike.jpg")}
                             alt=""
                             style={{
                               width: "100%",
@@ -549,7 +550,7 @@ const ImageSlider = () => {
   return (
     <div className="slider-container" style={{ width: "100%", height: "100%" }}>
       <img
-        src={images[currentIndex]}
+        src={safePath(images[currentIndex])}
         alt=""
         className="slider-image"
         style={{

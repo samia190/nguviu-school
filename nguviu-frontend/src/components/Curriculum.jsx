@@ -1,6 +1,7 @@
 // src/components/Curriculum.jsx
 import { useEffect, useState } from "react";
 import { get } from "../utils/api";
+import { safePath } from "../utils/paths";
 
 export default function Curriculum() {
   const [items, setItems] = useState([]);
@@ -63,7 +64,7 @@ export default function Curriculum() {
                         className="media-thumb image-thumb"
                         onClick={() => setLightboxUrl(m.url)}
                       >
-                        <img src={m.url} alt={m.originalName || "Curriculum"} />
+                        <img src={safePath(m.url)} alt={m.originalName || "Curriculum"} />
                       </div>
                     );
                   }
@@ -71,7 +72,7 @@ export default function Curriculum() {
                   if (isVideo) {
                     return (
                       <div key={i} className="media-thumb video-thumb">
-                        <video src={m.url} controls />
+                        <video src={safePath(m.url)} controls />
                       </div>
                     );
                   }
@@ -79,7 +80,7 @@ export default function Curriculum() {
                   if (isAudio) {
                     return (
                       <div key={i} className="media-thumb audio-thumb">
-                        <audio src={m.url} controls />
+                        <audio src={safePath(m.url)} controls />
                       </div>
                     );
                   }
@@ -111,7 +112,7 @@ export default function Curriculum() {
             >
               ×
             </button>
-            <img src={lightboxUrl} alt="Preview" />
+            <img src={safePath(lightboxUrl)} alt="Preview" />
           </div>
         </div>
       )}

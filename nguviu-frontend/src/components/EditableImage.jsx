@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { safePath } from "../utils/paths";
 
 export default function EditableImage({ src, alt, onSave, isAdmin }) {
   const [editing, setEditing] = useState(false);
@@ -16,7 +17,7 @@ export default function EditableImage({ src, alt, onSave, isAdmin }) {
   }
 
   if (!isAdmin) {
-    return <img src={src} alt={alt} style={{ width: "100%", borderRadius: "4px" }} />;
+    return <img src={safePath(src)} alt={alt} style={{ width: "100%", borderRadius: "4px" }} />;
   }
 
   return editing ? (
@@ -39,7 +40,7 @@ export default function EditableImage({ src, alt, onSave, isAdmin }) {
     </div>
   ) : (
     <img
-      src={src}
+      src={safePath(src)}
       alt={alt}
       onClick={() => setEditing(true)}
       style={{ width: "100%", borderRadius: "4px", cursor: "pointer", border: "2px dashed #ccc" }}

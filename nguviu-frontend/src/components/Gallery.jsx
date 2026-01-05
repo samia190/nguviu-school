@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { safePath } from "../utils/paths";
 
 export default function Gallery() {
   const [items, setItems] = useState([]);
@@ -145,7 +146,7 @@ export default function Gallery() {
             onClick={() => handleImageClick(idx)} // Set the index for preview
           >
             <img
-              src={item.url}
+              src={safePath(item.url)}
               alt={item.originalName || "Image"}
               style={{
                 width: "100%",
@@ -206,7 +207,7 @@ export default function Gallery() {
               ✕
             </button>
             <img
-              src={items[previewIndex].url} // Display the selected image
+              src={safePath(items[previewIndex].url)} // Display the selected image
               alt="Preview"
               style={{
                 maxWidth: "100%",

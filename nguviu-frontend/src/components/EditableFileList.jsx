@@ -1,6 +1,7 @@
 // src/components/EditableFileList.jsx
 import React, { useEffect, useState } from "react";
 import { get } from "../utils/api";
+import { safePath } from "../utils/paths";
 
 function getHref(file) {
   return file?.downloadUrl || file?.url || "";
@@ -145,7 +146,7 @@ export default function EditableFileList({ files = [], onSave, isAdmin }) {
           onClick={() => setLightboxSrc(href)}
         >
           <img
-            src={href}
+            src={safePath(href)}
             alt={getTitle(file) || getHeading(file)}
             style={{
               width: "100%",
@@ -169,7 +170,7 @@ export default function EditableFileList({ files = [], onSave, isAdmin }) {
             display: "block",
           }}
         >
-          <source src={href} />
+          <source src={safePath(href)} />
           Your browser does not support the video tag.
         </video>
       );
@@ -178,7 +179,7 @@ export default function EditableFileList({ files = [], onSave, isAdmin }) {
     if (isAudio(file)) {
       return (
         <audio controls style={{ width: "100%" }}>
-          <source src={href} />
+          <source src={safePath(href)} />
           Your browser does not support the audio element.
         </audio>
       );
@@ -237,7 +238,7 @@ export default function EditableFileList({ files = [], onSave, isAdmin }) {
           ✕
         </button>
         <img
-          src={lightboxSrc}
+          src={safePath(lightboxSrc)}
           alt=""
           style={{
             maxWidth: "100%",

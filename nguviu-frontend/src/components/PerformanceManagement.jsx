@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { safePath } from "../utils/paths";
 import { get, patch } from "../utils/api";
 
 /**
@@ -712,7 +713,7 @@ export default function PerformanceManagement({ user }) {
                     <div key={c.id} style={{ border: "1px solid #eee", borderRadius: 10, padding: 10 }}>
                       <div style={{ fontWeight: 600, marginBottom: 6 }}>{c.name}</div>
                       {c.url ? (
-                        <img src={c.url} alt={c.name} style={{ width: "100%", borderRadius: 8, display: "block" }} />
+                        <img src={safePath(c.url)} alt={c.name} style={{ width: "100%", borderRadius: 8, display: "block" }} />
                       ) : (
                         <div style={{ color: "#777" }}>No URL</div>
                       )}

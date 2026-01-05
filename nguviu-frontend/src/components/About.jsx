@@ -3,6 +3,7 @@ import { get, patch } from "../utils/api";
 import EditableText from "../components/EditableText";
 import EditableHeading from "../components/EditableHeading";
 import EditableSubheading from "../components/EditableSubheading";
+import { safePath } from "../utils/paths";
 
 export default function About({ user }) {
   const [content, setContent] = useState({});
@@ -261,7 +262,7 @@ export default function About({ user }) {
             }}
           >
             <img
-              src={content.principalImageUrl || "/images/background images/principle.jpeg"}
+              src={safePath(content.principalImageUrl || "/images/background images/principle.jpeg")}
               alt="Principal"
               
               style={{
@@ -304,7 +305,7 @@ export default function About({ user }) {
             }}
           >
             <img
-              src={content.deputyImageUrl || "/images/background images/deputy.jpeg"}
+              src={safePath(content.deputyImageUrl || "/images/background images/deputy.jpeg")}
               alt="Deputy Principal"
               style={{
                 width: "100%",

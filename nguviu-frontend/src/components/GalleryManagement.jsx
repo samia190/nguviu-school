@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { safePath } from "../utils/paths";
 import { get, post, patch, del, upload } from "../utils/api";
 import EditableText from "../components/EditableText";
 import EditableHeading from "../components/EditableHeading";
@@ -345,7 +346,7 @@ export default function GalleryManagement() {
                       <div key={att._id || idx} style={{ position: "relative" }}>
                         {img && (
                           <img
-                            src={url}
+                            src={safePath(url)}
                             alt={att.originalName || "image"}
                             style={{ width: "100%", borderRadius: 6, cursor: "pointer" }}
                             onClick={() => setPreview({ url, name: att.originalName })}
@@ -354,7 +355,7 @@ export default function GalleryManagement() {
 
                         {vid && (
                           <video
-                            src={url}
+                            src={safePath(url)}
                             controls
                             style={{ width: "100%", borderRadius: 6 }}
                           />
@@ -434,7 +435,7 @@ export default function GalleryManagement() {
         >
           <div style={{ maxWidth: "95%", maxHeight: "95%" }}>
             <img
-              src={preview.url}
+              src={safePath(preview.url)}
               alt={preview.name || "preview"}
               style={{ width: "100%", height: "auto", borderRadius: 8 }}
             />

@@ -4,6 +4,7 @@ import EditableHeading from "../components/EditableHeading";
 import EditableSubheading from "../components/EditableSubheading";
 import EditableText from "../components/EditableText";
 import EditableFileList from "../components/EditableFileList";
+import { safePath } from "../utils/paths";
 
 export default function Student({ user }) {
   const route = window.__route;
@@ -212,7 +213,7 @@ export default function Student({ user }) {
     }}
   >
     <source
-      src={content.heroVideoUrl || "/images/students/life 1.mp4"}
+      src={safePath(content.heroVideoUrl || "/images/students/life 1.mp4")}
       type="video/mp4"
     />
     Your browser does not support the video tag.
@@ -520,7 +521,7 @@ export default function Student({ user }) {
                 }}
               >
                 <img
-                  src={file.url}
+                  src={safePath(file.url)}
                   alt={file.name}
                   style={{
                     width: "100%",
@@ -586,7 +587,7 @@ export default function Student({ user }) {
                 }}
               >
                 <img
-                  src={file.url}
+                  src={safePath(file.url)}
                   alt={file.name}
                   style={{
                     width: "100%",

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { safePath } from "../utils/paths";
 
 const PAGES = [
   { key: "home", label: "Home Page" },
@@ -186,7 +187,7 @@ export default function PageBackgroundManagement() {
             {/* PREVIEW */}
             {(preview || fileHref(file)) && (
               <img
-                src={preview || fileHref(file)}
+                src={safePath(preview || fileHref(file))}
                 alt=""
                 style={{
                   width: "100%",
