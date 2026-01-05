@@ -101,7 +101,7 @@ export default function Footer() {
           >
             <img
               alt="NGUVIU logo"
-              src="/logo.png"
+              src="public/header/logo.png"
               style={{ width: 60, height: 60 }}
             />
             <div>
@@ -129,7 +129,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
               >
                 <img
-                  src="/knec.png"
+                  src="public/header/knec.png"
                   alt="KNEC"
                   style={{ width: 80, height: 40, objectFit: "contain" }}
                 />
@@ -140,7 +140,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
               >
                 <img
-                  src="/tsc.png"
+                  src="public/header/tsc.png"
                   alt="TSC"
                   style={{ width: 80, height: 40, objectFit: "contain" }}
                 />
@@ -151,7 +151,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
               >
                 <img
-                  src="/MOF E.png"
+                  src="public/header/MOF E.png"
                   alt="Ministry of Education"
                   style={{ width: 80, height: 40, objectFit: "contain" }}
                 />
@@ -162,7 +162,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
               >
                 <img
-                  src="/kicd.png"
+                  src="public/header/kicd.png"
                   alt="KICD"
                   style={{ width: 80, height: 40, objectFit: "contain" }}
                 />
@@ -173,7 +173,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
               >
                 <img
-                  src="/CBE.png"
+                  src="public/header/CBE.PNG"
                   alt="CBC Kenya"
                   style={{ width: 80, height: 40, objectFit: "contain" }}
                 />

@@ -33,6 +33,17 @@ export default function About({ user }) {
     .split("\n")
     .filter(Boolean);
 
+  // Normalize image paths coming from content or defaults.
+  const resolvePath = (p) => {
+    if (!p) return p;
+    // If someone saved a `public/...` path, convert to root-served path
+    if (p.startsWith("public/")) return "/" + p.slice("public/".length);
+    // If already an absolute path, return as-is
+    if (p.startsWith("/")) return p;
+    // Otherwise prefix with leading slash
+    return "/" + p;
+  };
+
   return (
     <section style={{ padding: 20 }}>
       {/* ================= HERO / TOP BACKGROUND SECTION ================= */}
@@ -45,10 +56,9 @@ export default function About({ user }) {
     maxHeight: 1000,
     overflow: "hidden",
     height: 500,
-          backgroundImage: `url(${
-           
-            content.heroBackgroundUrl || "/images/hero.jpg"
-          })`,
+          backgroundImage: `url(${encodeURI(
+            resolvePath(content.heroBackgroundUrl || "images/background images/hero.JPG")
+          )})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat"

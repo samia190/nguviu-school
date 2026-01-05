@@ -38,7 +38,7 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
       >
         <img
           alt="NGUVIU Girls Logo"
-          src="/logo.png"
+          src="public/header/logo.png"
           style={{
             width: 70,
             height: 70,

@@ -491,7 +491,7 @@ export default function Home({ user, setRoute }) {
             position: "relative",
             flex: 1,
             height: "400px",
-            backgroundImage: "url('/hike.jpg')",
+            backgroundImage: "url('public/header/hike.JPG')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
