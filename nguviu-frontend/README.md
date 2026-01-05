@@ -16,11 +16,11 @@ The React Compiler is not enabled on this template because of its impact on dev 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
 
 
- "/src/assets/background images/principle.jpeg",
-    "/src/assets/background images/img 1.jpeg",
-    "/src/assets/background images/lab 1.jpeg",
-    "/src/assets/background images/student 01.jpeg",
-    "/src/assets/background images/school3.jpeg",
+ "/images/background images/principle.jpeg",
+    "/images/background images/img 1.jpeg",
+    "/images/background images/lab 1.jpeg",
+    "/images/background images/student 01.jpeg",
+    "/images/background images/school3.jpeg",
 
     sections 
      position: "relative",

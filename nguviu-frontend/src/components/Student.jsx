@@ -42,299 +42,142 @@ export default function Student({ user }) {
   const defaultAcademicGallery = [
     {
       name: "",
-      url: "/src/assets/students/IMG_0778.JPG",
+      url: "/images/students/IMG_0778.JPG",
     },
     {
       name: "",
-      url:"/src/assets/students/IMG_1030.JPG",
+      url:"/images/students/IMG_1030.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/IMG_1043.JPG",
+      url: "/images/students/IMG_1043.JPG",
        
     },
     {
       name: "",
-      url: "/src/assets/students/IMG_1056.JPG",
+      url: "/images/students/IMG_1056.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/IMG_1067.JPG",
+      url: "/images/students/IMG_1067.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/IMG_1086.JPG",
+      url: "/images/students/IMG_1086.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/IMG_1329.JPG",
+      url: "/images/students/IMG_1329.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/IMG_1447.JPG",
+      url: "/images/students/IMG_1447.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/IMG_0786.JPG",
+      url: "/images/students/IMG_0786.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/student life.JPG",
+      url: "/images/students/student life.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/life 2.JPG",
+      url: "/images/students/life 2.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/life 1.JPG",
+      url: "/images/students/life 1.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/life 5.JPG",
+      url: "/images/students/life 5.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/life.JPG",
+      url: "/images/students/life.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/sc (3).JPG",
+      url: "/images/students/sc (3).JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/sc(2).JPG",
+      url: "/images/students/sc(2).JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/sc.JPG",
+      url: "/images/students/sc.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/std 7.JPG",
+      url: "/images/students/std 7.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/std 4.JPG",
+      url: "/images/students/std 4.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/std 2.JPG",
+      url: "/images/students/std 2.JPG",
     },
     {
       name: "",
-      url: "/src/assets/students/std 0.JPG",
+      url: "/images/students/std 0.JPG",
     }
     
   ];
 
   const defaultCocurricularGallery = [
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1257.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1221.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1194.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1329.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1332.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1413.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1415.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1424.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1443.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1444.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1447.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1449.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1458.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1459.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1475.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1528.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1641.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1644.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1649.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1650.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1651.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1653.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1655.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1659.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1667.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1669.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1671.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1672.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1673.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1674.JPG",
-    },{
-      name: "",
-      url: "/src/assets/students/IMG_1675.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1676.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1677.JPG",
-    },{
-      name: "",
-      url: "/src/assets/students/IMG_1680.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1681.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1682.JPG",
-    },{
-      name: "",
-      url: "/src/assets/students/IMG_1683.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1684.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1685.JPG",
-    },{
-      name: "",
-      url: "/src/assets/students/IMG_1686.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1687.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1688.JPG",
-    },{
-      name: "",
-      url: "/src/assets/students/IMG_1689.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1690.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1691.JPG",
-    },{
-      name: "",
-      url: "/src/assets/students/IMG_1692.JPG",
-    },
-    {
-      name: "",
-      url: "/src/assets/students/IMG_1693.JPG",
-    },
-    {
-      name: "",
-  
-      url: "/src/assets/students/IMG_1745.JPG",
-    },{
-      name: "",
-      url: "/src/assets/students/IMG_1741.JPG",
-    },
-   
+    { name: "", url: "/images/students/IMG_1257.JPG" },
+    { name: "", url: "/images/students/IMG_1221.JPG" },
+    { name: "", url: "/images/students/IMG_1194.JPG" },
+    { name: "", url: "/images/students/IMG_1329.JPG" },
+    { name: "", url: "/images/students/IMG_1332.JPG" },
+    { name: "", url: "/images/students/IMG_1413.JPG" },
+    { name: "", url: "/images/students/IMG_1415.JPG" },
+    { name: "", url: "/images/students/IMG_1424.JPG" },
+    { name: "", url: "/images/students/IMG_1443.JPG" },
+    { name: "", url: "/images/students/IMG_1444.JPG" },
+    { name: "", url: "/images/students/IMG_1447.JPG" },
+    { name: "", url: "/images/students/IMG_1449.JPG" },
+    { name: "", url: "/images/students/IMG_1458.JPG" },
+    { name: "", url: "/images/students/IMG_1459.JPG" },
+    { name: "", url: "/images/students/IMG_1475.JPG" },
+    { name: "", url: "/images/students/IMG_1528.JPG" },
+    { name: "", url: "/images/students/IMG_1641.JPG" },
+    { name: "", url: "/images/students/IMG_1644.JPG" },
+    { name: "", url: "/images/students/IMG_1649.JPG" },
+    { name: "", url: "/images/students/IMG_1650.JPG" },
+    { name: "", url: "/images/students/IMG_1651.JPG" },
+    { name: "", url: "/images/students/IMG_1653.JPG" },
+    { name: "", url: "/images/students/IMG_1655.JPG" },
+    { name: "", url: "/images/students/IMG_1659.JPG" },
+    { name: "", url: "/images/students/IMG_1667.JPG" },
+    { name: "", url: "/images/students/IMG_1669.JPG" },
+    { name: "", url: "/images/students/IMG_1671.JPG" },
+    { name: "", url: "/images/students/IMG_1672.JPG" },
+    { name: "", url: "/images/students/IMG_1673.JPG" },
+    { name: "", url: "/images/students/IMG_1674.JPG" },
+    { name: "", url: "/images/students/IMG_1675.JPG" },
+    { name: "", url: "/images/students/IMG_1676.JPG" },
+    { name: "", url: "/images/students/IMG_1677.JPG" },
+    { name: "", url: "/images/students/IMG_1680.JPG" },
+    { name: "", url: "/images/students/IMG_1681.JPG" },
+    { name: "", url: "/images/students/IMG_1682.JPG" },
+    { name: "", url: "/images/students/IMG_1683.JPG" },
+    { name: "", url: "/images/students/IMG_1684.JPG" },
+    { name: "", url: "/images/students/IMG_1685.JPG" },
+    { name: "", url: "/images/students/IMG_1686.JPG" },
+    { name: "", url: "/images/students/IMG_1687.JPG" },
+    { name: "", url: "/images/students/IMG_1688.JPG" },
+    { name: "", url: "/images/students/IMG_1689.JPG" },
+    { name: "", url: "/images/students/IMG_1690.JPG" },
+    { name: "", url: "/images/students/IMG_1691.JPG" },
+    { name: "", url: "/images/students/IMG_1692.JPG" },
+    { name: "", url: "/images/students/IMG_1693.JPG" },
+    { name: "", url: "/images/students/IMG_1745.JPG" },
+    { name: "", url: "/images/students/IMG_1741.JPG" },
   ];
 
   const academicGalleryFiles =
@@ -369,7 +212,7 @@ export default function Student({ user }) {
     }}
   >
     <source
-      src={content.heroVideoUrl || "/src/assets/students/life 1.mp4"}
+      src={content.heroVideoUrl || "/images/students/life 1.mp4"}
       type="video/mp4"
     />
     Your browser does not support the video tag.

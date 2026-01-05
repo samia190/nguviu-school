@@ -83,17 +83,17 @@ export default function Home({ user, setRoute }) {
         {
           title: "Leadership",
           text: "We believe in strong leadership to guide our students.",
-          image: "src/assets/school/lab 4.jpeg",
+          image: "/images/school/lab 4.jpeg",
         },
         {
           title: "school Life",
           text: "Our vibrant campus is home to diverse activities.",
-          image: "src/assets/school/lab 4.jpeg",
+          image: "/images/school/lab 4.jpeg",
         },
         {
           title: "Community Engagement",
           text: "We actively engage with the local community.",
-          image: "src/assets/school/lab 4.jpeg",
+          image: "/images/school/lab 4.jpeg",
         },
       ],
     },
@@ -107,27 +107,27 @@ export default function Home({ user, setRoute }) {
         {
           title: "Our classes",
           text: "Get a chance to take your studies in our well condusive learning enviroments.",
-          image: "src/assets/school/class 3.jpeg",
+          image: "/images/school/class 3.jpeg",
         },
         {
           
-          image: "src/assets/school/dh 1.jpeg",
+          image: "/images/school/dh 1.jpeg",
         },
         {
           
-          image: "src/assets/school/face 2.jpeg",
+          image: "/images/school/face 2.jpeg",
         },
         {
           
-          image: "src/assets/school/face 4.jpeg",
+          image: "/images/school/face 4.jpeg",
         },
         {
           
-          image: "src/assets/school/06.jpeg",
+          image: "/images/school/06.jpeg",
         },
         {
           
-          image: "src/assets/school/class 1.jpeg",
+          image: "/images/school/class 1.jpeg",
         },
       ],
     },
@@ -136,35 +136,35 @@ export default function Home({ user, setRoute }) {
       key: "student",
       title: "student life",
       text: "Learn about our mission, history, values, and vision.",
-      image: "src/assets/std 1.jpg",
+      image: "/images/std 1.jpg",
       childContainers: [
         {
           title: "Students Engaged in Current Affairs Reading",
           text: "A group of students reading newspapers, fostering awareness of current events and promoting critical thinking in a group setting.",
-          image: "src/assets/gallery/school life/std 1.jpg",
+          image: "/images/gallery/school life/std 1.jpg",
         },
         {
           
-          image: "src/assets/students/IMG_0778.jpg",
+          image: "/images/students/IMG_0778.jpg",
         },
         {
-          image: "src/assets/students/IMG_1067.jpg  ",
-        },
-        {
-          
-          image: "src/assets/students/life.jpg",
+          image: "/images/students/IMG_1067.jpg  ",
         },
         {
           
-          image: "src/assets/students/std 4.jpg",
+          image: "/images/students/life.jpg",
+        },
+        {
+          
+          image: "/images/students/std 4.jpg",
         },
         {
          
-          image: "src/assets/students/sc.jpg",
+          image: "/images/students/sc.jpg",
         },
         {
           
-          image: "src/assets/students/std 2.jpg",
+          image: "/images/students/std 2.jpg",
         },
       ],
     },
@@ -173,37 +173,37 @@ export default function Home({ user, setRoute }) {
       key: "admissions",
       title: "Admission Process",
       text: "See the full admission process and join our school.",
-      image: "src/assets/admissions/admission 1.jpeg",
+      image: "/images/admissions/admission 1.jpeg",
       childContainers: [
         {
           title: "Admission Requirements",
           text: "Find out the requirements to apply to our school.",
-          image: "src/assets/admissions/requirements.png",
+          image: "/images/admissions/requirements.png",
         },
         {
           title: "How to Apply",
           text: "A step-by-step guide to help you through the application process.",
-          image: "src/assets/admissions/how-to-apply.png",
+          image: "/images/admissions/how-to-apply.png",
         },
         {
           title: "Tuition Fees",
           text: "Learn about our competitive tuition fees and payment plans.",
-          image: "src/assets/admissions/tuition.png",
+          image: "/images/admissions/tuition.png",
         },
         {
           title: "Scholarships",
           text: "Explore the scholarship opportunities we offer.",
-          image: "src/assets/admissions/scholarships.png",
+          image: "/images/admissions/scholarships.png",
         },
         {
           title: "Application Deadline",
           text: "Check the deadlines for applying for the upcoming academic year.",
-          image: "src/assets/admissions/deadline.png",
+          image: "/images/admissions/deadline.png",
         },
         {
           title: "Admission Events",
           text: "Attend our open days and information sessions.",
-          image: "src/assets/admissions/events.png",
+          image: "/images/admissions/events.png",
         },
       ],
     },
@@ -211,37 +211,37 @@ export default function Home({ user, setRoute }) {
       key: "curriculum",
       title: "Curriculum Overview",
       text: "Explore subjects, programs, and academic structure.",
-      image: "src/assets/curriculum/curriculum 1.jpeg",
+      image: "/images/curriculum/curriculum 1.jpeg",
       childContainers: [
         {
           title: "Primary School Curriculum",
           text: "An introduction to our primary school curriculum.",
-          image: "src/assets/curriculum/primary-curriculum-image.png",
+          image: "/images/curriculum/primary-curriculum-image.png",
         },
         {
           title: "Secondary School Curriculum",
           text: "A detailed overview of our secondary school offerings.",
-          image: "src/assets/curriculum/secondary-curriculum-image.png",
+          image: "/images/curriculum/secondary-curriculum-image.png",
         },
         {
           title: "Extracurricular Activities",
           text: "Sports, arts, and leadership programs beyond the classroom.",
-          image: "src/assets/curriculum/extracurricular-image.png",
+          image: "/images/curriculum/extracurricular-image.png",
         },
         {
           title: "Assessments and Exams",
           text: "Information on how we assess our students' progress.",
-          image: "src/assets/curriculum/assessment-image.png",
+          image: "/images/curriculum/assessment-image.png",
         },
         {
           title: "Curriculum Syllabus",
           text: "Detailed breakdown of each subject and course.",
-          image: "src/assets/curriculum/syllabus-image.png",
+          image: "/images/curriculum/syllabus-image.png",
         },
         {
           title: "Special Programs",
           text: "Our special programs for gifted students and more.",
-          image: "src/assets/curriculum/special-programs-image.png",
+          image: "/images/curriculum/special-programs-image.png",
         },
       ],
     },
@@ -249,37 +249,37 @@ export default function Home({ user, setRoute }) {
       key: "staff",
       title: "Our Staff",
       text: "Meet our teachers, leadership, and support staff.",
-      image: "src/assets/staff/staff 1.jpeg",
+      image: "/images/staff/staff 1.jpeg",
       childContainers: [
         {
           title: "Leadership Team",
           text: "Meet the leaders guiding our institution.",
-          image: "src/assets/staff/leadership-team-image.png",
+          image: "/images/staff/leadership-team-image.png",
         },
         {
           title: "Teaching Staff",
           text: "Our team of dedicated educators.",
-          image: "src/assets/staff/teaching-staff-image.png",
+          image: "/images/staff/teaching-staff-image.png",
         },
         {
           title: "Support Staff",
           text: "The support team that ensures the smooth running of our school.",
-          image: "src/assets/staff/support-staff-image.png",
+          image: "/images/staff/support-staff-image.png",
         },
         {
           title: "Staff Training",
           text: "Our continuous professional development programs.",
-          image: "src/assets/staff/staff-training-image.png",
+          image: "/images/staff/staff-training-image.png",
         },
         {
           title: "Staff Wellness",
           text: "We prioritize the well-being of our staff members.",
-          image: "src/assets/staff/staff-wellness-image.png",
+          image: "/images/staff/staff-wellness-image.png",
         },
         {
           title: "Faculty Achievements",
           text: "Recognizing the accomplishments of our academic staff.",
-          image: "src/assets/staff/faculty-achievements-image.png",
+          image: "/images/staff/faculty-achievements-image.png",
         },
       ],
     },
@@ -287,37 +287,37 @@ export default function Home({ user, setRoute }) {
       key: "gallery",
       title: "school Gallery",
       text: "Browse photos of school events and student life.",
-      image: "src/assets/gallery/gallery 1.jpeg",
+      image: "/images/gallery/gallery 1.jpeg",
       childContainers: [
         {
           title: "Sports Day",
           text: "Highlights from our annual sports events.",
-          image: "src/assets/gallery/sports-day-image.png",
+          image: "/images/gallery/sports-day-image.png",
         },
         {
           title: "Cultural Celebrations",
           text: "A glimpse of our cultural festivals and events.",
-          image: "src/assets/gallery/arts/19.jpg",
+          image: "/images/gallery/arts/19.jpg",
         },
         {
           title: "Graduation Ceremony",
           text: "Celebrate our students' achievements.",
-          image: "src/assets/gallery/graduation-ceremony-image.png",
+          image: "/images/gallery/graduation-ceremony-image.png",
         },
         {
           title: "Field Trips",
           text: "Our students' educational field trips and excursions.",
-          image: "src/assets/gallery/tours/IMG_0986.jpg",
+          image: "/images/gallery/tours/IMG_0986.jpg",
         },
         {
           title: "Community Service",
           text: "The volunteer and service projects our students are involved in.",
-          image: "src/assets/gallery/community-service-image.png",
+          image: "/images/gallery/community-service-image.png",
         },
         {
           title: "Student Performances",
           text: "Talent shows, performances, and arts exhibitions.",
-          image: "src/assets/gallery/arts/04.jpg",
+          image: "/images/gallery/arts/04.jpg",
         },
       ],
     },
@@ -411,7 +411,7 @@ export default function Home({ user, setRoute }) {
                           }}
                         >
                           <img
-                            src={child.image || "public/hike.jpg"}
+                            src={child.image || "/images/hike.jpg"}
                             alt=""
                             style={{
                               width: "100%",
@@ -477,7 +477,7 @@ export default function Home({ user, setRoute }) {
           }}
         >
           <video width="100%" height="100%" autoPlay loop muted>
-            <source src="/src/assets/videos/vid 1.mp4" type="video/mp4" />
+            <source src="/images/videos/vid 1.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           <div className="welcome-text video-text">
@@ -527,12 +527,12 @@ export default function Home({ user, setRoute }) {
 
 const ImageSlider = () => {
   const images = [
-    "/src/assets/background images/principle.jpeg",
-    "/src/assets/background images/deputy.jpeg",
-    "/src/assets/background images/img 1.jpeg",
-    "/src/assets/background images/lab 1.jpeg",
-    "/src/assets/background images/student 01.jpeg",
-    "/src/assets/background images/school3.jpeg",
+    "/images/background images/principle.jpeg",
+    "/images/background images/deputy.jpeg",
+    "/images/background images/img 1.jpeg",
+    "/images/background images/lab 1.jpeg",
+    "/images/background images/student 01.jpeg",
+    "/images/background images/school3.jpeg",
 
   ];
 

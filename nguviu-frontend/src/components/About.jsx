@@ -47,7 +47,7 @@ export default function About({ user }) {
     height: 500,
           backgroundImage: `url(${
            
-            content.heroBackgroundUrl || "/src/assets/hero.jpg"
+            content.heroBackgroundUrl || "/images/hero.jpg"
           })`,
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -251,7 +251,7 @@ export default function About({ user }) {
             }}
           >
             <img
-              src={content.principalImageUrl || "/src/assets/background images/principle.jpeg"}
+              src={content.principalImageUrl || "/images/background images/principle.jpeg"}
               alt="Principal"
               
               style={{
@@ -294,7 +294,7 @@ export default function About({ user }) {
             }}
           >
             <img
-              src={content.deputyImageUrl || "/src/assets/background images/deputy.jpeg"}
+              src={content.deputyImageUrl || "/images/background images/deputy.jpeg"}
               alt="Deputy Principal"
               style={{
                 width: "100%",
