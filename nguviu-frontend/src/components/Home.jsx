@@ -63,22 +63,22 @@ export default function Home({ user, setRoute }) {
       key: "about",
       title: "About Us",
       text: "Learn about our mission, history, values, and vision.",
-      image: "public/logo.png",
+      image: "/logo.png",
       childContainers: [
         {
           title: "Our History",
           text: "Our school has a rich history of academic excellence.",
-          image: "public/history-image.png",
+          image: "/history-image.png",
         },
         {
           title: "Our Values",
           text: "Integrity, Respect, and Excellence are our core values.",
-          image: "public/values-image.png",
+          image: "/values-image.png",
         },
         {
           title: "Our Vision",
           text: "To empower future leaders with knowledge and confidence.",
-          image: "public/vision-image.png",
+          image: "/vision-image.png",
         },
         {
           title: "Leadership",
@@ -491,7 +491,7 @@ export default function Home({ user, setRoute }) {
             position: "relative",
             flex: 1,
             height: "400px",
-            backgroundImage: "url('/public/hike.jpg')",
+            backgroundImage: "url('/hike.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
