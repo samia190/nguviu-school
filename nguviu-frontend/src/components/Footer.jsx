@@ -29,6 +29,8 @@ export default function Footer() {
   const year = new Date().getFullYear();
   const [links, setLinks] = useState(defaultLinks);
 
+  const safeList = (list, fallback = []) => (Array.isArray(list) ? list : fallback);
+
   // Make links dynamic from API, but keep safe fallbacks
   useEffect(() => {
     get("/api/footer-links")
@@ -230,9 +232,9 @@ export default function Footer() {
                 marginleft:23
               }}
             >
-              {links.quickLinks.map((item) => (
-                <li key={item.href}>
-                  <a href={item.href} className="footer-link">
+              {safeList(links.quickLinks, defaultLinks.quickLinks).map((item) => (
+                <li key={item.href || item.label}>
+                  <a href={item.href || "#"} className="footer-link">
                     {item.label}
                   </a>
                 </li>
@@ -258,9 +260,9 @@ export default function Footer() {
                 fontWeight: "bold",
               }}
             >
-              {links.portals.map((item) => (
-                <li key={item.href}>
-                  <a href={item.href} className="footer-link">
+              {safeList(links.portals, defaultLinks.portals).map((item) => (
+                <li key={item.href || item.label}>
+                  <a href={item.href || "#"} className="footer-link">
                     {item.label}
                   </a>
                 </li>
@@ -286,9 +288,9 @@ export default function Footer() {
                 fontWeight: "bold",
               }}
             >
-              {links.academics.map((item) => (
-                <li key={item.href}>
-                  <a href={item.href} className="footer-link">
+              {safeList(links.academics, defaultLinks.academics).map((item) => (
+                <li key={item.href || item.label}>
+                  <a href={item.href || "#"} className="footer-link">
                     {item.label}
                   </a>
                 </li>

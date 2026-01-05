@@ -105,9 +105,11 @@ export default function Contact({ user }) {
   }
 
   const title = content?.title || "Contact Us";
+  // Ensure intro is a plain string to avoid nested <p> elements in the DOM.
   const intro =
-    content?.intro ||
-    <p>Get in touch with NGUVIU GIRL'S SCHOOL using the details and contact form below.</p>;
+    (typeof content?.intro === "string" && content.intro.trim())
+      ? content.intro
+      : "Get in touch with NGUVIU GIRL'S SCHOOL using the details and contact form below.";
 
   const address = content?.address || "";
   const phone = content?.phone || "";
