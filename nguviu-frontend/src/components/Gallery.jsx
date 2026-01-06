@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { safePath } from "../utils/paths";
+import { get } from "../utils/api";
 
 export default function Gallery() {
   const [items, setItems] = useState([]);
@@ -8,26 +9,40 @@ export default function Gallery() {
   const [previewIndex, setPreviewIndex] = useState(null); // Index for the full-screen view
 
   useEffect(() => {
-    // Manually define gallery images with title and description (No grouping)
-    const galleryData = [
-      { url: "/images/gallery/arts/01.jpg", originalName: "Football Match", description: "A thrilling football match during Sports Day." },
-      { url: "/images/gallery/arts/02.jpg", originalName: "Running Race", description: "The exciting 100-meter race with our best athletes." },
-      { url: "/images/gallery/arts/03.jpg", originalName: "Dance Performance", description: "An energetic dance performance by the students." },
-      { url: "/images/gallery/arts/04.jpg", originalName: "Art Exhibition", description: "Students displaying their creative artwork." },
-      { url: "/images/gallery/arts/05.jpg", originalName: "Graduation Day", description: "The joyful moment of our senior students' graduation." },
-      { url: "/images/gallery/arts/06.jpg", originalName: "Class of 2022", description: "Our proud graduating class of 2022." },
-      { url: "/images/gallery/arts/06.jpg", originalName: "Class of 2022", description: "Our proud graduating class of 2022." },
-      { url: "/images/gallery/arts/07.jpg", originalName: "Science Fair", },
-      { url: "/images/gallery/arts/08.jpg", originalName: "Music Concert"},
-      { url: "/images/gallery/arts/09.jpg", originalName: "Drama Club",  },   
-      { url: "/images/gallery/arts/10.jpg", originalName: "Field Trip",  },
-      { url: "/images/gallery/arts/11.jpg", originalName: "Sports Day",  },
-      { url: "/images/gallery/arts/12.jpg", originalName: "Cultural Fest",  },     
-      // Add more images here as needed...
-    ];
+    async function load() {
+      try {
+        const data = await get('/api/content/gallery');
+        // backend returns array of gallery items; flatten attachments for simple gallery
+        if (Array.isArray(data) && data.length > 0) {
+          const flat = [];
+          data.forEach((section) => {
+            (section.attachments || []).forEach((att) => {
+              flat.push({ url: att.url || att.downloadUrl, originalName: att.title || att.originalName || section.title, description: att.description || section.body });
+            });
+          });
+          if (flat.length > 0) {
+            setItems(flat);
+            setLoading(false);
+            return;
+          }
+        }
 
-    setItems(galleryData);
-    setLoading(false);
+        // Fallback to static list if API empty
+        const galleryData = [
+          { url: "/images/gallery/arts/01.jpg", originalName: "Football Match", description: "A thrilling football match during Sports Day." },
+          { url: "/images/gallery/arts/02.jpg", originalName: "Running Race", description: "The exciting 100-meter race with our best athletes." },
+          { url: "/images/gallery/arts/03.jpg", originalName: "Dance Performance", description: "An energetic dance performance by the students." },
+        ];
+        setItems(galleryData);
+        setLoading(false);
+      } catch (err) {
+        setItems([]);
+        setError('Failed to load gallery');
+        setLoading(false);
+      }
+    }
+
+    load();
   }, []);
 
   if (loading) {

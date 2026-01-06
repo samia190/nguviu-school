@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import LazyVideo from "./LazyVideo";
 import { get, patch } from "../utils/api";
 import EditableHeading from "../components/EditableHeading";
 import EditableText from "../components/EditableText";
@@ -31,31 +32,27 @@ export default function Home({ user, setRoute }) {
   }, []);
 
   async function fetchSummaries() {
-    const keys = ["about", "admissions", "curriculum", "staff", "gallery", "contact"];
     try {
+      const keys = ["about", "admissions", "curriculum", "staff", "gallery", "contact"];
       const results = await Promise.all(
-        keys.map((k) => get(`/api/content/${k}`).catch(() => null))
+        keys.map((k) => get(`/api/content/summary/${k}`).catch(() => null))
       );
-
       const map = {};
       keys.forEach((k, i) => {
-        const d = results[i] || {};
-        const fallback = sections.find((s) => s.key === k);
-
-        map[k] = {
-          title: d.title || fallback?.title,
-          summary: (d.body || d.intro || fallback?.text || "").slice(0, 160),
-          image:
-            (d.attachments &&
-              d.attachments[0] &&
-              (d.attachments[0].downloadUrl || d.attachments[0].url)) ||
-            null,
-        };
+        if (results[i]) map[k] = results[i];
       });
-
       setSummaries(map);
     } catch (err) {
-      // ignore
+      // ignore errors fetching small summaries
+    }
+  }
+
+  async function updateSection(key, value) {
+    try {
+      await patch("/api/content/home", { [key]: value });
+      setContent((c) => ({ ...c, [key]: value }));
+    } catch (err) {
+      setError("Failed to save changes.");
     }
   }
 
@@ -439,10 +436,12 @@ export default function Home({ user, setRoute }) {
             height: "400px",
           }}
         >
-          <video width="100%" height="100%" autoPlay loop muted>
-            <source src="/images/videos/vid 1.mp4" type="video/mp4" />
+          {/* Lazy-loaded hero video */}
+          <LazyVideo autoPlay loop muted>
+            <source src={safePath("/images/videos/vid 1.mp4")} type="video/mp4" />
             Your browser does not support the video tag.
-          </video>
+          </LazyVideo>
+
           <div className="welcome-text video-text">
             Welcome to NGUVIU GIRLS' SENIOR SCHOOL!
           </div>
@@ -515,12 +514,12 @@ const ImageSlider = () => {
         src={safePath(images[currentIndex])}
         alt=""
         className="slider-image"
+        loading="lazy"
         style={{
           width: "100%",
           height: "100%",
-          objectFit: "fit",
+          objectFit: "cover",
           transition: "opacity 0.9s ease-in-out",
-          loading: "fast",
         }}
       />
     </div>

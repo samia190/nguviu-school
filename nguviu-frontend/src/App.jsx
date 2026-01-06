@@ -14,6 +14,7 @@ import Loader from "./components/Loader";
 import Login from "./components/Login";
 import SignUp from "./components/SignUp";
 import AdminDashboard from "./components/AdminDashboard";
+import DevLogin from "./components/DevLogin";
 import Curriculum from "./components/Curriculum";
 import Performance from "./components/Performance";
 import Policies from "./components/Policies";
@@ -50,13 +51,15 @@ import PageBackgroundManagement from "./components/PageBackgroundManagement";
 // ❌ REMOVE this duplicate import (pages version)
 // import HomeworkPortal from "./pages/HomeworkPortal";
 
-function MenuButton({ route, setRoute, setLoading }) {
+function MenuButton({ route, setRoute, setLoading, user }) {
   const [open, setOpen] = useState(false);
   const HIDDEN = ["login", "signup"];
 
   if (HIDDEN.includes((route || "").toLowerCase())) return null;
 
   const links = [
+    // admin quick link visible only when logged in as admin
+    ...(user && user.role === "admin" ? [{ key: "admin", label: "Admin" }] : []),
     { key: "home", label: "Home" },
     { key: "about", label: "About" },
     { key: "admissions", label: "Admissions" },
@@ -216,8 +219,25 @@ export default function App() {
       window.addEventListener("load", handleLoad);
     }
 
-    // make router globally available
-    window.setRoute = setRoute;
+    // make router globally available and maintain a simple in-memory route stack
+    window.__routeStack = window.__routeStack || [];
+    window.setRoute = (r) => {
+      setRoute((prev) => {
+        try {
+          window.__routeStack.push(prev);
+        } catch (err) {}
+        return r;
+      });
+    };
+    window.__goBack = () => {
+      try {
+        const last = window.__routeStack.pop();
+        if (last) setRoute(last);
+        else setRoute("home");
+      } catch (err) {
+        setRoute("home");
+      }
+    };
     window.__route = route;
 
     return () => {
@@ -239,6 +259,29 @@ export default function App() {
         console.error("Failed to decode token", err);
       }
     }
+  }, []);
+
+  // Listen for dev auto-login events (dev helper)
+  useEffect(() => {
+    function onDevLogin(e) {
+      try {
+        const token = e?.detail?.token;
+        if (!token) return;
+        localStorage.setItem("token", token);
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const u = { email: payload.email, role: payload.role, id: payload.id };
+        setUser(u);
+        if (u?.role === "admin") setRoute("admin");
+        else if (u?.role === "teacher") setRoute("teacher");
+        else if (u?.role === "student") setRoute("student");
+        else setRoute("staff");
+      } catch (err) {
+        console.error("Dev login failed", err);
+      }
+    }
+
+    window.addEventListener("nguviu:dev-login", onDevLogin);
+    return () => window.removeEventListener("nguviu:dev-login", onDevLogin);
   }, []);
 
   function handleAuth(u) {
@@ -290,7 +333,7 @@ export default function App() {
         user={user}
         logout={logout}
       />
-      <MenuButton route={route} setRoute={setRoute} setLoading={setLoading} />
+      <MenuButton route={route} setRoute={setRoute} setLoading={setLoading} user={user} />
 
       <main
         style={{
@@ -379,20 +422,10 @@ export default function App() {
               return <Legal user={user} />;
 
             case "student":
-              switch (subRoute) {
-                case "admissions-guide":
-                  return <StudentAdmissionsGuide user={user} />;
-                case "fees":
-                  return <StudentFees user={user} />;
-                case "exams":
-                  return <StudentExams user={user} />;
-                case "clubs":
-                  return <StudentClubs user={user} />;
-                case "support-services":
-                  return <StudentSupportServices user={user} />;
-                default:
-                  return <Student user={user} />;
-              }
+              // Always render the Student page as the parent container and let it
+              // mount its subpages when `subRoute` is present. This preserves the
+              // student page layout while keeping routing behaviour.
+              return <Student user={user} subRoute={subRoute} setRoute={setRoute} />;
 
             case "portal":
               // ✅ Homework portal route handled here
@@ -413,6 +446,9 @@ export default function App() {
 
             case "login":
               return <Login onAuth={handleAuth} user={user} />;
+
+            case "dev-login":
+              return <DevLogin />;
 
             case "signup":
               return <SignUp onAuth={handleAuth} user={user} />;

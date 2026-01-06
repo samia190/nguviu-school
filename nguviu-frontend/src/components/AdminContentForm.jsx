@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { upload } from "../utils/api";
+import AdminButton from "./AdminButton";
  // Make sure you import upload
 
 export default function AdminContentForm({ onSaved }) {
@@ -179,9 +180,9 @@ export default function AdminContentForm({ onSaved }) {
       )}
 
       <div style={{ marginTop: 12 }}>
-        <button type="submit" disabled={loading}>
+        <AdminButton type="submit" disabled={loading} variant="primary">
           {loading ? "Uploading..." : "Add Content"}
-        </button>
+        </AdminButton>
       </div>
     </form>
   );

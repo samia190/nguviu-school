@@ -13,6 +13,10 @@ const fileSchema = new mongoose.Schema(
     notes: { type: String, default: "" },
     studentEmail: { type: String, default: "" },
     studentRole: { type: String, default: "" },
+      // Review status for submissions
+      status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+      reviewerNotes: { type: String, default: "" },
+      reviewedBy: { type: String, default: "" },
   },
   { timestamps: { createdAt: "uploadedAt", updatedAt: "updatedAt" } }
 );

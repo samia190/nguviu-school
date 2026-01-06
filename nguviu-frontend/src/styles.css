@@ -20,3 +20,13 @@ footer .meta { margin-left:auto; display:flex; gap:16px; align-items:center; fon
 .form-input, textarea { padding:8px; border:1px solid #ddd; border-radius:4px; width:100%; }
 .btn { background:var(--accent); color:#f7efef; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; }
 .grid { display:grid; gap:12px; }
+
+/* Admission form / Admin dashboard styles */
+.admission-card { max-width:680px; margin:0 auto; background:#fff; padding:18px; border-radius:8px; box-shadow:0 6px 18px rgba(15,15,15,0.06); }
+.admission-form { display:grid; gap:12px; }
+.alert { padding:8px 10px; border-radius:6px; margin-bottom:12px; }
+.alert.success { background:#e6ffed; color:#065f2d; }
+.alert.error { background:#ffe6e6; color:#7a1515; }
+.submissions-table { width:100%; border-collapse:collapse; margin-top:12px; }
+.submissions-table th, .submissions-table td { text-align:left; padding:8px; border-bottom:1px solid #eee; }
+.admin-dashboard { max-width:980px; margin:0 auto; padding:6px; }

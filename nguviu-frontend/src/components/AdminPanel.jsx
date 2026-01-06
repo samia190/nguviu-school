@@ -54,8 +54,10 @@ export default function AdminPanel({ setLoading, user }) {
     if (!confirm("Delete this content entry?")) return;
     try {
       setLoading && setLoading(true);
-      await del(`/api/admin/content/${id}`);
-      setItems(prev => prev.filter(i => i.id !== id));
+      // The canonical delete endpoint for content is /api/content/:id
+      await del(`/api/content/${id}`);
+      // Some responses/items may use `_id` or `id`. Remove any matching item.
+      setItems((prev) => prev.filter((i) => String(i._id || i.id) !== String(id)));
     } catch (err) {
       alert(err?.body?.error || err?.message || "Delete failed");
     } finally {
@@ -104,24 +106,36 @@ export default function AdminPanel({ setLoading, user }) {
         {items.length === 0 && <div>No content yet.</div>}
         <div style={{ display: "grid", gap: 12, marginTop: 12 }}>
           {items.map(item => (
-            <article key={item.id} style={{ border: "1px solid #eee", padding: 12, borderRadius: 6 }}>
+            <article key={item._id || item.id} style={{ border: "1px solid #eee", padding: 12, borderRadius: 6 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
                   <strong>{item.title}</strong> <small style={{ color: "#666" }}>({item.type})</small>
                   <div style={{ color: "#555", marginTop: 6 }}>{item.body}</div>
                   <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {item.attachments?.map(a =>
-                      a.mimetype?.startsWith("image/") ? (
-                        <img key={a.filename} src={a.url} alt={a.originalName} style={{ width: 140, height: 90, objectFit: "cover", borderRadius: 4 }} />
-                      ) : (
-                        <video key={a.filename} src={a.url} controls style={{ width: 200, height: 120, borderRadius: 4 }} />
-                      )
-                    )}
+                    {item.attachments?.map((a, ai) => {
+                      const key = a.filename || a.name || a._id || ai;
+                      if (String(a.mimetype || "").startsWith("image/")) {
+                        return (
+                          <img key={key} src={a.url} alt={a.originalName || a.name || "attachment"} style={{ width: 140, height: 90, objectFit: "cover", borderRadius: 4 }} />
+                        );
+                      }
+                      // If video, render video; otherwise render a download link
+                      if (String(a.mimetype || "").startsWith("video/")) {
+                        return (
+                          <video key={key} src={a.url} controls style={{ width: 200, height: 120, borderRadius: 4 }} />
+                        );
+                      }
+                      return (
+                        <a key={key} href={a.downloadUrl || a.url} target="_blank" rel="noreferrer" style={{ display: 'inline-block', padding: 8, border: '1px solid #eee', borderRadius: 6 }}>
+                          {a.originalName || a.name || "Download"}
+                        </a>
+                      );
+                    })}
                   </div>
                 </div>
                 <div>
                   <button
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() => handleDelete(item._id || item.id)}
                     style={{
                       background: "#f44336",
                       color: "#fff",

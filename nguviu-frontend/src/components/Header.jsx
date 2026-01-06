@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { safePath } from "../utils/paths";
 
 export default function Header({ route, setRoute, setLoading, user, logout }) {
@@ -16,6 +16,32 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
     cursor: "pointer",
     fontWeight: active ? "bold" : "normal",
   });
+
+  const [openSubmenu, setOpenSubmenu] = useState(null);
+
+  const subLinks = {
+    curriculum: [
+      { key: "curriculum/overview", label: "Overview" },
+      { key: "curriculum/primary", label: "Primary" },
+      { key: "curriculum/secondary", label: "Secondary" },
+      { key: "curriculum/syllabus", label: "Syllabus" },
+      { key: "curriculum/extracurricular", label: "Extracurricular" },
+      { key: "curriculum/assessment", label: "Assessment" },
+      { key: "curriculum/careers", label: "Careers" },
+    ],
+    student: [
+      { key: "student/admissions-guide", label: "Admissions Guide" },
+      { key: "student/fees", label: "Fees" },
+      { key: "student/exams", label: "Exams" },
+      { key: "student/clubs", label: "Clubs" },
+      { key: "student/support-services", label: "Support Services" },
+    ],
+    staff: [
+      { key: "staff/leadership", label: "Leadership" },
+      { key: "staff/teaching", label: "Teaching" },
+      { key: "staff/support", label: "Support" },
+    ],
+  };
 
   return (
     <header
@@ -37,6 +63,26 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
         onClick={() => go("home")}
         style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
       >
+        {/* Back button: appears when not on home */}
+        {route && route !== "home" && (
+          <button
+            onClick={() => {
+              if (window && typeof window.__goBack === "function") window.__goBack();
+              else go("home");
+            }}
+            aria-label="Go back"
+            style={{
+              marginRight: 8,
+              padding: "6px 8px",
+              borderRadius: 6,
+              border: "none",
+              background: "rgba(255,255,255,0.9)",
+              cursor: "pointer",
+            }}
+          >
+            ←
+          </button>
+        )}
         <img
           alt="NGUVIU Girls Logo"
           src={safePath("/header/logo.PNG")}
@@ -78,9 +124,81 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
         <button onClick={() => go("about")} style={navButtonStyle(route === "about")}>
           About
         </button>
-        <button onClick={() => go("student")} style={navButtonStyle(route === "student")}>
-          Student
-        </button>
+
+        {/* Curriculum parent + submenu */}
+        <div
+          onMouseEnter={() => setOpenSubmenu("curriculum")}
+          onMouseLeave={() => setOpenSubmenu(null)}
+          style={{ position: "relative" }}
+        >
+          <button onClick={() => go("curriculum") } style={navButtonStyle(route && route.split("/")[0] === "curriculum")}>
+            Curriculum
+          </button>
+          {openSubmenu === "curriculum" && (
+            <div
+              style={{
+                position: "absolute",
+                top: 36,
+                left: 0,
+                background: "#fff",
+                color: "#111",
+                padding: 8,
+                borderRadius: 6,
+                boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
+                zIndex: 600,
+              }}
+            >
+              {subLinks.curriculum.map((s) => (
+                <div key={s.key} style={{ marginBottom: 6 }}>
+                  <button
+                    onClick={() => go(s.key)}
+                    style={{ padding: "6px 8px", border: "none", background: "transparent", cursor: "pointer" }}
+                  >
+                    {s.label}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Student parent + submenu */}
+        <div
+          onMouseEnter={() => setOpenSubmenu("student")}
+          onMouseLeave={() => setOpenSubmenu(null)}
+          style={{ position: "relative" }}
+        >
+          <button onClick={() => go("student")} style={navButtonStyle(route && route.split("/")[0] === "student") }>
+            Student
+          </button>
+          {openSubmenu === "student" && (
+            <div
+              style={{
+                position: "absolute",
+                top: 36,
+                left: 0,
+                background: "#fff",
+                color: "#111",
+                padding: 8,
+                borderRadius: 6,
+                boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
+                zIndex: 600,
+              }}
+            >
+              {subLinks.student.map((s) => (
+                <div key={s.key} style={{ marginBottom: 6 }}>
+                  <button
+                    onClick={() => go(s.key)}
+                    style={{ padding: "6px 8px", border: "none", background: "transparent", cursor: "pointer" }}
+                  >
+                    {s.label}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         <button onClick={() => go("contact")} style={navButtonStyle(route === "contact")}>
           Contact
         </button>
@@ -97,19 +215,42 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
           FeeStructure
         </button>
 
-        {/* Apply Now button */}
-        <button
-          onClick={() => go("admissions")}
-          style={{
-            ...buttonStyle,
-            background: "#28a745",
-            border: "1px solid #1e7e34",
-            fontWeight: "bold",
-          }}
-          aria-label="Apply now to NGUVIU Girl's School"
+        {/* Staff parent + submenu */}
+        <div
+          onMouseEnter={() => setOpenSubmenu("staff")}
+          onMouseLeave={() => setOpenSubmenu(null)}
+          style={{ position: "relative" }}
         >
-          Apply Now
-        </button>
+          <button onClick={() => go("staff")} style={navButtonStyle(route && route.split("/")[0] === "staff") }>
+            Staff
+          </button>
+          {openSubmenu === "staff" && (
+            <div
+              style={{
+                position: "absolute",
+                top: 36,
+                left: 0,
+                background: "#fff",
+                color: "#111",
+                padding: 8,
+                borderRadius: 6,
+                boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
+                zIndex: 600,
+              }}
+            >
+              {subLinks.staff.map((s) => (
+                <div key={s.key} style={{ marginBottom: 6 }}>
+                  <button
+                    onClick={() => go(s.key)}
+                    style={{ padding: "6px 8px", border: "none", background: "transparent", cursor: "pointer" }}
+                  >
+                    {s.label}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Auth buttons or user info */}
         {!user ? (

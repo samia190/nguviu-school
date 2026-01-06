@@ -1,28 +1,34 @@
-import { useEffect, useState } from "react";
-import EditableHeading from "../components/EditableHeading";
-import EditableText from "../components/EditableText";
-import EditableSubheading from "../components/EditableSubheading";
-import AdminContentForm from "../components/AdminContentForm";
+import React, { useEffect, useState } from "react";
+import EditableHeading from "./EditableHeading";
+import EditableText from "./EditableText";
+import EditableSubheading from "./EditableSubheading";
+import AdminContentForm from "./AdminContentForm";
 
-import AdmissionsManagement from "../components/AdmissionsManagement";
-import FeeStructureManagement from "../components/FeeStructureManagement";
-import NewslettersManagement from "../components/NewslettersManagement";
-import EventsManagement from "../components/EventsManagement";
-import GalleryManagement from "../components/GalleryManagement";
-import LegalManagement from "../components/LegalManagement";
+import AdmissionsManagement from "./AdmissionsManagement";
+import AdminSubmissions from "./AdminSubmissions";
+import FeeStructureManagement from "./FeeStructureManagement";
+import NewslettersManagement from "./NewslettersManagement";
+import EventsManagement from "./EventsManagement";
+import GalleryManagement from "./GalleryManagement";
+import LegalManagement from "./LegalManagement";
 
 // Import new content page management components
-import AboutManagement from "../components/AboutManagement";
-import ContactManagement from "../components/ContactManagement";
-import CurriculumManagement from "../components/CurriculumManagement";
-import PerformanceManagement from "../components/PerformanceManagement";
-import PoliciesManagement from "../components/PoliciesManagement";
-import ParentsManagement from "../components/ParentsManagement";
-import StudentsManagement from "../components/StudentsManagement";
-import StaffManagement from "../components/StaffManagement";
+import AboutManagement from "./AboutManagement";
+import ContactManagement from "./ContactManagement";
+import CurriculumManagement from "./CurriculumManagement";
+import PerformanceManagement from "./PerformanceManagement";
+import PoliciesManagement from "./PoliciesManagement";
+import ParentsManagement from "./ParentsManagement";
+import StudentsManagement from "./StudentsManagement";
+import StaffManagement from "./StaffManagement";
+import RoleManagement from "./RoleManagement";
 
 import { get, patch } from "../utils/api";
 import PageBackgroundManagement from "./PageBackgroundManagement";
+import Notifications from "./Notifications";
+import DashboardWidgets from "./DashboardWidgets";
+import DragDropUpload from "./DragDropUpload";
+import "../admin.css";
 
 export default function AdminDashboard({ user }) {
   const [content, setContent] = useState({});
@@ -39,7 +45,7 @@ export default function AdminDashboard({ user }) {
 
   function updateSection(section, value) {
     setLoading(true);
-    setError("");
+
     setSuccess("");
 
     patch(`/api/content/admin/${section}`, { value })
@@ -66,9 +72,10 @@ export default function AdminDashboard({ user }) {
     );
   }
 
-  // All admin sections
   const sections = [
     "dashboard",
+    "submissions",
+    "roles",
     "admissions",
     "feeStructure",
     "newsletters",
@@ -83,7 +90,7 @@ export default function AdminDashboard({ user }) {
     "parents",
     "students",
     "staff",
-    "pagebackground"
+    "pagebackground",
   ];
 
   return (
@@ -95,19 +102,13 @@ export default function AdminDashboard({ user }) {
         minHeight: "70vh",
       }}
     >
+      <Notifications />
       {/* Sidebar */}
-      <aside
-        style={{
-          width: 220,
-          borderRight: "1px solid #e5e7eb",
-          paddingRight: "0.75rem",
-        }}
-      >
+      <aside className="admin-sidebar">
         <h2 style={{ marginTop: 0, marginBottom: "0.75rem" }}>Admin Panel</h2>
         {user && (
           <p style={{ fontSize: "0.85rem", marginTop: 0, color: "#4b5563" }}>
-            Logged in as <strong>{user.email}</strong>{" "}
-            {user.role && <span>({user.role})</span>}
+            Logged in as <strong>{user.email}</strong> {user.role && <span>({user.role})</span>}
           </p>
         )}
 
@@ -141,17 +142,7 @@ export default function AdminDashboard({ user }) {
                   <button
                     type="button"
                     onClick={() => setActiveSection(key)}
-                    style={{
-                      width: "100%",
-                      textAlign: "left",
-                      padding: "6px 8px",
-                      borderRadius: 6,
-                      border: "none",
-                      backgroundColor: active ? "#991b1b" : "transparent",
-                      color: active ? "#fff" : "#111827",
-                      cursor: "pointer",
-                      fontSize: "0.9rem",
-                    }}
+                    className={`menu-item ${active ? "active" : ""}`}
                   >
                     {label}
                   </button>
@@ -163,7 +154,7 @@ export default function AdminDashboard({ user }) {
       </aside>
 
       {/* Main content */}
-      <main style={{ flexGrow: 1 }}>
+      <main className="admin-main-bg" style={{ flexGrow: 1 }}>
         {activeSection === "dashboard" && (
           <>
             <EditableHeading
@@ -198,6 +189,21 @@ export default function AdminDashboard({ user }) {
               />
             </div>
 
+            <div style={{ marginTop: 28 }}>
+              <h3 style={{ marginBottom: 12 }}>Quick Overview</h3>
+              <DashboardWidgets onNavigate={setActiveSection} />
+            </div>
+
+            <div style={{ marginTop: 22 }}>
+              <h3 style={{ marginBottom: 12 }}>Quick Upload</h3>
+              <div className="card">
+                <DragDropUpload onUploaded={(d) => {
+                  setSuccess("File uploaded");
+                  setTimeout(() => setSuccess(""), 2500);
+                }} />
+              </div>
+            </div>
+
             {loading && <p style={{ color: "#00a" }}>Saving...</p>}
             {success && <p style={{ color: "green" }}>{success}</p>}
             {error && <p style={{ color: "red" }}>{error}</p>}
@@ -205,6 +211,10 @@ export default function AdminDashboard({ user }) {
         )}
 
         {activeSection === "admissions" && <AdmissionsManagement />}
+
+        {activeSection === "roles" && <RoleManagement />}
+
+        {activeSection === "submissions" && <AdminSubmissions />}
 
         {activeSection === "feeStructure" && <FeeStructureManagement />}
 
@@ -216,7 +226,6 @@ export default function AdminDashboard({ user }) {
 
         {activeSection === "legal" && <LegalManagement />}
 
-        {/* Simple editable content components for content pages */}
         {activeSection === "about" && <AboutManagement />}
 
         {activeSection === "contact" && <ContactManagement />}

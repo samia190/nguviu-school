@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import notify from "../utils/notify";
+import AdminButton from "./AdminButton";
 
 function fileHref(file) {
   return file?.downloadUrl || file?.url || "";
@@ -110,6 +112,7 @@ export default function AdmissionsManagement() {
       const updated = await res.json();
       setContent(updated);
       setSuccess("Admissions text saved.");
+      notify("Admissions text saved", "success");
     } catch (err) {
       console.error(err);
       setError(err.message || "Error saving admissions text");
@@ -142,8 +145,11 @@ export default function AdmissionsManagement() {
         fd.append("files", file);
       });
 
+      const token = localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await fetch("/api/admin/content", {
         method: "POST",
+        headers,
         body: fd,
       });
       if (!res.ok) throw new Error("Failed to upload files");
@@ -153,6 +159,7 @@ export default function AdmissionsManagement() {
       setContent(updated);
       setSelectedFiles([]);
       setSuccess("Admissions files uploaded successfully.");
+      notify("Admissions files uploaded", "success");
     } catch (err) {
       console.error(err);
       setError(err.message || "Error uploading files");
@@ -180,9 +187,13 @@ export default function AdmissionsManagement() {
     setSuccess("");
 
     try {
+      const token = localStorage.getItem("token");
+      const headers = { "Content-Type": "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
       const res = await fetch(`/api/content/${content._id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           attachments: content.attachments || [],
         }),
@@ -191,9 +202,11 @@ export default function AdmissionsManagement() {
       const updated = await res.json();
       setContent(updated);
       setSuccess("Media titles and descriptions saved.");
+      notify("Media titles and descriptions saved", "success");
     } catch (err) {
       console.error(err);
       setError(err.message || "Error saving media details");
+      notify(err?.message || "Error saving media details", "error");
     }
   }
 
@@ -302,9 +315,9 @@ export default function AdmissionsManagement() {
           />
         </div>
 
-        <button type="submit" disabled={savingText}>
+        <AdminButton type="submit" disabled={savingText} variant="primary">
           {savingText ? "Saving…" : "Save Admissions Text"}
-        </button>
+        </AdminButton>
       </form>
 
       {/* FILE UPLOAD */}
@@ -322,9 +335,9 @@ export default function AdmissionsManagement() {
             style={{ marginBottom: "0.5rem" }}
           />
           <br />
-          <button type="submit" disabled={uploading}>
+          <AdminButton type="submit" disabled={uploading} variant="primary">
             {uploading ? "Uploading…" : "Upload Files"}
-          </button>
+          </AdminButton>
         </form>
       </div>
 
@@ -388,9 +401,9 @@ export default function AdmissionsManagement() {
         ))}
 
         {attachments.length > 0 && (
-          <button onClick={handleSaveMediaDetails} style={{ marginTop: "0.5rem" }}>
-            Save Media Titles &amp; Descriptions
-          </button>
+          <div style={{ marginTop: 8 }}>
+            <AdminButton onClick={handleSaveMediaDetails} variant="primary">Save Media Titles &amp; Descriptions</AdminButton>
+          </div>
         )}
       </div>
     </section>

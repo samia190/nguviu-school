@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { safePath } from "../utils/paths";
+import LazyImage from "../components/LazyImage";
 
 const PAGES = [
   { key: "home", label: "Home Page" },
@@ -186,7 +187,7 @@ export default function PageBackgroundManagement() {
 
             {/* PREVIEW */}
             {(preview || fileHref(file)) && (
-              <img
+              <LazyImage
                 src={safePath(preview || fileHref(file))}
                 alt=""
                 style={{

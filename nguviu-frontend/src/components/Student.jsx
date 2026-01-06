@@ -1,18 +1,33 @@
 import { useEffect, useState } from "react";
+import LazyImage from "../components/LazyImage";
 import { get, patch } from "../utils/api";
 import EditableHeading from "../components/EditableHeading";
 import EditableSubheading from "../components/EditableSubheading";
 import EditableText from "../components/EditableText";
 import EditableFileList from "../components/EditableFileList";
 import { safePath } from "../utils/paths";
+import StudentAdmissionsGuide from "./subpages/StudentAdmissionsGuide.jsx";
+import StudentFees from "./subpages/StudentFees.jsx";
+import StudentExams from "./subpages/StudentExams.jsx";
+import StudentClubs from "./subpages/StudentClubs.jsx";
+import StudentSupportServices from "./subpages/StudentSupportServices.jsx";
 
-export default function Student({ user }) {
+export default function Student({ user, subRoute }) {
   const route = window.__route;
-  const [mainRoute, subRoute] = route.split("/");
-  const tab = subRoute || "home";
+  const [mainRoute, routeSub] = route.split("/");
+  const currentSub = subRoute || routeSub || null;
 
   const switchTab = (key) => {
-    window.setRoute(`student/${key}`);
+    if (typeof window.setRoute === "function") window.setRoute(`student/${key}`);
+    else window.setRoute && window.setRoute(`student/${key}`);
+  };
+
+  const subpageMap = {
+    "admissions-guide": StudentAdmissionsGuide,
+    fees: StudentFees,
+    exams: StudentExams,
+    clubs: StudentClubs,
+    "support-services": StudentSupportServices,
   };
 
   const [content, setContent] = useState({});
@@ -238,6 +253,8 @@ export default function Student({ user }) {
     width="100%"
     height="100%"
     autoPlay
+    preload="none"
+    playsInline
     loop
     muted
     style={{
@@ -332,299 +349,331 @@ export default function Student({ user }) {
       </div>
 
       {/* ---------- CONTENT ---------- */}
-      <section style={{ padding: 20 }}>
-        {/* TITLE */}
-        <EditableHeading
-          value={content.title || "Student Resources"}
-          onSave={(val) => updateSection("title", val)}
-          isAdmin={isAdmin}
-          level={2}
-        />
+      {(() => {
+        const Sub = subpageMap[currentSub];
+        if (Sub) {
+          return (
+            <div style={{ padding: 20 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <div>
+                  <button
+                    onClick={() => {
+                      if (window && typeof window.__goBack === "function") window.__goBack();
+                      else window.setRoute && window.setRoute("student");
+                    }}
+                    style={{ padding: "6px 8px", borderRadius: 6, border: "none", cursor: "pointer" }}
+                  >
+                    ← Back
+                  </button>
+                </div>
+                <div style={{ fontWeight: "bold" }}>{currentSub.replace(/-/g, " ")}</div>
+                <div />
+              </div>
 
-        {/* INTRO */}
-        <EditableText
-          value={
-            content.intro ||
-            "Welcome, students! Here you'll find everything you need to stay organized, involved, and informed."
-          }
-          onSave={(val) => updateSection("intro", val)}
-          isAdmin={isAdmin}
-        />
+              <div>
+                <Sub user={user} />
+              </div>
+            </div>
+          );
+        }
 
-        {/* TIMETABLES */}
-        <EditableSubheading
-          value={content.timetableHeading || "Class Timetables"}
-          onSave={(val) => updateSection("timetableHeading", val)}
-          isAdmin={isAdmin}
-          level={3}
-        />
+        return (
+          <section style={{ padding: 20 }}>
+            {/* TITLE */}
+            <EditableHeading
+              value={content.title || "Student Resources"}
+              onSave={(val) => updateSection("title", val)}
+              isAdmin={isAdmin}
+              level={2}
+            />
 
-        <EditableFileList
-          files={
-            content.timetableFiles || [
-              { name: "Form 1 Timetable", url: "/files/timetable-form1.pdf" },
-              { name: "Form 2 Timetable", url: "/files/timetable-form2.pdf" },
-              { name: "Form 3 Timetable", url: "/files/timetable-form3.pdf" },
-              { name: "Form 4 Timetable", url: "/files/timetable-form4.pdf" },
-            ]
-          }
-          onSave={(files) => updateSection("timetableFiles", files)}
-          isAdmin={isAdmin}
-        />
-
-        {/* HOMEWORK */}
-        <EditableSubheading
-          value={content.homeworkHeading || "Homework Portal"}
-          onSave={(val) => updateSection("homeworkHeading", val)}
-          isAdmin={isAdmin}
-          level={3}
-        />
-
-        <EditableText
-          value={
-            content.homeworkIntro ||
-            "Access assignments and submit your work online. Use the portal link below and follow the guide."
-          }
-          onSave={(val) => updateSection("homeworkIntro", val)}
-          isAdmin={isAdmin}
-        />
-
-        <EditableFileList
-          files={
-            content.homeworkFiles || [
-              {
-                name: "Homework Submission Guide",
-                url: "/files/homework-guide.pdf",
-              },
-            ]
-          }
-          onSave={(files) => updateSection("homeworkFiles", files)}
-          isAdmin={isAdmin}
-        />
-
-        <p>
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              if (window.setRoute) {
-                window.setRoute("portal/homework");
+            {/* INTRO */}
+            <EditableText
+              value={
+                content.intro ||
+                "Welcome, students! Here you'll find everything you need to stay organized, involved, and informed."
               }
-            }}
-          >
-            Go to Homework Portal
-          </a>
-        </p>
+              onSave={(val) => updateSection("intro", val)}
+              isAdmin={isAdmin}
+            />
 
-        {/* CLUBS */}
-        <EditableSubheading
-          value={content.clubsHeading || "Clubs & Extracurriculars"}
-          onSave={(val) => updateSection("clubsHeading", val)}
-          isAdmin={isAdmin}
-          level={3}
-        />
+            {/* TIMETABLES */}
+            <EditableSubheading
+              value={content.timetableHeading || "Class Timetables"}
+              onSave={(val) => updateSection("timetableHeading", val)}
+              isAdmin={isAdmin}
+              level={3}
+            />
 
-        <EditableText
-          value={
-            content.clubs ||
-            "• Science Club – Thursdays at 3:30 PM\n" +
-              "• Drama Club – Wednesdays at 4:00 PM\n" +
-              "• Football Team – Practice on Mondays & Fridays\n" +
-              "• Debate Society – Tuesdays at 3:45 PM"
-          }
-          onSave={(val) => updateSection("clubs", val)}
-          isAdmin={isAdmin}
-        />
+            <EditableFileList
+              files={
+                content.timetableFiles || [
+                  { name: "Form 1 Timetable", url: "/files/timetable-form1.pdf" },
+                  { name: "Form 2 Timetable", url: "/files/timetable-form2.pdf" },
+                  { name: "Form 3 Timetable", url: "/files/timetable-form3.pdf" },
+                  { name: "Form 4 Timetable", url: "/files/timetable-form4.pdf" },
+                ]
+              }
+              onSave={(files) => updateSection("timetableFiles", files)}
+              isAdmin={isAdmin}
+            />
 
-        {/* STUDENT COUNCIL */}
-        <EditableSubheading
-          value={content.councilHeading || "Student Council"}
-          onSave={(val) => updateSection("councilHeading", val)}
-          isAdmin={isAdmin}
-          level={3}
-        />
+            {/* HOMEWORK */}
+            <EditableSubheading
+              value={content.homeworkHeading || "Homework Portal"}
+              onSave={(val) => updateSection("homeworkHeading", val)}
+              isAdmin={isAdmin}
+              level={3}
+            />
 
-        <EditableText
-          value={
-            content.councilIntro ||
-            "Our student leaders represent your voice. Elections are held every January. Download the charter and candidate form below."
-          }
-          onSave={(val) => updateSection("councilIntro", val)}
-          isAdmin={isAdmin}
-        />
+            <EditableText
+              value={
+                content.homeworkIntro ||
+                "Access assignments and submit your work online. Use the portal link below and follow the guide."
+              }
+              onSave={(val) => updateSection("homeworkIntro", val)}
+              isAdmin={isAdmin}
+            />
 
-        <EditableFileList
-          files={
-            content.councilFiles || [
-              {
-                name: "Student Council Charter",
-                url: "/files/student-council-charter.pdf",
-              },
-              { name: "Candidate Form", url: "/files/candidate-form.pdf" },
-            ]
-          }
-          onSave={(files) => updateSection("councilFiles", files)}
-          isAdmin={isAdmin}
-        />
+            <EditableFileList
+              files={
+                content.homeworkFiles || [
+                  {
+                    name: "Homework Submission Guide",
+                    url: "/files/homework-guide.pdf",
+                  },
+                ]
+              }
+              onSave={(files) => updateSection("homeworkFiles", files)}
+              isAdmin={isAdmin}
+            />
 
-        {/* CODE OF CONDUCT */}
-        <EditableSubheading
-          value={content.conductHeading || "Code of Conduct"}
-          onSave={(val) => updateSection("conductHeading", val)}
-          isAdmin={isAdmin}
-          level={3}
-        />
-
-        <EditableText
-          value={
-            content.conductIntro ||
-            "All students are expected to uphold our values of respect, responsibility, and excellence."
-          }
-          onSave={(val) => updateSection("conductIntro", val)}
-          isAdmin={isAdmin}
-        />
-
-        <EditableFileList
-          files={
-            content.conductFiles || [
-              {
-                name: "Code of Conduct",
-                url: "/files/code-of-conduct.pdf",
-              },
-            ]
-          }
-          onSave={(files) => updateSection("conductFiles", files)}
-          isAdmin={isAdmin}
-        />
-
-        {/* ================= STUDENT LIFE GALLERY ================= */}
-        <EditableSubheading
-          value={content.galleryHeading || "Student Life Gallery"}
-          onSave={(val) => updateSection("galleryHeading", val)}
-          isAdmin={isAdmin}
-          level={3}
-        />
-
-        <EditableText
-          value={
-            content.galleryIntro ||
-            "Explore moments from academic life and co-curricular activities at Nguviu Girls School."
-          }
-          onSave={(val) => updateSection("galleryIntro", val)}
-          isAdmin={isAdmin}
-        />
-
-        {/* Academic Life Group */}
-        <EditableSubheading
-          value={content.academicGalleryHeading || "Academic Life"}
-          onSave={(val) => updateSection("academicGalleryHeading", val)}
-          isAdmin={isAdmin}
-          level={4}
-        />
-
-        <EditableFileList
-          files={academicGalleryFiles}
-          onSave={(files) => updateSection("academicGalleryFiles", files)}
-          isAdmin={isAdmin}
-        />
-
-        <div className="gallery-grid" style={{ marginTop: 12 }}>
-          {academicGalleryFiles.map((file, idx) => (
-            <div key={file.url} className="gallery-item">
-              <button
-                className="gallery-thumb"
-                onClick={() => openViewer(academicGalleryFiles, idx)}
-                aria-label={`Open image ${idx + 1}`}
+            <p>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (window.setRoute) {
+                    window.setRoute("portal/homework");
+                  }
+                }}
               >
-                <img src={safePath(file.url)} alt={file.name} />
-              </button>
-              <div className="gallery-caption">{file.name}</div>
+                Go to Homework Portal
+              </a>
+            </p>
+
+            {/* CLUBS */}
+            <EditableSubheading
+              value={content.clubsHeading || "Clubs & Extracurriculars"}
+              onSave={(val) => updateSection("clubsHeading", val)}
+              isAdmin={isAdmin}
+              level={3}
+            />
+
+            <EditableText
+              value={
+                content.clubs ||
+                "• Science Club – Thursdays at 3:30 PM\n" +
+                  "• Drama Club – Wednesdays at 4:00 PM\n" +
+                  "• Football Team – Practice on Mondays & Fridays\n" +
+                  "• Debate Society – Tuesdays at 3:45 PM"
+              }
+              onSave={(val) => updateSection("clubs", val)}
+              isAdmin={isAdmin}
+            />
+
+            {/* STUDENT COUNCIL */}
+            <EditableSubheading
+              value={content.councilHeading || "Student Council"}
+              onSave={(val) => updateSection("councilHeading", val)}
+              isAdmin={isAdmin}
+              level={3}
+            />
+
+            <EditableText
+              value={
+                content.councilIntro ||
+                "Our student leaders represent your voice. Elections are held every January. Download the charter and candidate form below."
+              }
+              onSave={(val) => updateSection("councilIntro", val)}
+              isAdmin={isAdmin}
+            />
+
+            <EditableFileList
+              files={
+                content.councilFiles || [
+                  {
+                    name: "Student Council Charter",
+                    url: "/files/student-council-charter.pdf",
+                  },
+                  { name: "Candidate Form", url: "/files/candidate-form.pdf" },
+                ]
+              }
+              onSave={(files) => updateSection("councilFiles", files)}
+              isAdmin={isAdmin}
+            />
+
+            {/* CODE OF CONDUCT */}
+            <EditableSubheading
+              value={content.conductHeading || "Code of Conduct"}
+              onSave={(val) => updateSection("conductHeading", val)}
+              isAdmin={isAdmin}
+              level={3}
+            />
+
+            <EditableText
+              value={
+                content.conductIntro ||
+                "All students are expected to uphold our values of respect, responsibility, and excellence."
+              }
+              onSave={(val) => updateSection("conductIntro", val)}
+              isAdmin={isAdmin}
+            />
+
+            <EditableFileList
+              files={
+                content.conductFiles || [
+                  {
+                    name: "Code of Conduct",
+                    url: "/files/code-of-conduct.pdf",
+                  },
+                ]
+              }
+              onSave={(files) => updateSection("conductFiles", files)}
+              isAdmin={isAdmin}
+            />
+
+            {/* ================= STUDENT LIFE GALLERY ================= */}
+            <EditableSubheading
+              value={content.galleryHeading || "Student Life Gallery"}
+              onSave={(val) => updateSection("galleryHeading", val)}
+              isAdmin={isAdmin}
+              level={3}
+            />
+
+            <EditableText
+              value={
+                content.galleryIntro ||
+                "Explore moments from academic life and co-curricular activities at Nguviu Girls School."
+              }
+              onSave={(val) => updateSection("galleryIntro", val)}
+              isAdmin={isAdmin}
+            />
+
+            {/* Academic Life Group */}
+            <EditableSubheading
+              value={content.academicGalleryHeading || "Academic Life"}
+              onSave={(val) => updateSection("academicGalleryHeading", val)}
+              isAdmin={isAdmin}
+              level={4}
+            />
+
+            <EditableFileList
+              files={academicGalleryFiles}
+              onSave={(files) => updateSection("academicGalleryFiles", files)}
+              isAdmin={isAdmin}
+            />
+
+            <div className="gallery-grid" style={{ marginTop: 12 }}>
+              {academicGalleryFiles.map((file, idx) => (
+                <div key={file.url} className="gallery-item">
+                  <button
+                    className="gallery-thumb"
+                    onClick={() => openViewer(academicGalleryFiles, idx)}
+                    aria-label={`Open image ${idx + 1}`}
+                  >
+                    <LazyImage src={safePath(file.url)} alt={file.name} />
+                  </button>
+                  <div className="gallery-caption">{file.name}</div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Co-curricular Group */}
-        <EditableSubheading
-          value={content.cocurricularGalleryHeading || "Co-curricular & Clubs"}
-          onSave={(val) => updateSection("cocurricularGalleryHeading", val)}
-          isAdmin={isAdmin}
-          level={4}
-        />
+            {/* Co-curricular Group */}
+            <EditableSubheading
+              value={content.cocurricularGalleryHeading || "Co-curricular & Clubs"}
+              onSave={(val) => updateSection("cocurricularGalleryHeading", val)}
+              isAdmin={isAdmin}
+              level={4}
+            />
 
-        <EditableFileList
-          files={cocurricularGalleryFiles}
-          onSave={(files) =>
-            updateSection("cocurricularGalleryFiles", files)
-          }
-          isAdmin={isAdmin}
-        />
+            <EditableFileList
+              files={cocurricularGalleryFiles}
+              onSave={(files) =>
+                updateSection("cocurricularGalleryFiles", files)
+              }
+              isAdmin={isAdmin}
+            />
 
-        <div className="gallery-grid" style={{ marginTop: 12 }}>
-          {cocurricularGalleryFiles.map((file, idx) => (
-            <div key={file.url} className="gallery-item">
-              <button
-                className="gallery-thumb"
-                onClick={() => openViewer(cocurricularGalleryFiles, idx)}
-                aria-label={`Open image ${idx + 1}`}
-              >
-                <img src={safePath(file.url)} alt={file.name} />
-              </button>
-              <div className="gallery-caption">{file.name}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Lightbox viewer */}
-        {viewerOpen && viewerList && viewerList.length > 0 && (
-          <div className="lightbox-overlay" onClick={closeViewer}>
-            <button
-              className="lightbox-close"
-              onClick={(e) => {
-                e.stopPropagation();
-                closeViewer();
-              }}
-              aria-label="Close viewer"
-            >
-              ×
-            </button>
-
-            <button
-              className="lightbox-prev"
-              onClick={(e) => {
-                e.stopPropagation();
-                prevImage();
-              }}
-              aria-label="Previous image"
-            >
-              ‹
-            </button>
-
-            <div
-              className="lightbox-content"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <img
-                src={safePath(viewerList[viewerIndex].url)}
-                alt={viewerList[viewerIndex].name}
-                className="lightbox-image"
-              />
+            <div className="gallery-grid" style={{ marginTop: 12 }}>
+              {cocurricularGalleryFiles.map((file, idx) => (
+                <div key={file.url} className="gallery-item">
+                  <button
+                    className="gallery-thumb"
+                    onClick={() => openViewer(cocurricularGalleryFiles, idx)}
+                    aria-label={`Open image ${idx + 1}`}
+                  >
+                    <LazyImage src={safePath(file.url)} alt={file.name} />
+                  </button>
+                  <div className="gallery-caption">{file.name}</div>
+                </div>
+              ))}
             </div>
 
-            <button
-              className="lightbox-next"
-              onClick={(e) => {
-                e.stopPropagation();
-                nextImage();
-              }}
-              aria-label="Next image"
-            >
-              ›
-            </button>
-          </div>
-        )}
+            {/* Lightbox viewer */}
+            {viewerOpen && viewerList && viewerList.length > 0 && (
+              <div className="lightbox-overlay" onClick={closeViewer}>
+                <button
+                  className="lightbox-close"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    closeViewer();
+                  }}
+                  aria-label="Close viewer"
+                >
+                  ×
+                </button>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
-      </section>
+                <button
+                  className="lightbox-prev"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    prevImage();
+                  }}
+                  aria-label="Previous image"
+                >
+                  ‹
+                </button>
+
+                <div
+                  className="lightbox-content"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <img
+                    src={safePath(viewerList[viewerIndex].url)}
+                    alt={viewerList[viewerIndex].name}
+                    className="lightbox-image"
+                    loading="eager"
+                  />
+                </div>
+
+                <button
+                  className="lightbox-next"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    nextImage();
+                  }}
+                  aria-label="Next image"
+                >
+                  ›
+                </button>
+              </div>
+            )}
+
+            {error && <p style={{ color: "red" }}>{error}</p>}
+          </section>
+        );
+      })()}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import EditableFileList from "./EditableFileList";
+import Admission from "./Admission";
 
 export default function Admissions({ user }) {
   const [content, setContent] = useState(null);
@@ -111,6 +112,11 @@ export default function Admissions({ user }) {
         {attachments.length > 0 && (
           <EditableFileList files={attachments} isAdmin={false} />
         )}
+      </section>
+
+      {/* Embedded admission submission form */}
+      <section style={{ marginTop: "2rem" }}>
+        <Admission />
       </section>
     </section>
   );

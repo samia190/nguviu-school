@@ -113,6 +113,16 @@ export default function FeeStructure({ user }) {
 
   const attachments = content?.attachments || [];
 
+  // Ensure attachments link to the server-side download endpoint to force download
+  const downloadableAttachments = (attachments || []).map((att) => {
+    if (!att) return att;
+    // If attachment is local (relative url) and we have content id, point to download proxy
+    if (content?._id && att._id && !(att.downloadUrl || "").startsWith("http")) {
+      return { ...att, downloadUrl: `/api/content/${content._id}/attachments/${att._id}/download` };
+    }
+    return att;
+  });
+
   return (
     <section style={{ padding: 20, maxWidth: 960, margin: "0 auto" }}>
       <header style={{ marginBottom: "1rem" }}>
@@ -135,14 +145,14 @@ export default function FeeStructure({ user }) {
       {/* Attachments managed via Admin -> Fee Structure */}
       <section style={{ marginTop: "1.5rem" }}>
         <h2>Fee Structure Documents &amp; Media</h2>
-        {attachments.length === 0 && (
+        {downloadableAttachments.length === 0 && (
           <p>
             No fee structure documents have been uploaded yet. Please check back
             later or contact the school office.
           </p>
         )}
-        {attachments.length > 0 && (
-          <EditableFileList files={attachments} isAdmin={false} />
+        {downloadableAttachments.length > 0 && (
+          <EditableFileList files={downloadableAttachments} isAdmin={false} />
         )}
       </section>
 

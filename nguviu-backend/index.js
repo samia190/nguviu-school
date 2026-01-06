@@ -1,5 +1,7 @@
 // index.js (ESM)
 import dotenv from "dotenv";
+// Load .env early so index.js can access MONGO_URI and other settings
+dotenv.config();
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
@@ -10,10 +12,14 @@ import fs from "fs";
 import footerLinksRoutes from "./routes/footerLinks.js";
 import authRoutes from "./routes/auth.js";
 import contentRoutes from "./routes/content.js";
+import homeRoutes from "./routes/contentHome.js";
+import aboutRoutes from "./routes/contentAbout.js";
 import filesRoutes from "./routes/files.js";
 import downloadRoutes from "./routes/downloads.js";
 import galleryRoutes from "./routes/galleryAttachments.js";
 import adminRoutes from "./routes/admin.js";
+import submissionsRoutes from "./routes/submissions.js";
+import submitFormRoutes from "./routes/submitForm.js";
 
 // Initialize the Express app
 const app = express();
@@ -57,27 +63,39 @@ app.use("/downloads", express.static(downloadsDir));
 
 // Mount routes
 app.use("/api/auth", authRoutes);
+// Mount dedicated home route BEFORE the generic content router so it takes precedence
+app.use("/api/content/home", homeRoutes);
+app.use("/api/content/about", aboutRoutes);
 app.use("/api/content", contentRoutes);
 app.use("/api/files", filesRoutes);
 app.use("/api/downloads", downloadRoutes);
 app.use("/api/content/gallery", galleryRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/submissions", submissionsRoutes);
+// Public submit form and admin helpers
+app.use("/api/submit-form", submitFormRoutes);
 app.use("/api/footer-links", footerLinksRoutes);
 
-// MongoDB connection setup
+// MongoDB connection setup — attempt to connect but don't crash the server
 const mongoUri = process.env.MONGO_URI;
+let dbConnected = false;
 if (!mongoUri) {
-  console.error("❌ MONGO_URI is not set in .env");
-  process.exit(1);
+  console.warn("⚠️ MONGO_URI is not set in .env — running in degraded mode without DB");
+} else {
+  mongoose
+    .connect(mongoUri)
+    .then(() => {
+      dbConnected = true;
+      console.log("✅ Connected to MongoDB");
+    })
+    .catch((err) => {
+      dbConnected = false;
+      console.warn("⚠️ MongoDB connect error — continuing without DB:", err.message || err);
+    });
 }
 
-mongoose
-  .connect(mongoUri)
-  .then(() => console.log("✅ Connected to MongoDB"))
-  .catch((err) => {
-    console.error("❌ MongoDB connect error:", err);
-    process.exit(1);
-  });
+// Export dbConnected flag so routes can optionally check it (not required)
+export { dbConnected };
 
 // Health check route
 app.get("/api/health", (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
