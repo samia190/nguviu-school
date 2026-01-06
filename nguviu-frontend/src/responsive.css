@@ -8,8 +8,7 @@
 }
 
 /* Classic-but-modern typography: serif headings, neutral sans body */
-body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,\
-  "Noto Sans", "Liberation Sans", sans-serif;background-color:#fff;color:var(--text-color)}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif;background-color:#fff;color:var(--text-color)}
 h1,h2,h3,h4{font-family:Georgia, 'Times New Roman', serif;color:#1b1b1b}
 
 /* Subtle card background for a classic look */
