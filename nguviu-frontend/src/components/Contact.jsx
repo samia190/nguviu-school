@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { get, post } from "../utils/api";
 
 function buildWhatsappHref(number, customLink) {
   if (customLink && customLink.trim()) return customLink.trim();
@@ -41,21 +42,16 @@ export default function Contact({ user }) {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch("/api/content/contact");
-        if (!res.ok) {
-          if (res.status === 404) {
-            setContent(null);
-            setLoading(false);
-            return;
-          }
-          throw new Error("Failed to load contact page content.");
-        }
-        const data = await res.json();
+        const data = await get("/api/content/contact");
         setContent(data || {});
         setLoading(false);
       } catch (err) {
         console.error(err);
-        setError(err.message || "Error loading contact page.");
+        if (err && err.status === 404) {
+          setContent(null);
+        } else {
+          setError(err.message || "Error loading contact page.");
+        }
         setLoading(false);
       }
     }
@@ -74,25 +70,16 @@ export default function Contact({ user }) {
     setSendError("");
     setSendSuccess("");
 
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formState),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to send message. Please try again later.");
+      try {
+        await post("/api/contact", formState);
+        setSendSuccess("Your message has been sent. Thank you!");
+        setFormState({ name: "", email: "", message: "" });
+      } catch (err) {
+        console.error(err);
+        setSendError(err.message || "Failed to send message.");
+      } finally {
+        setSending(false);
       }
-
-      setSendSuccess("Your message has been sent. Thank you!");
-      setFormState({ name: "", email: "", message: "" });
-    } catch (err) {
-      console.error(err);
-      setSendError(err.message || "Failed to send message.");
-    } finally {
-      setSending(false);
-    }
   }
 
   if (loading) {

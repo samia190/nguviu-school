@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { get, put, upload } from "../utils/api";
 
 function fileHref(file) {
   return file?.downloadUrl || file?.url || "";
@@ -49,9 +50,7 @@ export default function EventsManagement() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/content/events");
-      if (!res.ok) throw new Error("Failed to load events content");
-      const data = await res.json();
+      const data = await get("/api/content/events");
       const safe = data || {};
       setContent(safe);
       setTextForm({
@@ -94,12 +93,7 @@ export default function EventsManagement() {
         fd.append("body", textForm.body);
       }
 
-      const res = await fetch("/api/admin/content", {
-        method: "POST",
-        body: fd,
-      });
-      if (!res.ok) throw new Error("Failed to save intro text");
-      await res.json();
+      await upload("/api/admin/content", fd);
       setSuccess("Events intro text saved.");
       await fetchContent();
     } catch (err) {
@@ -132,12 +126,7 @@ export default function EventsManagement() {
         fd.append("files", file);
       });
 
-      const res = await fetch("/api/admin/content", {
-        method: "POST",
-        body: fd,
-      });
-      if (!res.ok) throw new Error("Failed to upload files");
-      await res.json();
+      await upload("/api/admin/content", fd);
       setSuccess("Event files uploaded successfully.");
       setSelectedFiles([]);
       await fetchContent();
@@ -167,17 +156,9 @@ export default function EventsManagement() {
     setError("");
     setSuccess("");
     try {
-      const res = await fetch(`/api/content/${content._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          attachments: content.attachments || [],
-        }),
+      const updated = await put(`/api/content/${content._id}`, {
+        attachments: content.attachments || [],
       });
-      if (!res.ok) throw new Error("Failed to save media details");
-      const updated = await res.json();
       setContent(updated);
       setSuccess("Media titles and descriptions saved.");
     } catch (err) {
@@ -223,21 +204,13 @@ export default function EventsManagement() {
 
       const updatedEvents = [newEvent, ...(events || [])];
 
-      const res = await fetch(`/api/content/${content._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      const updated = await put(`/api/content/${content._id}`, {
+        data: {
+          ...(content.data || {}),
+          events: updatedEvents,
         },
-        body: JSON.stringify({
-          data: {
-            ...(content.data || {}),
-            events: updatedEvents,
-          },
-        }),
       });
-
-      if (!res.ok) throw new Error("Failed to save events");
-      const updated = await res.json();
+      if (!updated) throw new Error("Failed to save events");
       setContent(updated);
       const freshEvents =
         (updated.data && Array.isArray(updated.data.events) && updated.data.events) ||
@@ -278,21 +251,13 @@ export default function EventsManagement() {
     setSuccess("");
 
     try {
-      const res = await fetch(`/api/content/${content._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      const updated = await put(`/api/content/${content._id}`, {
+        data: {
+          ...(content.data || {}),
+          events,
         },
-        body: JSON.stringify({
-          data: {
-            ...(content.data || {}),
-            events,
-          },
-        }),
       });
-
-      if (!res.ok) throw new Error("Failed to save events");
-      const updated = await res.json();
+      if (!updated) throw new Error("Failed to save events");
       setContent(updated);
       const freshEvents =
         (updated.data && Array.isArray(updated.data.events) && updated.data.events) ||

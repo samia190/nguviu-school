@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import notify from "../utils/notify";
 import AdminButton from "./AdminButton";
+import { get, put, upload } from "../utils/api";
 
 function fileHref(file) {
   return file?.downloadUrl || file?.url || "";
@@ -36,9 +37,7 @@ export default function AdmissionsManagement() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/content/admissions");
-      if (!res.ok) throw new Error("Failed to load admissions content");
-      const data = await res.json();
+      const data = await get("/api/content/admissions");
       const safe = data || {};
       setContent(safe);
 
@@ -94,22 +93,15 @@ export default function AdmissionsManagement() {
     setSuccess("");
 
     try {
-      const res = await fetch(`/api/content/${content._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: textForm.title,
-          overview: textForm.overview,
-          process: textForm.process,
-          requirements: textForm.requirements,
-          importantDates: textForm.importantDates,
-          contactInfo: textForm.contactInfo,
-          downloadsHeading: textForm.downloadsHeading,
-        }),
+      const updated = await put(`/api/content/${content._id}`, {
+        title: textForm.title,
+        overview: textForm.overview,
+        process: textForm.process,
+        requirements: textForm.requirements,
+        importantDates: textForm.importantDates,
+        contactInfo: textForm.contactInfo,
+        downloadsHeading: textForm.downloadsHeading,
       });
-
-      if (!res.ok) throw new Error("Failed to save admissions text");
-      const updated = await res.json();
       setContent(updated);
       setSuccess("Admissions text saved.");
       notify("Admissions text saved", "success");
@@ -145,16 +137,7 @@ export default function AdmissionsManagement() {
         fd.append("files", file);
       });
 
-      const token = localStorage.getItem("token");
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const res = await fetch("/api/admin/content", {
-        method: "POST",
-        headers,
-        body: fd,
-      });
-      if (!res.ok) throw new Error("Failed to upload files");
-
-      const data = await res.json(); // { ok, content }
+      const data = await upload("/api/admin/content", fd);
       const updated = data.content || data;
       setContent(updated);
       setSelectedFiles([]);
@@ -187,19 +170,9 @@ export default function AdmissionsManagement() {
     setSuccess("");
 
     try {
-      const token = localStorage.getItem("token");
-      const headers = { "Content-Type": "application/json" };
-      if (token) headers.Authorization = `Bearer ${token}`;
-
-      const res = await fetch(`/api/content/${content._id}`, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify({
-          attachments: content.attachments || [],
-        }),
+      const updated = await put(`/api/content/${content._id}`, {
+        attachments: content.attachments || [],
       });
-      if (!res.ok) throw new Error("Failed to save media details");
-      const updated = await res.json();
       setContent(updated);
       setSuccess("Media titles and descriptions saved.");
       notify("Media titles and descriptions saved", "success");

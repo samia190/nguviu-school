@@ -23,12 +23,24 @@ router.get("/admin", (req, res) => {
 });
 
 // ---------------- UPDATE A SECTION ---------------------
-router.patch("/admin/:section", upload.any(), (req, res) => {
-  const section = req.params.section;
+// Support both single-level and nested section updates, e.g. /admin/staff/leadership
+router.patch(["/admin/:section","/admin/:rest(.*)"], upload.any(), (req, res) => {
+  // sectionPath will hold the full path after /admin/
+  const sectionPath = req.params.section || req.params.rest || "";
   const body = req.body;
   const files = req.files;
 
   const content = loadContent();
+
+  function setNested(obj, pathParts, value) {
+    const last = pathParts.pop();
+    let cur = obj;
+    for (const p of pathParts) {
+      if (cur[p] == null || typeof cur[p] !== "object") cur[p] = {};
+      cur = cur[p];
+    }
+    cur[last] = value;
+  }
 
   // handle file uploads
   if (files && files.length > 0) {
@@ -38,18 +50,35 @@ router.patch("/admin/:section", upload.any(), (req, res) => {
       type: file.mimetype
     }));
 
-    // lists (gallery, newsletters, etc.)
-    if (Array.isArray(content[section])) {
-      content[section].push(...fileList);
+    // if updating a nested list, store as array at that path
+    const parts = sectionPath.split("/");
+    // attempt to get current value
+    let cur = content;
+    for (const p of parts) {
+      if (cur == null) break;
+      cur = cur[p];
+    }
+
+    if (Array.isArray(cur)) {
+      // append uploaded files
+      cur.push(...fileList);
+    } else if (parts.length === 1) {
+      // single top-level field
+      content[parts[0]] = fileList[0].url;
     } else {
-      // single field text content
-      content[section] = fileList[0].url;
+      // set nested field to first file url
+      setNested(content, [...parts], fileList[0].url);
     }
   }
 
   // handle simple text values
   if (body.value) {
-    content[section] = body.value;
+    const parts = sectionPath.split("/");
+    if (parts.length === 1) {
+      content[parts[0]] = body.value;
+    } else {
+      setNested(content, [...parts], body.value);
+    }
   }
 
   saveContent(content);

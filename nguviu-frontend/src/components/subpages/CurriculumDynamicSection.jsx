@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { get } from "../../utils/api";
 
 function backToCurriculum() {
   if (typeof window !== "undefined" && typeof window.setRoute === "function") {
@@ -16,12 +17,9 @@ export default function CurriculumDynamicSection({ slug }) {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch("/api/content/curriculum");
-        if (!res.ok) throw new Error("Failed to load curriculum content.");
-        const data = await res.json();
+        const data = await get("/api/content/curriculum");
 
-        const sections =
-          data.sections || (data.data && data.data.sections) || [];
+        const sections = data.sections || (data.data && data.data.sections) || [];
         const found =
           sections.find(
             (s) =>

@@ -36,6 +36,34 @@ export default function AdminDashboard({ user }) {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeSection, setActiveSection] = useState("dashboard");
+  const [genericValue, setGenericValue] = useState("");
+
+  function getNested(obj, path) {
+    if (!obj || !path) return "";
+    const parts = path.split("/");
+
+    // Prefer to look inside obj.data for nested admin keys
+    let cur = obj.data ?? obj;
+    for (const p of parts) {
+      if (cur == null) return "";
+      cur = cur[p];
+    }
+    if (cur == null) {
+      // fallback to top-level path
+      cur = obj;
+      for (const p of parts) {
+        if (cur == null) return "";
+        cur = cur[p];
+      }
+    }
+    return typeof cur === "string" ? cur : JSON.stringify(cur, null, 2);
+  }
+
+  useEffect(() => {
+    if (activeSection && activeSection.includes("/")) {
+      setGenericValue(getNested(content, activeSection) || "");
+    }
+  }, [activeSection, content]);
 
   useEffect(() => {
     get("/api/content/admin")
@@ -50,7 +78,24 @@ export default function AdminDashboard({ user }) {
 
     patch(`/api/content/admin/${section}`, { value })
       .then(() => {
-        setContent((prev) => ({ ...prev, [section]: value }));
+        // update nested state to reflect saved change (store under data for typed content)
+        setContent((prev) => {
+          const next = { ...prev };
+          const parts = section.split("/");
+          if (parts.length === 1) {
+            next[section] = value;
+          } else {
+            if (!next.data || typeof next.data !== "object") next.data = {};
+            let cur = next.data;
+            for (let i = 0; i < parts.length - 1; i++) {
+              const p = parts[i];
+              if (cur[p] == null || typeof cur[p] !== "object") cur[p] = {};
+              cur = cur[p];
+            }
+            cur[parts[parts.length - 1]] = value;
+          }
+          return next;
+        });
         setSuccess("Content saved successfully");
       })
       .catch((err) => {
@@ -90,6 +135,21 @@ export default function AdminDashboard({ user }) {
     "parents",
     "students",
     "staff",
+    // Add fine-grained content keys for staff, student and curriculum
+    "staff/leadership",
+    "staff/teaching",
+    "staff/support",
+    "student/admissions-guide",
+    "student/fees",
+    "student/exams",
+    "student/clubs",
+    "student/support-services",
+    "curriculum/overview",
+    "curriculum/primary",
+    "curriculum/secondary",
+    "curriculum/syllabus",
+    "curriculum/extracurricular",
+    "curriculum/assessment",
     "pagebackground",
   ];
 
@@ -132,6 +192,20 @@ export default function AdminDashboard({ user }) {
                   parents: "Parents Page",
                   students: "Students Page",
                   staff: "Staff Page",
+                  "staff/leadership": "Staff Leadership",
+                  "staff/teaching": "Staff Teaching",
+                  "staff/support": "Staff Support",
+                  "student/admissions-guide": "Student Admissions Guide",
+                  "student/fees": "Student Fees",
+                  "student/exams": "Student Exams",
+                  "student/clubs": "Student Clubs",
+                  "student/support-services": "Student Support Services",
+                  "curriculum/overview": "Curriculum Overview",
+                  "curriculum/primary": "Curriculum Primary",
+                  "curriculum/secondary": "Curriculum Secondary",
+                  "curriculum/syllabus": "Curriculum Syllabus",
+                  "curriculum/extracurricular": "Curriculum Extracurricular",
+                  "curriculum/assessment": "Curriculum Assessment",
                   pagebackground: "Page Background",
                 }[key] || key;
 
@@ -155,6 +229,51 @@ export default function AdminDashboard({ user }) {
 
       {/* Main content */}
       <main className="admin-main-bg" style={{ flexGrow: 1 }}>
+        {/* Generic editor for nested keys like staff/leadership or curriculum/overview */}
+        {activeSection.includes("/") && (
+          <section style={{ padding: 20 }}>
+            <h2>{
+              {
+                "staff/leadership": "Staff Leadership",
+                "staff/teaching": "Staff Teaching",
+                "staff/support": "Staff Support",
+                "student/admissions-guide": "Student Admissions Guide",
+                "student/fees": "Student Fees",
+                "student/exams": "Student Exams",
+                "student/clubs": "Student Clubs",
+                "student/support-services": "Student Support Services",
+                "curriculum/overview": "Curriculum Overview",
+                "curriculum/primary": "Curriculum Primary",
+                "curriculum/secondary": "Curriculum Secondary",
+                "curriculum/syllabus": "Curriculum Syllabus",
+                "curriculum/extracurricular": "Curriculum Extracurricular",
+                "curriculum/assessment": "Curriculum Assessment",
+              }[activeSection] || activeSection
+            }</h2>
+
+            <p style={{ marginTop: 6, color: "#444" }}>
+              Edit content for <strong>{activeSection}</strong>
+            </p>
+
+            <div style={{ marginTop: 12 }}>
+              <textarea
+                value={genericValue}
+                onChange={(e) => setGenericValue(e.target.value)}
+                rows={10}
+                style={{ width: "100%", padding: 12, fontSize: 14 }}
+              />
+
+              <div style={{ marginTop: 10 }}>
+                <button
+                  className="btn"
+                  onClick={() => updateSection(activeSection, genericValue)}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
         {activeSection === "dashboard" && (
           <>
             <EditableHeading

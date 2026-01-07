@@ -1,1 +1,5 @@
+/images/*   /.optimized/images/:splat    200
+/header/*   /.optimized/header/:splat    200
+/downloads/*   /.optimized/downloads/:splat    200
+
 /*    /index.html   200

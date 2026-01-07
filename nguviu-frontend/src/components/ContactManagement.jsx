@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { get, put, upload } from "../utils/api";
 
 export default function ContactManagement() {
   const [contentDoc, setContentDoc] = useState(null);
@@ -24,26 +25,22 @@ export default function ContactManagement() {
       setSuccess("");
 
       try {
-        const res = await fetch("/api/content/contact");
-        if (!res.ok) {
-          if (res.status === 404) {
-            // First time: nothing saved yet
-            setContentDoc(null);
-            setForm({
-              address: "",
-              phone: "",
-              email: "",
-              whatsappNumber: "",
-              whatsappLink: "",
-              mapEmbed: "",
-            });
-            setLoading(false);
-            return;
-          }
-          throw new Error("Failed to load contact content.");
+        const data = await get("/api/content/contact");
+        if (!data) {
+          // First time: nothing saved yet
+          setContentDoc(null);
+          setForm({
+            address: "",
+            phone: "",
+            email: "",
+            whatsappNumber: "",
+            whatsappLink: "",
+            mapEmbed: "",
+          });
+          setLoading(false);
+          return;
         }
 
-        const data = await res.json();
         const safe = data || {};
         setContentDoc(safe);
 
@@ -91,15 +88,7 @@ export default function ContactManagement() {
           mapEmbed: form.mapEmbed,
         };
 
-        const res = await fetch(`/api/content/${contentDoc._id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedDoc),
-        });
-
-        if (!res.ok) throw new Error("Failed to save contact content.");
-
-        const updated = await res.json();
+        const updated = await put(`/api/content/${contentDoc._id}`, updatedDoc);
         setContentDoc(updated);
 
         setForm({
@@ -123,14 +112,7 @@ export default function ContactManagement() {
         fd.append("whatsappLink", form.whatsappLink);
         fd.append("mapEmbed", form.mapEmbed);
 
-        const res = await fetch("/api/admin/content", {
-          method: "POST",
-          body: fd,
-        });
-
-        if (!res.ok) throw new Error("Failed to create contact content.");
-
-        const data = await res.json();
+        const data = await upload("/api/admin/content", fd);
         const created = data.content || data;
         setContentDoc(created);
 

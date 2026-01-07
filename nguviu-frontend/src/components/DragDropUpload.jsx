@@ -1,9 +1,5 @@
 import React, { useCallback, useState } from "react";
-
-function headerAuth() {
-  const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
+import { upload } from "../utils/api";
 
 export default function DragDropUpload({ onUploaded }) {
   const [files, setFiles] = useState([]);
@@ -29,10 +25,11 @@ export default function DragDropUpload({ onUploaded }) {
       for (const f of files) {
         const fd = new FormData();
         fd.append("file", f);
-        const resp = await fetch("/api/files/upload", { method: "POST", headers: headerAuth(), body: fd });
-        if (resp.ok) {
-          const data = await resp.json();
+        try {
+          const data = await upload("/api/files/upload", fd);
           onUploaded && onUploaded(data);
+        } catch (e) {
+          console.error("Upload failed for file", f.name, e);
         }
       }
       setFiles([]);

@@ -1,0 +1,23 @@
+# Netlify headers for caching + performance
+
+# Never cache HTML
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Vite outputs hashed assets under /assets
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Optimized media: safe to cache long-term (content changes produce different bytes)
+/.optimized/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Common static files
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.js
+  Cache-Control: public, max-age=31536000, immutable

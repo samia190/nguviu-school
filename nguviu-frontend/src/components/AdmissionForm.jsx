@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { upload } from "../utils/api";
 
 const downloadableFiles = [
   {
@@ -57,14 +58,9 @@ function AdmissionForm() {
       if (files.transcript) data.append("transcript", files.transcript);
       if (files.certificate) data.append("certificate", files.certificate);
 
-      const res = await fetch("/api/admissions/apply", {
-        method: "POST",
-        body: data,
-      });
+      const json = await upload("/api/admissions/apply", data);
 
-      const json = await res.json();
-
-      if (json.ok) {
+      if (json && json.ok) {
         setStatus({ type: "success", message: "Application submitted successfully!" });
         setFormData({
           fullName: "",
@@ -77,7 +73,7 @@ function AdmissionForm() {
         });
         setFiles({ transcript: null, certificate: null });
       } else {
-        setStatus({ type: "error", message: "Failed to submit: " + json.error });
+        setStatus({ type: "error", message: "Failed to submit: " + (json && json.error) });
       }
     } catch (error) {
       setStatus({ type: "error", message: "Network error: " + error.message });

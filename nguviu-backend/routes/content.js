@@ -169,6 +169,13 @@ router.patch("/:type/:field", async (req, res) => {
 });
 
 /**
+ * PATCH /api/content/:type/*
+ * Support nested keys stored inside the `data` field of the content document.
+ * Example: PATCH /api/content/admin/staff/leadership with { value: '...' }
+ */
+// Note: nested updates for admin are handled by the file-based `/routes/contentRoutes.js`.
+
+/**
  * ✅ POST /api/content
  * Create a new content document (not heavily used by the current frontend,
  * but kept for completeness).

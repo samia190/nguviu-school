@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { get, put, upload } from "../utils/api";
 
 function fileHref(file) {
   return file?.downloadUrl || file?.url || "";
@@ -46,9 +47,7 @@ export default function NewslettersManagement() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/content/newsletter");
-      if (!res.ok) throw new Error("Failed to load newsletter content");
-      const data = await res.json();
+      const data = await get("/api/content/newsletter");
       const safe = data || {};
       setContent(safe);
       setTextForm({
@@ -88,12 +87,7 @@ export default function NewslettersManagement() {
         fd.append("body", textForm.body);
       }
 
-      const res = await fetch("/api/admin/content", {
-        method: "POST",
-        body: fd,
-      });
-      if (!res.ok) throw new Error("Failed to save text content");
-      await res.json();
+      await upload("/api/admin/content", fd);
       setSuccess("Newsletter intro text saved.");
       await fetchContent();
     } catch (err) {
@@ -126,12 +120,7 @@ export default function NewslettersManagement() {
         fd.append("files", file);
       });
 
-      const res = await fetch("/api/admin/content", {
-        method: "POST",
-        body: fd,
-      });
-      if (!res.ok) throw new Error("Failed to upload files");
-      await res.json();
+      await upload("/api/admin/content", fd);
       setSuccess("Files uploaded successfully.");
       setSelectedFiles([]);
       await fetchContent();
@@ -161,17 +150,9 @@ export default function NewslettersManagement() {
     setError("");
     setSuccess("");
     try {
-      const res = await fetch(`/api/content/${content._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          attachments: content.attachments || [],
-        }),
+      const updated = await put(`/api/content/${content._id}`, {
+        attachments: content.attachments || [],
       });
-      if (!res.ok) throw new Error("Failed to save media details");
-      const updated = await res.json();
       setContent(updated);
       setSuccess("Media titles and descriptions saved.");
     } catch (err) {
@@ -214,21 +195,13 @@ export default function NewslettersManagement() {
 
       const updatedPosts = [newPost, ...(posts || [])];
 
-      const res = await fetch(`/api/content/${content._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      const updated = await put(`/api/content/${content._id}`, {
+        data: {
+          ...(content.data || {}),
+          posts: updatedPosts,
         },
-        body: JSON.stringify({
-          data: {
-            ...(content.data || {}),
-            posts: updatedPosts,
-          },
-        }),
       });
-
-      if (!res.ok) throw new Error("Failed to save newsletter items");
-      const updated = await res.json();
+      if (!updated) throw new Error("Failed to save newsletter items");
       setContent(updated);
       const freshPosts =
         (updated.data && Array.isArray(updated.data.posts) && updated.data.posts) ||
@@ -267,21 +240,13 @@ export default function NewslettersManagement() {
     setSuccess("");
 
     try {
-      const res = await fetch(`/api/content/${content._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      const updated = await put(`/api/content/${content._id}`, {
+        data: {
+          ...(content.data || {}),
+          posts,
         },
-        body: JSON.stringify({
-          data: {
-            ...(content.data || {}),
-            posts,
-          },
-        }),
       });
-
-      if (!res.ok) throw new Error("Failed to save newsletter items");
-      const updated = await res.json();
+      if (!updated) throw new Error("Failed to save newsletter items");
       setContent(updated);
       const freshPosts =
         (updated.data && Array.isArray(updated.data.posts) && updated.data.posts) ||

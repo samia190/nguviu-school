@@ -13,30 +13,17 @@ export default function MenuButton({ route, setRoute, setLoading, links = [] }) 
 
     // Curriculum and subpages
     { key: "curriculum", label: "Curriculum" },
-    { key: "curriculum/overview", label: "Curriculum Overview" },
-    { key: "curriculum/primary", label: "Curriculum Primary" },
-    { key: "curriculum/secondary", label: "Curriculum Secondary" },
-    { key: "curriculum/syllabus", label: "Curriculum Syllabus" },
-    { key: "curriculum/extracurricular", label: "Curriculum Extracurricular" },
-    { key: "curriculum/assessment", label: "Curriculum Assessment" },
-
+  
     { key: "performance", label: "Performance" },
     { key: "policies", label: "Policies" },
     { key: "parents", label: "Parents" },
 
     // Student and subpages
     { key: "student", label: "Student" },
-    { key: "student/admissions-guide", label: "Student Admissions Guide" },
-    { key: "student/fees", label: "Student Fees" },
-    { key: "student/exams", label: "Student Exams" },
-    { key: "student/clubs", label: "Student Clubs" },
-    { key: "student/support-services", label: "Student Support Services" },
+
 
     { key: "staff", label: "Staff" },
-    { key: "staff/leadership", label: "Staff Leadership" },
-    { key: "staff/teaching", label: "Staff Teaching" },
-    { key: "staff/support", label: "Staff Support" },
-
+   
     { key: "gallery", label: "Gallery" },
     { key: "legal", label: "Legal" },
     { key: "newsletter", label: "Newsletter" },

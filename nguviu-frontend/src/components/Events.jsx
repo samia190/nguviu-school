@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { get } from "../utils/api";
 import EditableFileList from "./EditableFileList";
 
 const eventsWrapperStyle = {
@@ -38,11 +39,7 @@ export default function Events() {
       try {
         setLoading(true);
         setError("");
-        const res = await fetch("/api/content/events");
-        if (!res.ok) {
-          throw new Error("Failed to load events content");
-        }
-        const data = await res.json();
+        const data = await get("/api/content/events");
         setContent(data || {});
         setLoading(false);
       } catch (err) {

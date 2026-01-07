@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { get, upload, put } from "../utils/api";
 import { safePath } from "../utils/paths";
 import LazyImage from "../components/LazyImage";
 
@@ -32,9 +33,7 @@ export default function PageBackgroundManagement() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/content/page-backgrounds");
-      if (!res.ok) throw new Error("Failed to load page backgrounds");
-      const data = await res.json();
+      const data = await get("/api/content/page-backgrounds");
       setContent(data || {});
 
       setOverlays(
@@ -95,14 +94,7 @@ export default function PageBackgroundManagement() {
         })
       );
 
-      const res = await fetch("/api/admin/content", {
-        method: "POST",
-        body: fd,
-      });
-
-      if (!res.ok) throw new Error("Failed to save background");
-
-      await res.json();
+      await upload("/api/admin/content", fd);
       setSuccess(`${page} background saved`);
       setSelectedFiles((prev) => {
         const copy = { ...prev };
@@ -137,13 +129,7 @@ export default function PageBackgroundManagement() {
       };
       delete updated[page];
 
-      const res = await fetch(`/api/content/${content._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: updated }),
-      });
-
-      if (!res.ok) throw new Error("Failed to delete background");
+      await put(`/api/content/${content._id}`, { data: updated });
 
       setSuccess(`${page} background removed`);
       await fetchContent();

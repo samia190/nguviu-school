@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { get, put } from "../utils/api";
 
 export default function PoliciesManagement() {
   const [content, setContent] = useState({ title: "", policiesText: "" });
@@ -8,16 +9,18 @@ export default function PoliciesManagement() {
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    fetch("/api/content/policies")
-      .then((res) => res.json())
-      .then((data) => {
+    async function load() {
+      try {
+        const data = await get("/api/content/policies");
         setContent(data || { title: "", policiesText: "" });
-        setLoading(false);
-      })
-      .catch(() => {
+      } catch (err) {
+        console.error(err);
         setError("Failed to load policies content.");
+      } finally {
         setLoading(false);
-      });
+      }
+    }
+    load();
   }, []);
 
   function handleChange(e) {
@@ -30,22 +33,17 @@ export default function PoliciesManagement() {
     setError("");
     setSuccess("");
 
-    fetch("/api/content/policies", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(content),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to save policies content.");
-        return res.json();
-      })
-      .then(() => {
+    (async () => {
+      try {
+        await put("/api/content/policies", content);
         setSuccess("Policies content saved successfully.");
-      })
-      .catch(() => {
+      } catch (err) {
+        console.error(err);
         setError("Failed to save policies content.");
-      })
-      .finally(() => setSaving(false));
+      } finally {
+        setSaving(false);
+      }
+    })();
   }
 
   if (loading) return <p>Loading policies content...</p>;

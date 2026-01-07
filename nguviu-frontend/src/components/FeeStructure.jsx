@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import EditableFileList from "./EditableFileList";
+import { get, upload as apiUpload, del } from "../utils/api";
 
 export default function FeeStructure({ user }) {
   const [content, setContent] = useState(null);
@@ -17,22 +18,16 @@ export default function FeeStructure({ user }) {
       try {
         setLoading(true);
         setError("");
-        const res = await fetch("/api/content/feestructure");
-        if (!res.ok) {
-          // If nothing exists yet, it's not fatal
-          if (res.status === 404) {
-            setContent(null);
-            setLoading(false);
-            return;
-          }
-          throw new Error("Failed to load fee structure content");
-        }
-        const data = await res.json();
+        const data = await get("/api/content/feestructure");
         setContent(data || null);
         setLoading(false);
       } catch (err) {
         console.error(err);
-        setError("Failed to load fee structure content.");
+        if (err && err.status === 404) {
+          setContent(null);
+        } else {
+          setError("Failed to load fee structure content.");
+        }
         setLoading(false);
       }
     }
@@ -44,9 +39,7 @@ export default function FeeStructure({ user }) {
     async function fetchDownloads() {
       try {
         setError("");
-        const res = await fetch("/api/downloads");
-        if (!res.ok) throw new Error("Failed to load downloadable files");
-        const data = await res.json();
+        const data = await get("/api/downloads");
         setDownloads(data || []);
       } catch (err) {
         console.error(err);
@@ -64,28 +57,22 @@ export default function FeeStructure({ user }) {
       return;
     }
 
-    try {
-      setUploadingDownload(true);
-      const fd = new FormData();
-      fd.append("name", downloadName);
-      fd.append("file", downloadFile);
+      try {
+        setUploadingDownload(true);
+        const fd = new FormData();
+        fd.append("name", downloadName);
+        fd.append("file", downloadFile);
 
-      const res = await fetch("/api/downloads", {
-        method: "POST",
-        body: fd,
-      });
-      if (!res.ok) throw new Error("Failed to upload file");
-
-      const newFile = await res.json();
-      setDownloads((prev) => [...prev, newFile]);
-      setDownloadName("");
-      setDownloadFile(null);
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Failed to upload fee structure file.");
-    } finally {
-      setUploadingDownload(false);
-    }
+        const newFile = await apiUpload("/api/downloads", fd);
+        setDownloads((prev) => [...prev, newFile]);
+        setDownloadName("");
+        setDownloadFile(null);
+      } catch (err) {
+        console.error(err);
+        setError(err.message || "Failed to upload fee structure file.");
+      } finally {
+        setUploadingDownload(false);
+      }
   }
 
   if (loading) {
@@ -210,12 +197,13 @@ export default function FeeStructure({ user }) {
                   <button
                     onClick={async () => {
                       try {
-                        await fetch(`/api/downloads/${file._id}`, {
-                          method: "DELETE",
-                        });
-                        setDownloads((prev) =>
-                          prev.filter((f) => f._id !== file._id)
-                        );
+                        try {
+                          await del(`/api/downloads/${file._id}`);
+                          setDownloads((prev) => prev.filter((f) => f._id !== file._id));
+                        } catch (err) {
+                          console.error(err);
+                          setError("Failed to delete file.");
+                        }
                       } catch (err) {
                         console.error(err);
                         setError("Failed to delete file.");

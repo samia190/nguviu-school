@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { get, post, put, del } from "../utils/api";
 
 export default function LegalManagement() {
   const [documents, setDocuments] = useState([]);
@@ -13,18 +14,17 @@ export default function LegalManagement() {
     fetchDocuments();
   }, []);
 
-  function fetchDocuments() {
+  async function fetchDocuments() {
     setLoading(true);
-    fetch("/api/legal")
-      .then((res) => res.json())
-      .then((data) => {
-        setDocuments(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError("Failed to load legal documents");
-        setLoading(false);
-      });
+    try {
+      const data = await get("/api/legal");
+      setDocuments(data || []);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load legal documents");
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleChange(e) {
@@ -42,14 +42,15 @@ export default function LegalManagement() {
     setFormError("");
   }
 
-  function handleDelete(id) {
+  async function handleDelete(id) {
     if (!window.confirm("Delete this document?")) return;
-    fetch(`/api/legal/${id}`, { method: "DELETE" })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to delete");
-        fetchDocuments();
-      })
-      .catch(() => setError("Failed to delete document"));
+    try {
+      await del(`/api/legal/${id}`);
+      fetchDocuments();
+    } catch (err) {
+      console.error(err);
+      setError("Failed to delete document");
+    }
   }
 
   async function handleSubmit(e) {
@@ -70,15 +71,9 @@ export default function LegalManagement() {
       const url = editId ? `/api/legal/${editId}` : "/api/legal";
       const method = editId ? "PUT" : "POST";
 
-      const res = await fetch(url, {
-        method,
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to save document");
-      }
+      const saveMethod = editId ? put : post;
+      const saved = await saveMethod(url, formData);
+      if (!saved) throw new Error("Failed to save document");
 
       setForm({ title: "", description: "", file: null });
       setEditId(null);

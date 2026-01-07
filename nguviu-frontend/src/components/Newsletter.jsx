@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { get } from "../utils/api";
 import EditableFileList from "./EditableFileList";
 
 const postsWrapperStyle = {
@@ -37,11 +38,7 @@ export default function Newsletter() {
       try {
         setLoading(true);
         setError("");
-        const res = await fetch("/api/content/newsletter");
-        if (!res.ok) {
-          throw new Error("Failed to load newsletter content");
-        }
-        const data = await res.json();
+        const data = await get("/api/content/newsletter");
         setContent(data || {});
         setLoading(false);
       } catch (err) {

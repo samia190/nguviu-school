@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { safePath } from "../utils/paths";
 import LazyImage from "../components/LazyImage";
-import { get, patch } from "../utils/api";
+import { get, patch, upload } from "../utils/api";
 
 /**
  * This management page stores EVERYTHING inside /api/content/performance sections,
@@ -243,9 +243,7 @@ export default function PerformanceManagement({ user }) {
     // This is safe: if endpoint doesn't exist, it will fail and we fallback to manual URL.
     const form = new FormData();
     form.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: form });
-    if (!res.ok) throw new Error("Upload failed");
-    const data = await res.json(); // expected { url: "..." }
+    const data = await upload("/api/upload", form);
     if (!data?.url) throw new Error("Upload response missing url");
     return data.url;
   }

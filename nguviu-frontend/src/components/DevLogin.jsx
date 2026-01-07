@@ -1,15 +1,10 @@
 import React from "react";
+import { post } from "../utils/api";
 
 export default function DevLogin() {
   async function doLogin() {
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: "nguviu@yahoo.com", password: "girls@nguviu" }),
-      });
-      if (!res.ok) throw new Error("Login failed");
-      const data = await res.json();
+      const data = await post("/api/auth/login", { email: "nguviu@yahoo.com", password: "girls@nguviu" });
       const token = data.token;
       // dispatch event so App listens and sets user+route
       window.dispatchEvent(new CustomEvent("nguviu:dev-login", { detail: { token } }));

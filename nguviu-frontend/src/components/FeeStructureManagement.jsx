@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { get, put, upload } from "../utils/api";
 
 function fileHref(file) {
   return file?.downloadUrl || file?.url || file?.fileUrl || "";
@@ -30,27 +31,12 @@ export default function FeeStructureManagement() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/content/feestructure");
-      if (!res.ok) {
-        if (res.status === 404) {
-          // No fee structure content yet – we'll allow first-time create
-          setContent(null);
-          setTextForm({
-            title: "Fee Structure",
-            body:
-              "Here you will find the current official fee structures and related payment information.",
-            notes:
-              "Please ensure you use the most recent approved fee structure when making payments.",
-            paymentInfo:
-              "Payment details (bank, paybill, account number) will be provided in the documents below or by the school office.",
-          });
-          setLoading(false);
-          return;
-        }
-        throw new Error("Failed to load fee structure content");
+      const data = await get("/api/content/feestructure");
+      if (!data) {
+        setContent(null);
+        setLoading(false);
+        return;
       }
-
-      const data = await res.json();
       const safe = data || {};
       setContent(safe);
 
@@ -95,18 +81,12 @@ export default function FeeStructureManagement() {
     try {
       // If content exists, update via PUT
       if (content?._id) {
-        const res = await fetch(`/api/content/${content._id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: textForm.title,
-            body: textForm.body,
-            notes: textForm.notes,
-            paymentInfo: textForm.paymentInfo,
-          }),
+        const updated = await put(`/api/content/${content._id}`, {
+          title: textForm.title,
+          body: textForm.body,
+          notes: textForm.notes,
+          paymentInfo: textForm.paymentInfo,
         });
-        if (!res.ok) throw new Error("Failed to save fee structure text");
-        const updated = await res.json();
         setContent(updated);
         setSuccess("Fee structure text saved.");
       } else {
@@ -118,14 +98,7 @@ export default function FeeStructureManagement() {
         fd.append("notes", textForm.notes);
         fd.append("paymentInfo", textForm.paymentInfo);
 
-        const res = await fetch("/api/admin/content", {
-          method: "POST",
-          body: fd,
-        });
-        if (!res.ok) throw new Error("Failed to create fee structure content");
-
-        // Some backends return { ok, content }, some the doc itself:
-        const data = await res.json();
+        const data = await upload("/api/admin/content", fd);
         const created = data.content || data;
         setContent(created);
         setSuccess("Fee structure text saved.");
@@ -161,13 +134,7 @@ export default function FeeStructureManagement() {
         fd.append("files", file);
       });
 
-      const res = await fetch("/api/admin/content", {
-        method: "POST",
-        body: fd,
-      });
-      if (!res.ok) throw new Error("Failed to upload fee structure files");
-
-      const data = await res.json();
+      const data = await upload("/api/admin/content", fd);
       const updated = data.content || data;
       setContent(updated);
       setSelectedFiles([]);
@@ -199,15 +166,9 @@ export default function FeeStructureManagement() {
     setSuccess("");
 
     try {
-      const res = await fetch(`/api/content/${content._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          attachments: content.attachments || [],
-        }),
+      const updated = await put(`/api/content/${content._id}`, {
+        attachments: content.attachments || [],
       });
-      if (!res.ok) throw new Error("Failed to save media details");
-      const updated = await res.json();
       setContent(updated);
       setSuccess("Media titles and descriptions saved.");
     } catch (err) {

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { upload } from "../utils/api";
 
 const Admission = () => {
   const [name, setName] = useState("");
@@ -26,17 +27,16 @@ const Admission = () => {
     fd.append("image", image);
 
     try {
-      const res = await fetch("/api/submit-form", { method: "POST", body: fd });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      const data = await upload("/api/submit-form", fd);
+      if (data && data.success) {
         setMessage({ type: "success", text: "Application submitted successfully." });
         setName(""); setEmail(""); setPhone(""); setClassLevel(""); setApplicationForm(null); setImage(null);
       } else {
-        setMessage({ type: "error", text: data.error || "Submission failed" });
+        setMessage({ type: "error", text: (data && data.error) || "Submission failed" });
       }
     } catch (err) {
       console.error(err);
-      setMessage({ type: "error", text: "Network error" });
+      setMessage({ type: "error", text: err.message || "Network error" });
     } finally {
       setLoading(false);
     }

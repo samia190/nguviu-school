@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Generated optimized media (non-source)
+public/.optimized/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

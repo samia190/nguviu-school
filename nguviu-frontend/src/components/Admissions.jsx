@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import EditableFileList from "./EditableFileList";
 import Admission from "./Admission";
+import { get } from "../utils/api";
 
 export default function Admissions({ user }) {
   const [content, setContent] = useState(null);
@@ -12,9 +13,7 @@ export default function Admissions({ user }) {
       try {
         setLoading(true);
         setError("");
-        const res = await fetch("/api/content/admissions");
-        if (!res.ok) throw new Error("Failed to load admissions content");
-        const data = await res.json();
+        const data = await get("/api/content/admissions");
         setContent(data || {});
         setLoading(false);
       } catch (err) {

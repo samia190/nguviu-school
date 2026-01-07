@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { get, put, upload } from "../utils/api";
 
 export default function AboutManagement() {
   const [content, setContent] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-
   const [form, setForm] = useState({
     title: "",
     intro: "",
@@ -18,54 +14,47 @@ export default function AboutManagement() {
     motto: "",
     coreValuesHeading: "",
     coreValues: "",
-    promiseHeading:"",
-    promise:"",
+    promiseHeading: "",
+    promise: "",
   });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  // ---------- LOAD EXISTING ABOUT CONTENT ----------
   useEffect(() => {
     async function fetchContent() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch("/api/content/about");
-        if (!res.ok) {
-          if (res.status === 404) {
-            // Nothing created yet – use sensible defaults
-            setContent(null);
-            setForm({
-              title: "About NGUVIU GIRL'S SCHOOL",
-              intro:
-                "NGUVIU GIRL'S SCHOOL is a centre of excellence dedicated to nurturing young women into confident, capable leaders.",
-              missionHeading: "Our Mission",
-              mission:
-                "Our mission is to provide a safe, inclusive, and academically rigorous environment where every girl thrives.",
-              visionHeading: "Our Vision",
-              vision:
-                "We envision a future where every NGUVIU GIRL'S SCHOOL student becomes a beacon of change in her community and beyond.",
-              mottoHeading:  "Our Motto",
-              motto:
-                "Empowering Girls, Transforming Lives",
-              coreValuesHeading: "Our Core Values",
-              coreValues:
-                "Integrity, Excellence, Empowerment, Respect, Innovation", 
-              promiseHeading: "Our Promise",
-          promise:
-            "update me", 
-            });
-            setLoading(false);
-            return;
-          }
-          throw new Error("Failed to load about page content");
+        const data = await get("/api/content/about");
+
+        if (!data) {
+          setContent(null);
+          setForm({
+            title: "About NGUVIU GIRL'S SCHOOL",
+            intro:
+              "NGUVIU GIRL'S SCHOOL is a centre of excellence dedicated to nurturing young women into confident, capable leaders.",
+            missionHeading: "Our Mission",
+            mission:
+              "Our mission is to provide a safe, inclusive, and academically rigorous environment where every girl thrives.",
+            visionHeading: "Our Vision",
+            vision:
+              "We envision a future where every NGUVIU GIRL'S SCHOOL student becomes a beacon of change in her community and beyond.",
+            mottoHeading: "Our Motto",
+            motto: "Empowering Girls, Transforming Lives",
+            coreValuesHeading: "Our Core Values",
+            coreValues: "Integrity, Excellence, Empowerment, Respect, Innovation",
+            promiseHeading: "Our Promise",
+            promise: "",
+          });
+          return;
         }
 
-        const data = await res.json();
         const safe = data || {};
         setContent(safe);
-
         setForm({
-          title:
-            safe.title || "About NGUVIU GIRL'S SCHOOL",
+          title: safe.title || "About NGUVIU GIRL'S SCHOOL",
           intro:
             safe.intro ||
             "NGUVIU GIRL'S SCHOOL is a centre of excellence dedicated to nurturing young women into confident, capable leaders.",
@@ -79,28 +68,16 @@ export default function AboutManagement() {
             "We envision a future where every NGUVIU GIRL'S SCHOOL student becomes a beacon of change in her community and beyond.",
           coreValuesHeading: safe.coreValuesHeading || "Our Core Values",
           coreValues:
-            safe.coreValues ||
-            "Integrity, Excellence, Empowerment, Respect, Innovation",
+            safe.coreValues || "Integrity, Excellence, Empowerment, Respect, Innovation",
           mottoHeading: safe.mottoHeading || "Our Motto",
-          motto:
-            safe.motto ||
-            "Empowering Girls, Transforming Lives",
+          motto: safe.motto || "Empowering Girls, Transforming Lives",
           promiseHeading: safe.promiseHeading || "Our Promise",
-          promise:
-            safe.promise ||
-            "Empowering Girls, Transforming Lives",
-           
-
-
-
-
-
+          promise: safe.promise || "",
         });
-
-        setLoading(false);
       } catch (err) {
         console.error(err);
         setError(err.message || "Error loading about page content");
+      } finally {
         setLoading(false);
       }
     }
@@ -123,24 +100,17 @@ export default function AboutManagement() {
     try {
       // If document already exists, update it via PUT /api/content/:id
       if (content?._id) {
-        const res = await fetch(`/api/content/${content._id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: form.title,
-            intro: form.intro,
-            missionHeading: form.missionHeading,
-            mission: form.mission,
-            visionHeading: form.visionHeading,
-            vision: form.vision,
-            motto: form.motto,
-            coreValues: form.coreValues,
-            promise: form.promise,
-          }),
+        const updated = await put(`/api/content/${content._1d || content._id}`, {
+          title: form.title,
+          intro: form.intro,
+          missionHeading: form.missionHeading,
+          mission: form.mission,
+          visionHeading: form.visionHeading,
+          vision: form.vision,
+          motto: form.motto,
+          coreValues: form.coreValues,
+          promise: form.promise,
         });
-
-        if (!res.ok) throw new Error("Failed to save about page content");
-        const updated = await res.json();
         setContent(updated);
         setSuccess("About page content saved.");
       } else {
@@ -157,16 +127,10 @@ export default function AboutManagement() {
         fd.append("motto", form.motto);
         fd.append("coreValuesHeading", form.coreValuesHeading);
         fd.append("coreValues", form.coreValues);
-        fd.append("promise", form.promiseHeading);
+        fd.append("promiseHeading", form.promiseHeading);
         fd.append("promise", form.promise);
 
-        const res = await fetch("/api/admin/content", {
-          method: "POST",
-          body: fd,
-        });
-        if (!res.ok) throw new Error("Failed to create about page content");
-
-        const data = await res.json();
+        const data = await upload("/api/admin/content", fd);
         const created = data.content || data;
         setContent(created);
         setSuccess("About page content saved.");
@@ -187,9 +151,8 @@ export default function AboutManagement() {
       </section>
     );
   }
-const values = (content?.coreValues || "")
-  .split("\n")
-  .filter(Boolean);
+
+  const values = (content?.coreValues || "").split("\n").filter(Boolean);
 
   return (
     <section>
@@ -322,9 +285,6 @@ const values = (content?.coreValues || "")
             style={{ width: "100%", padding: 8 }}
           />
         </div>
-
-        
-        
 
         <button
           type="submit"

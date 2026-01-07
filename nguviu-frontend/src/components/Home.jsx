@@ -66,32 +66,32 @@ export default function Home({ user, setRoute }) {
         {
           title: "Our History",
           text: "Our school has a rich history of academic excellence.",
-          image: "/history-image.png",
+          image: "/images/abouts/history.png",
         },
         {
           title: "Our Values",
           text: "Integrity, Respect, and Excellence are our core values.",
-          image: "/values-image.png",
+          image: "/images/abouts/values.png",
         },
         {
           title: "Our Vision",
           text: "To empower future leaders with knowledge and confidence.",
-          image: "/vision-image.png",
+          image: "/images/abouts/vision.png",
         },
         {
           title: "Leadership",
           text: "We believe in strong leadership to guide our students.",
-          image: "/images/school/lab 4.jpeg",
+          image: "/images/abouts/leadership.png",
         },
         {
           title: "school Life",
           text: "Our vibrant campus is home to diverse activities.",
-          image: "/images/school/lab 4.jpeg",
+          image: "/images/abouts/school life.png",
         },
         {
           title: "Community Engagement",
           text: "We actively engage with the local community.",
-          image: "/images/school/lab 4.jpeg",
+          image: "/images/abouts/comunity.png",
         },
       ],
     },
@@ -176,32 +176,37 @@ export default function Home({ user, setRoute }) {
         {
           title: "Admission Requirements",
           text: "Find out the requirements to apply to our school.",
-          image: "/images/admissions/requirements.png",
+          image: "/images/admission/require.png",
         },
         {
           title: "How to Apply",
           text: "A step-by-step guide to help you through the application process.",
-          image: "/images/admissions/how-to-apply.png",
+          image: "/images/admission/apply.png",
         },
         {
           title: "Tuition Fees",
           text: "Learn about our competitive tuition fees and payment plans.",
-          image: "/images/admissions/tuition.png",
+          image: "/images/admission/fee.png",
         },
         {
           title: "Scholarships",
           text: "Explore the scholarship opportunities we offer.",
-          image: "/images/admissions/scholarships.png",
+          image: "/images/admission/scholar.png",
         },
         {
           title: "Application Deadline",
           text: "Check the deadlines for applying for the upcoming academic year.",
-          image: "/images/admissions/deadline.png",
+          image: "/images/admission/deadline.png",
         },
         {
           title: "Admission Events",
           text: "Attend our open days and information sessions.",
-          image: "/images/admissions/events.png",
+          image: "/images/admission/events.png",
+        },
+        {
+          title: "School Tours",
+          text: "Take a virtual or in-person tour of our campus.",
+          image: "/images/admission/campus-tours.png",
         },
       ],
     },
@@ -327,20 +332,27 @@ export default function Home({ user, setRoute }) {
       childContainers: [
         {
           title: "Contact Information",
-          text: "Find our address, phone numbers, and email contacts.",
+          text: "call us through the school official number on 0113688538.",
+          image:"/images/contacts/phone-call.png"
           
         },
         {
-          title: "Contact Form",
-          text: "Fill out our contact form for specific inquiries.",
-          
+          title: "  Whatsapp account details",
+          text: "for any inquiry reach us through whatsapp account on +254 720 123456.",
+          image:"/images/contacts/whatsapp.png"
         },
         {
           title: "Visit Us",
-          text: "Plan a visit to our campus and meet our staff.",
+          text: "Plan  visit to our institution and experience our learning environment.",
+          image:"/images/contacts/location.PNG"
+      
           
         },
-        
+        {
+          title: "Email Us",
+          text: "Send us an email at info@nguvuigirls@yahoo.com for any questions or support.",
+          image:"/images/contacts/gmail.png"
+        },
         {
           title: "Support Services",
           text: "Get help with admissions, fees, and more.",
@@ -389,6 +401,8 @@ export default function Home({ user, setRoute }) {
                           <img
                             src={safePath(child.image || "/images/hike.jpg")}
                             alt=""
+                            loading="lazy"
+                            decoding="async"
                             style={{
                               width: "100%",
                               height: "100%",
