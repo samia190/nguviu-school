@@ -7,6 +7,9 @@ Use this checklist to ensure your Nguviu School application is correctly configu
 - [ ] GitHub repository is created and code is pushed
 - [ ] MongoDB Atlas cluster is created (or plan to use Railway MongoDB plugin)
 - [ ] Railway account is set up and ready
+- [ ] **node_modules excluded from Git** (.gitignore configured)
+- [ ] **Vite in dependencies** (NOT devDependencies) for frontend
+- [ ] Run pre-flight check: `.\railway-preflight-check.ps1`
 
 ## Backend Service Setup
 
@@ -26,6 +29,7 @@ Use this checklist to ensure your Nguviu School application is correctly configu
 
 - [ ] Frontend service created in same Railway project
 - [ ] Frontend service root directory set to `nguviu-frontend`
+- [ ] **Vite installed in dependencies** (check package.json)
 - [ ] Environment variables configured:
   - [ ] `VITE_API_URL` (backend Railway URL from previous step)
   - [ ] `NODE_ENV=production`
@@ -76,6 +80,11 @@ Use this checklist to ensure your Nguviu School application is correctly configu
 - [ ] Error monitoring/logging set up
 
 ## Common Issues Troubleshooting
+
+**"vite: not found" error:**
+- ✅ FIXED: Vite moved to dependencies (not devDependencies)
+- Verify in package.json: `"dependencies": { "vite": "^5.4.21" }`
+- See [RAILWAY_TROUBLESHOOTING.md](./RAILWAY_TROUBLESHOOTING.md)
 
 **Backend won't connect to MongoDB:**
 - Verify `MONGO_URI` format: `mongodb+srv://user:pass@cluster.mongodb.net/dbname`

@@ -25,8 +25,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install ONLY vite for preview server (much smaller than full deps)
-RUN npm install --only=production vite && \
+# Install production dependencies (includes vite now)
+RUN npm ci --only=production && \
     npm cache clean --force
 
 # Copy built assets from builder stage
