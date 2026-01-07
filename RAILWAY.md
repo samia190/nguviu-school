@@ -39,6 +39,12 @@ Since your backend is in a subdirectory:
 3. Set it to: `nguviu-backend`
 4. Click **"Save"**
 
+**Note:** Railway will automatically detect and use the optimized `Dockerfile` in `nguviu-backend/` if present. This provides:
+- 77% smaller images (300 MB vs 1.2 GB)
+- Faster cold starts
+- Better performance
+- See [DOCKER.md](./DOCKER.md) for details
+
 ### 1.3 Set Environment Variables
 
 Go to your backend service → **Variables** tab and add:
