@@ -24,6 +24,12 @@ import submitFormRoutes from "./routes/submitForm.js";
 // Initialize the Express app
 const app = express();
 
+// Railway (and other PaaS) often run behind a proxy/load balancer.
+// Trusting the proxy ensures req.protocol/secure are set correctly.
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 // CORS configuration
 const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(",").map((s) => s.trim()).filter(Boolean)
@@ -77,10 +83,17 @@ app.use("/api/submit-form", submitFormRoutes);
 app.use("/api/footer-links", footerLinksRoutes);
 
 // MongoDB connection setup — attempt to connect but don't crash the server
-const mongoUri = process.env.MONGO_URI;
+const mongoUri =
+  process.env.MONGO_URI ||
+  process.env.MONGO_URL ||
+  process.env.MONGODB_URI ||
+  process.env.MONGODB_URL ||
+  process.env.DATABASE_URL;
 let dbConnected = false;
 if (!mongoUri) {
-  console.warn("⚠️ MONGO_URI is not set in .env — running in degraded mode without DB");
+  console.warn(
+    "⚠️ Mongo connection string not set (MONGO_URI/MONGO_URL/MONGODB_URI/DATABASE_URL) — running in degraded mode without DB"
+  );
 } else {
   mongoose
     .connect(mongoUri)

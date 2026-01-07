@@ -7,9 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "start": "vite preview --host 0.0.0.0 --port ${PORT:-3000}",
     "optimize-images": "node scripts/optimize-images.js",
     "optimize:media": "node scripts/optimize-media.mjs",
     "build:netlify": "npm run optimize:media && npm run build"
+  },
+  "engines": {
+    "node": ">=18.18.0"
   },
   "dependencies": {
     "react": "^18.2.0",
