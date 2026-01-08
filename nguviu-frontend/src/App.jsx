@@ -59,52 +59,24 @@ function MenuButton({ route, setRoute, setLoading, user }) {
 
   const links = [
     // admin quick link visible only when logged in as admin
-    ...(user && user.role === "admin" ? [{ key: "admin", label: "Admin" }] : []),
-    { key: "home", label: "Home" },
-    { key: "about", label: "About" },
-    { key: "admissions", label: "Admissions" },
-    { key: "events", label: "Events" },
-    { key: "feestructure", label: "Fee Structure" },
-
-    // Curriculum subpages
-    { key: "curriculum/careers", label: "Curriculum Careers" },
-
-    { key: "curriculum/overview", label: "Curriculum Overview" },
-    { key: "curriculum/primary", label: "Curriculum Primary" },
-    { key: "curriculum/secondary", label: "Curriculum Secondary" },
-    { key: "curriculum/syllabus", label: "Curriculum Syllabus" },
-    { key: "curriculum/extracurricular", label: "Curriculum Extracurricular" },
-    { key: "curriculum/assessment", label: "Curriculum Assessment" },
-
-    { key: "performance", label: "Performance" },
-    { key: "policies", label: "Policies" },
-    { key: "parents", label: "Parents" },
-
-    { key: "student", label: "Student" },
-    // Student subpages
-    { key: "student/admissions-guide", label: "Student Admissions Guide" },
-    { key: "student/fees", label: "Student Fees" },
-    { key: "student/exams", label: "Student Exams" },
-    { key: "student/clubs", label: "Student Clubs" },
-    { key: "student/support-services", label: "Student Support Services" },
-
-    { key: "staff", label: "Staff" },
-
-    // Staff subpages
-    { key: "staff/leadership", label: "Staff Leadership" },
-    { key: "staff/teaching", label: "Staff Teaching" },
-    { key: "staff/support", label: "Staff Support" },
-
-    { key: "gallery", label: "Gallery" },
-    { key: "legal", label: "Legal" },
-    { key: "feestructure", label: "Fee Structure" },
-    { key: "events", label: "Events" },
-    { key: "newsletter", label: "Newsletter" },
-  
-    { key: "contact", label: "Contact" },
-    { key: "portal/homework", label: "Homework Portal" },
-
-    
+    ...(user && user.role === "admin" ? [{ key: "admin", label: "Admin", icon: "👤" }] : []),
+    { key: "home", label: "Home", icon: "🏠" },
+    { key: "about", label: "About", icon: "ℹ️" },
+    { key: "admissions", label: "Admissions", icon: "📝" },
+    { key: "events", label: "Events", icon: "📅" },
+    { key: "feestructure", label: "Fee Structure", icon: "💰" },
+    { key: "curriculum", label: "Curriculum", icon: "📖" },
+    { key: "curriculum/careers", label: "Curriculum Careers", icon: "💼" },
+    { key: "performance", label: "Performance", icon: "📊" },
+    { key: "policies", label: "Policies", icon: "📋" },
+    { key: "parents", label: "Parents", icon: "👨‍👩‍👧" },
+    { key: "student", label: "Student", icon: "🎓" },
+    { key: "staff", label: "Staff", icon: "👥" },
+    { key: "gallery", label: "Gallery", icon: "🖼️" },
+    { key: "legal", label: "Legal", icon: "⚖️" },
+    { key: "newsletter", label: "Newsletter", icon: "📰" },
+    { key: "contact", label: "Contact", icon: "📞" },
+    { key: "portal/homework", label: "Homework Portal", icon: "📚" },
   ];
 
   const handleClick = (key) => {
@@ -164,7 +136,7 @@ function MenuButton({ route, setRoute, setLoading, user }) {
               left: 0,
               top: 70,
               bottom: 0,
-              width: 260,
+              width: 280,
               background: "#f7081cb9",
               zIndex: 1000,
               boxShadow: "2px 0 8px rgba(116, 221, 17, 0.43)",
@@ -173,30 +145,44 @@ function MenuButton({ route, setRoute, setLoading, user }) {
             }}
           >
             <h3 style={{ margin: "00 0 00px 0px", textAlign: "right" }}></h3>
-            <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+            <div style={{ 
+              display: "grid", 
+              gridTemplateColumns: "repeat(2, 1fr)", 
+              gap: "8px",
+              padding: 0
+            }}>
               {links.map((item) => {
                 const isActive = route === item.key;
                 return (
-                  <li key={item.key} style={{ marginBottom: 4 }}>
-                    <button
-                      onClick={() => handleClick(item.key)}
-                      style={{
-                        width: "100%",
-                        textAlign: "left",
-                        padding: "6px 8px",
-                        borderRadius: 6,
-                        border: "none",
-                        background: isActive ? "#10e929ff" : "transparent",
-                        color: isActive ? "#210202ff" : "#d0f408ff",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {item.label}
-                    </button>
-                  </li>
+                  <button
+                    key={item.key}
+                    onClick={() => handleClick(item.key)}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "12px 8px",
+                      borderRadius: 8,
+                      border: "1px solid rgba(13, 236, 39, 0.3)",
+                      background: isActive ? "#10e929ff" : "rgba(255, 255, 255, 0.1)",
+                      color: isActive ? "#210202ff" : "#d0f408ff",
+                      cursor: "pointer",
+                      fontSize: "11px",
+                      fontWeight: isActive ? "bold" : "normal",
+                      textAlign: "center",
+                      minHeight: "70px",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    <span style={{ fontSize: "24px", marginBottom: "4px" }}>
+                      {item.icon}
+                    </span>
+                    <span>{item.label}</span>
+                  </button>
                 );
               })}
-            </ul>
+            </div>
           </nav>
         </>
       )}

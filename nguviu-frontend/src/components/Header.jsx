@@ -57,48 +57,57 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
         top: 0,
         zIndex: 500,
       }}
+      className="main-header"
     >
       {/* Logo + School Name + Tagline */}
       <div
         onClick={() => go("home")}
-        style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
+        style={{ display: "flex", flexDirection: "column", gap: 4, cursor: "pointer" }}
       >
-        {/* Back button: appears when not on home */}
-        {route && route !== "home" && (
-          <button
-            onClick={() => {
-              if (window && typeof window.__goBack === "function") window.__goBack();
-              else go("home");
-            }}
-            aria-label="Go back"
+        {/* Top: Logo + Name */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {/* Back button: appears when not on home */}
+          {route && route !== "home" && (
+            <button
+              onClick={() => {
+                if (window && typeof window.__goBack === "function") window.__goBack();
+                else go("home");
+              }}
+              aria-label="Go back"
+              style={{
+                marginRight: 8,
+                padding: "6px 8px",
+                borderRadius: 6,
+                border: "none",
+                background: "rgba(255,255,255,0.9)",
+                cursor: "pointer",
+              }}
+            >
+              ←
+            </button>
+          )}
+          <img
+            alt="NGUVIU Girls Logo"
+            src={safePath("/header/logo.PNG")}
             style={{
-              marginRight: 8,
-              padding: "6px 8px",
-              borderRadius: 6,
-              border: "none",
-              background: "rgba(255,255,255,0.9)",
-              cursor: "pointer",
+              width: 70,
+              height: 70,
+              objectFit: "contain",
+              borderRadius: 4,
             }}
-          >
-            ←
-          </button>
-        )}
-        <img
-          alt="NGUVIU Girls Logo"
-          src={safePath("/header/logo.PNG")}
-          style={{
-            width: 70,
-            height: 70,
-            objectFit: "contain",
-            borderRadius: 4,
-          }}
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = "";
-          }}
-        />
-        <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
-          <strong style={{ fontSize: 18, color: "#fff" }}> ST ANGELA NGUVIU GIRLS' SENIOR SCHOOL</strong>
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "";
+            }}
+          />
+          <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
+            <strong style={{ fontSize: 14, color: "#fff" }}>ST ANGELA NGUVIU GIRLS'</strong>
+            <strong style={{ fontSize: 14, color: "#fff" }}>SENIOR SCHOOL</strong>
+          </div>
+        </div>
+        
+        {/* Below: Tagline and Route */}
+        <div style={{ display: "flex", flexDirection: "column", paddingLeft: route && route !== "home" ? 90 : 80 }}>
           <small
             style={{
               color: "#0b0b0bf5",
@@ -284,6 +293,100 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
           </>
         )}
       </nav>
+      
+      {/* Responsive styles */}
+      <style>{`
+        /* Tablet and laptop: logo + name on single line, nav below */
+        @media (min-width: 481px) and (max-width: 1200px) {
+          .main-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            padding: 12px !important;
+            gap: 12px;
+          }
+          
+          .main-header > div:first-child {
+            flex-direction: row !important;
+            gap: 10px !important;
+          }
+          
+          .main-header > div:first-child > div:first-child {
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 10px;
+          }
+          
+          .main-header > div:first-child > div:first-child > div {
+            flex-direction: row !important;
+            gap: 5px !important;
+            line-height: 1 !important;
+          }
+          
+          .main-header > div:first-child > div:first-child > div strong {
+            display: inline !important;
+            font-size: 16px !important;
+          }
+          
+          .main-header > div:first-child > div:last-child {
+            display: none !important;
+          }
+          
+          .main-header nav {
+            width: 100%;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+          }
+          
+          .main-header nav button,
+          .main-header nav > div {
+            margin: 0 !important;
+          }
+        }
+        
+        /* Mobile: logo + name (2 lines), nav in 2 horizontal rows */
+        @media (max-width: 480px) {
+          .main-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            padding: 12px !important;
+            gap: 12px;
+          }
+          
+          .main-header nav {
+            width: 100%;
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+            align-items: flex-start !important;
+          }
+          
+          .main-header nav > * {
+            flex: 1 1 auto !important;
+            min-width: fit-content !important;
+          }
+          
+          .main-header nav button {
+            text-align: center !important;
+            padding: 10px 12px !important;
+            font-size: 0.85rem !important;
+            white-space: nowrap !important;
+          }
+          
+          .main-header nav > div {
+            flex: 1 1 auto !important;
+            min-width: fit-content !important;
+          }
+          
+          .main-header nav > div button {
+            text-align: center !important;
+            padding: 10px 12px !important;
+            font-size: 0.85rem !important;
+            white-space: nowrap !important;
+          }
+        }
+      `}</style>
     </header>
   );
 }

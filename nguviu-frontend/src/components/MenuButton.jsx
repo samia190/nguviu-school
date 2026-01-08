@@ -7,29 +7,20 @@ export default function MenuButton({ route, setRoute, setLoading, links = [] }) 
   if (HIDDEN.includes((route || "").toLowerCase())) return null;
 
   const defaultLinks = [
-    { key: "home", label: "Home" },
-    { key: "about", label: "About" },
-    { key: "admissions", label: "Admissions" },
-
-    // Curriculum and subpages
-    { key: "curriculum", label: "Curriculum" },
-  
-    { key: "performance", label: "Performance" },
-    { key: "policies", label: "Policies" },
-    { key: "parents", label: "Parents" },
-
-    // Student and subpages
-    { key: "student", label: "Student" },
-
-
-    { key: "staff", label: "Staff" },
-   
-    { key: "gallery", label: "Gallery" },
-    { key: "legal", label: "Legal" },
-    { key: "newsletter", label: "Newsletter" },
-    { key: "events", label: "Events" },
-    { key: "contact", label: "Contact" },
-    
+    { key: "home", label: "Home", icon: "🏠" },
+    { key: "about", label: "About", icon: "ℹ️" },
+    { key: "admissions", label: "Admissions", icon: "📝" },
+    { key: "curriculum", label: "Curriculum", icon: "📚" },
+    { key: "performance", label: "Performance", icon: "📊" },
+    { key: "policies", label: "Policies", icon: "📋" },
+    { key: "parents", label: "Parents", icon: "👨‍👩‍👧‍👦" },
+    { key: "student", label: "Student", icon: "👨‍🎓" },
+    { key: "staff", label: "Staff", icon: "👥" },
+    { key: "gallery", label: "Gallery", icon: "🖼️" },
+    { key: "legal", label: "Legal", icon: "⚖️" },
+    { key: "newsletter", label: "Newsletter", icon: "📰" },
+    { key: "events", label: "Events", icon: "📅" },
+    { key: "contact", label: "Contact", icon: "📞" },
   ];
 
   const items = links.length ? links : defaultLinks;
@@ -99,33 +90,62 @@ export default function MenuButton({ route, setRoute, setLoading, links = [] }) 
               bottom: 12,
               zIndex: 1001,
               width: "80vw",
-              maxWidth: 280,
+              maxWidth: 320,
               overflowY: "auto",
               WebkitOverflowScrolling: "touch",
               background: "#d60a0a8a",
               borderRadius: 8,
               boxShadow: "0 8px 30px rgba(0,0,0,0.15)",
-              padding: 12,
+              padding: 16,
             }}
           >
-            <ul
+            <div
               style={{
-                listStyle: "none",
-                margin: 0,
-                padding: 0,
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: "12px",
               }}
             >
               {items.map((l) => (
-                <li key={l.key} style={{ marginBottom: 6 }}>
-                  <SmartLink
-                    to={l.key}
-                    label={l.label}
-                    setRoute={setRoute}
-                    setLoading={setLoading}
-                  />
-                </li>
+                <button
+                  key={l.key}
+                  onClick={() => {
+                    setRoute(l.key);
+                    setLoading && setLoading(true);
+                    setOpen(false);
+                  }}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "16px 8px",
+                    background: "rgba(255, 255, 255, 0.9)",
+                    border: "none",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontSize: "0.85rem",
+                    fontWeight: "500",
+                    color: "#333",
+                    transition: "all 0.2s ease",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#fff";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.2)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.9)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+                  }}
+                >
+                  <span style={{ fontSize: "2rem", marginBottom: "8px" }}>{l.icon}</span>
+                  <span>{l.label}</span>
+                </button>
               ))}
-            </ul>
+            </div>
           </nav>
         </>
       )}
