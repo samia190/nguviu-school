@@ -1,0 +1,88 @@
+name: Docker Build Test
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test-backend-build:
+    name: Test Backend Docker Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./nguviu-backend
+          file: ./nguviu-backend/Dockerfile
+          push: false
+          tags: nguviu-backend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Check image size
+        run: |
+          docker images nguviu-backend:test --format "{{.Size}}"
+          SIZE=$(docker images nguviu-backend:test --format "{{.Size}}")
+          echo "Backend image size: $SIZE"
+  
+  test-frontend-build:
+    name: Test Frontend Docker Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./nguviu-frontend
+          file: ./nguviu-frontend/Dockerfile
+          push: false
+          tags: nguviu-frontend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Check image size
+        run: |
+          docker images nguviu-frontend:test --format "{{.Size}}"
+          SIZE=$(docker images nguviu-frontend:test --format "{{.Size}}")
+          echo "Frontend image size: $SIZE"
+  
+  test-docker-compose:
+    name: Test Docker Compose
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          MONGO_URI=mongodb://test:test@localhost:27017/test
+          JWT_SECRET=test-secret-for-ci
+          NODE_ENV=production
+          CORS_ORIGINS=http://localhost:3000
+          PUBLIC_ORIGIN=http://localhost:4000
+          EOF
+      
+      - name: Build with docker-compose
+        run: docker-compose build
+      
+      - name: Check total size
+        run: |
+          echo "Image sizes:"
+          docker images | grep nguviu

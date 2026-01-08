@@ -1,0 +1,73 @@
+# Node dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output (we'll rebuild in Docker)
+dist
+build
+.vite
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Git
+.git
+.gitignore
+.github
+
+# Documentation
+*.md
+README.md
+
+# Testing
+coverage
+*.test.js
+*.test.jsx
+*.spec.js
+*.spec.jsx
+__tests__
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Temporary files
+tmp
+temp
+*.tmp
+
+# Development scripts
+scripts/optimize-images.js
+scripts/optimize-media.mjs
+
+# ESLint
+.eslintrc*
+eslint.config.js
+
+# Source maps (optional, comment out if you need them)
+*.map
+
+# Large media files (should be served from CDN)
+public/images/**
+public/videos/**
+public/downloads/**
+
+# Netlify specific
+netlify.toml
+public/_headers
+public/_redirects
