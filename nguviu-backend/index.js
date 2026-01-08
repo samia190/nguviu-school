@@ -7,6 +7,8 @@ import cors from "cors";
 import mongoose from "mongoose";
 import path from "path";
 import fs from "fs";
+import compression from "compression";
+import helmet from "helmet";
 
 // Import route files
 import footerLinksRoutes from "./routes/footerLinks.js";
@@ -23,6 +25,23 @@ import submitFormRoutes from "./routes/submitForm.js";
 
 // Initialize the Express app
 const app = express();
+
+// Security middleware
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false, // Disable if causing issues, configure properly for production
+}));
+
+// Compression middleware (Gzip/Brotli)
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  level: 6, // Compression level (0-9, 6 is balanced)
+}));
 
 // Railway (and other PaaS) often run behind a proxy/load balancer.
 // Trusting the proxy ensures req.protocol/secure are set correctly.
@@ -65,10 +84,42 @@ if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir, { recursive: true });
 if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
 
-// Serve static folders
-app.use("/uploads", express.static(uploadsDir));
-app.use("/downloads", express.static(downloadsDir));
-app.use("/images", express.static(imagesDir));
+// Cache control middleware for static assets
+const setStaticCacheHeaders = (res, path) => {
+  if (path.match(/\\.(jpg|jpeg|png|gif|ico|svg|webp)$/)) {
+    // Images - cache for 1 year
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  } else if (path.match(/\\.(css|js)$/)) {
+    // CSS/JS - cache for 1 year (with hash in filename)
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  } else if (path.match(/\\.(pdf|doc|docx)$/)) {
+    // Documents - cache for 1 week
+    res.setHeader('Cache-Control', 'public, max-age=604800');
+  } else {
+    // Other files - cache for 1 day
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+  }
+};
+
+// Serve static folders with caching
+app.use("/uploads", express.static(uploadsDir, { 
+  setHeaders: setStaticCacheHeaders,
+  maxAge: '1y',
+  etag: true,
+  lastModified: true
+}));
+app.use("/downloads", express.static(downloadsDir, { 
+  setHeaders: setStaticCacheHeaders,
+  maxAge: '1w',
+  etag: true,
+  lastModified: true
+}));
+app.use("/images", express.static(imagesDir, { 
+  setHeaders: setStaticCacheHeaders,
+  maxAge: '1y',
+  etag: true,
+  lastModified: true
+}));
 
 // Mount routes
 app.use("/api/auth", authRoutes);
