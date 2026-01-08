@@ -20,10 +20,13 @@ const API_ORIGIN = (() => {
     }
   } catch {}
 
-  // If we're in a production build and no env was provided, default to the Render backend
+  // If we're in a production build and no env was provided, return empty string
+  // This allows the frontend to make relative API calls to the same domain
+  // or you can set window.__API_ORIGIN at runtime
   try {
     if (typeof import.meta !== "undefined" && import.meta.env?.MODE === "production") {
-      return "https://nguviu-school.onrender.com";
+      // Return empty string to use relative URLs - configure VITE_API_URL for different domain
+      return "";
     }
   } catch {}
 

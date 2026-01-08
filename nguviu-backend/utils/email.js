@@ -1,5 +1,5 @@
 // utils/email.js
-const nodemailer = require("nodemailer");
+import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.example.com",
@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-async function sendEmail(to, subject, text, html) {
+export async function sendEmail(to, subject, text, html) {
   const from = process.env.SMTP_FROM || `no-reply@${(process.env.SMTP_HOST || "example.com").replace(/^smtp\./, "")}`;
   const msg = {
     from,
@@ -24,5 +24,3 @@ async function sendEmail(to, subject, text, html) {
   console.log("Email sent:", info.messageId);
   return info;
 }
-
-module.exports = { sendEmail };

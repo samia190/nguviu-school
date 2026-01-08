@@ -1,0 +1,70 @@
+services:
+  # Backend API Service
+  - type: web
+    name: nguviu-backend
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: cd nguviu-backend && npm install
+    startCommand: cd nguviu-backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_SECURE
+        value: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: CLIENT_ORIGIN
+        sync: false
+      - key: RESET_TOKEN_EXPIRES_MS
+        value: 3600000
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX
+        value: 5
+    healthCheckPath: /api/health
+
+  # Frontend Static Site
+  - type: web
+    name: nguviu-frontend
+    runtime: static
+    region: oregon
+    plan: free
+    buildCommand: cd nguviu-frontend && npm install && npm run build
+    staticPublishPath: nguviu-frontend/dist
+    pullRequestPreviewsEnabled: true
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false
