@@ -59,13 +59,16 @@ app.use(express.json());
 // Ensure static folders exist and are ready for use
 const uploadsDir = path.join(process.cwd(), "public", "uploads");
 const downloadsDir = path.join(process.cwd(), "downloads");
+const imagesDir = path.join(process.cwd(), "public", "images");
 
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir, { recursive: true });
+if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
 
 // Serve static folders
 app.use("/uploads", express.static(uploadsDir));
 app.use("/downloads", express.static(downloadsDir));
+app.use("/images", express.static(imagesDir));
 
 // Mount routes
 app.use("/api/auth", authRoutes);
