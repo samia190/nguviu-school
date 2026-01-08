@@ -135,99 +135,122 @@ export default function About({ user }) {
       />
 
       {/* MOTTO */}
-      <EditableSubheading
-        value={content.mottoHeading || "Our Motto"}
-        onSave={(val) => updateSection("mottoHeading", val)}
-        isAdmin={user?.role === "admin"}
-        level={3}
-      />
-
-      <EditableText
-        value={content.motto || "Empowering Girls, Transforming Lives"}
-        onSave={(val) => updateSection("motto", val)}
-        isAdmin={user?.role === "admin"}
-      />
-
-      {/* CORE VALUES */}
-      <EditableSubheading
-        value={content.coreValuesHeading || "Our Core Values"}
-        onSave={(val) => updateSection("coreValuesHeading", val)}
-        isAdmin={user?.role === "admin"}
-        level={3}
-      />
-
-      {/* Admin edits text, public sees list */}
-      {user?.role === "admin" ? (
-        <EditableText
-          value={
-            content.coreValues ||
-            "Integrity\nExcellence\nEmpowerment\nRespect\nInnovation"
-          }
-          onSave={(val) => updateSection("coreValues", val)}
-          isAdmin
+      <div style={{ marginTop: "30px", marginBottom: "20px" }}>
+        <EditableSubheading
+          value={content.mottoHeading || "MOTTO"}
+          onSave={(val) => updateSection("mottoHeading", val)}
+          isAdmin={user?.role === "admin"}
+          level={3}
+          style={{ color: "#2c3e50", fontWeight: "bold" }}
         />
-      ) : (
-        <ul
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-            paddingLeft: "20px",
-            lineHeight: "1.8"
-          }}
-        >
-          {coreValues.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
-      )}
-
-      {/* MISSION */}
-      <EditableSubheading
-        value={content.missionHeading || "Our Mission"}
-        onSave={(val) => updateSection("missionHeading", val)}
-        isAdmin={user?.role === "admin"}
-        level={3}
-      />
-
-      <EditableText
-        value={
-          content.mission ||
-          "To provide a safe, inclusive, and academically rigorous environment where every girl thrives."
-        }
-        onSave={(val) => updateSection("mission", val)}
-        isAdmin={user?.role === "admin"}
-      />
+        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px" }}>
+          <EditableText
+            value={content.motto || "Strive for Excellence"}
+            onSave={(val) => updateSection("motto", val)}
+            isAdmin={user?.role === "admin"}
+          />
+        </div>
+      </div>
 
       {/* VISION */}
-      <EditableSubheading
-        value={content.visionHeading || "Our Vision"}
-        onSave={(val) => updateSection("visionHeading", val)}
-        isAdmin={user?.role === "admin"}
-        level={3}
-      />
+      <div style={{ marginTop: "30px", marginBottom: "20px" }}>
+        <EditableSubheading
+          value={content.visionHeading || "VISION"}
+          onSave={(val) => updateSection("visionHeading", val)}
+          isAdmin={user?.role === "admin"}
+          level={3}
+          style={{ color: "#2c3e50", fontWeight: "bold" }}
+        />
+        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px" }}>
+          <EditableText
+            value={
+              content.vision ||
+              "Holistically Developed Person"
+            }
+            onSave={(val) => updateSection("vision", val)}
+            isAdmin={user?.role === "admin"}
+          />
+        </div>
+      </div>
 
-      <EditableText
-        value={
-          content.vision ||
-          "To nurture confident, responsible, and innovative young girls who positively impact their communities."
-        }
-        onSave={(val) => updateSection("vision", val)}
-        isAdmin={user?.role === "admin"}
-      />
+      {/* MISSION */}
+      <div style={{ marginTop: "30px", marginBottom: "20px" }}>
+        <EditableSubheading
+          value={content.missionHeading || "MISSION"}
+          onSave={(val) => updateSection("missionHeading", val)}
+          isAdmin={user?.role === "admin"}
+          level={3}
+          style={{ color: "#2c3e50", fontWeight: "bold" }}
+        />
+        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px" }}>
+          <EditableText
+            value={
+              content.mission ||
+              "Nurture excellence in a well-integrated person in line with Vision 2030"
+            }
+            onSave={(val) => updateSection("mission", val)}
+            isAdmin={user?.role === "admin"}
+          />
+        </div>
+      </div>
+
+      {/* CORE VALUES */}
+      <div style={{ marginTop: "30px", marginBottom: "20px" }}>
+        <EditableSubheading
+          value={content.coreValuesHeading || "CORE VALUES"}
+          onSave={(val) => updateSection("coreValuesHeading", val)}
+          isAdmin={user?.role === "admin"}
+          level={3}
+          style={{ color: "#2c3e50", fontWeight: "bold" }}
+        />
+
+        {/* Admin edits text, public sees list */}
+        {user?.role === "admin" ? (
+          <EditableText
+            value={
+              content.coreValues ||
+              "Responsibility\nAccountability & Transparency\nHonesty\nIntegrity\nRespect\nTeam Work\nHumility\nProfessionalism\nSelf & Emotional Awareness\nCreativity & Innovation"
+            }
+            onSave={(val) => updateSection("coreValues", val)}
+            isAdmin
+          />
+        ) : (
+          <ul
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "8px",
+              paddingLeft: "20px",
+              lineHeight: "1.8",
+              color: "#34495e",
+              fontSize: "1.05rem",
+              marginTop: "12px"
+            }}
+          >
+            {coreValues.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       {/* PROMISE */}
-      <EditableSubheading
-        value={content.promiseHeading || "Our Promise"}
-        onSave={(val) => updateSection("promiseHeading", val)}
-        isAdmin={user?.role === "admin"}
-        level={3}
-      />
-      <EditableText
-        value={content.promise || "Excellence, Our Choice"}
-        onSave={(val) => updateSection("promise", val)}
-        isAdmin={user?.role === "admin"}
-      />
+      <div style={{ marginTop: "30px", marginBottom: "20px" }}>
+        <EditableSubheading
+          value={content.promiseHeading || "Our Promise"}
+          onSave={(val) => updateSection("promiseHeading", val)}
+          isAdmin={user?.role === "admin"}
+          level={3}
+          style={{ color: "#2c3e50", fontWeight: "bold" }}
+        />
+        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px" }}>
+          <EditableText
+            value={content.promise || "Excellence, Our Choice"}
+            onSave={(val) => updateSection("promise", val)}
+            isAdmin={user?.role === "admin"}
+          />
+        </div>
+      </div>
 
       {/* ================= PRINCIPAL AND DEPUTY SECTION ================= */}
       <div
