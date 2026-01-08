@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { safePath } from "../utils/paths";
 import { get } from "../utils/api";
+import LazyImage from "./LazyImage";
 
 export default function Gallery() {
   const [items, setItems] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [previewIndex, setPreviewIndex] = useState(null); // Index for the full-screen view
+  const [imageLoading, setImageLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
@@ -143,9 +145,10 @@ export default function Gallery() {
       <div
         style={{
           display: "grid",
-          gap: "1.5rem",
-          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: "1rem",
+          gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 200px), 1fr))",
         }}
+        className="gallery-grid-optimized"
       >
         {items.map((item, idx) => (
           <div
@@ -153,16 +156,25 @@ export default function Gallery() {
             style={{
               borderRadius: 12,
               border: "1px solid #e5e7eb",
-              padding: "1rem",
+              padding: "0.75rem",
               background: "#ffffff",
               boxShadow: "0 1px 3px rgba(15,23,42,0.06)",
               cursor: "pointer",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
             }}
-            onClick={() => handleImageClick(idx)} // Set the index for preview
+            onClick={() => handleImageClick(idx)}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-4px)";
+              e.currentTarget.style.boxShadow = "0 4px 12px rgba(15,23,42,0.15)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 1px 3px rgba(15,23,42,0.06)";
+            }}
           >
-            <img
+            <LazyImage
               src={safePath(item.url)}
-              alt={item.originalName || "Image"}
+              alt={item.originalName || "Gallery image"}
               style={{
                 width: "100%",
                 height: "180px",
@@ -171,8 +183,8 @@ export default function Gallery() {
               }}
             />
             <div style={{ marginTop: "10px" }}>
-              <h4 style={{ fontSize: "1rem" }}>{item.originalName}</h4>
-              <p style={{ fontSize: "0.85rem", color: "#4b5563" }}>
+              <h4 style={{ fontSize: "0.95rem", marginBottom: "4px" }}>{item.originalName}</h4>
+              <p style={{ fontSize: "0.8rem", color: "#6b7280", lineHeight: "1.4" }}>
                 {item.description}
               </p>
             </div>
@@ -183,15 +195,16 @@ export default function Gallery() {
       {/* Full-Screen Image Preview */}
       {previewIndex !== null && (
         <div
-          onClick={() => setPreviewIndex(null)} // Close preview when clicked
+          onClick={() => setPreviewIndex(null)}
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.75)",
+            background: "rgba(0,0,0,0.9)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             zIndex: 9999,
+            padding: "20px",
           }}
         >
           <div
@@ -214,21 +227,39 @@ export default function Gallery() {
                 background: "#fff",
                 borderRadius: "999px",
                 border: "none",
-                padding: "4px 10px",
+                padding: "8px 12px",
                 cursor: "pointer",
                 fontWeight: 700,
+                fontSize: "18px",
+                zIndex: 10000,
               }}
+              aria-label="Close preview"
             >
               ✕
             </button>
+            
+            {imageLoading && (
+              <div style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                color: "#fff",
+              }}>
+                Loading...
+              </div>
+            )}
+            
             <img
-              src={safePath(items[previewIndex].url)} // Display the selected image
+              src={safePath(items[previewIndex].url)}
               alt="Preview"
+              onLoad={() => setImageLoading(false)}
               style={{
                 maxWidth: "100%",
                 maxHeight: "90vh",
                 display: "block",
                 borderRadius: 8,
+                objectFit: "contain",
               }}
             />
             <div
@@ -238,31 +269,45 @@ export default function Gallery() {
                 left: "50%",
                 transform: "translateX(-50%)",
                 display: "flex",
-                justifyContent: "space-between",
-                width: "100%",
+                gap: "10px",
+                justifyContent: "center",
               }}
             >
               <button
-                onClick={handlePrev}
-                style={{
-                  background: "#fff",
-                  border: "none",
-                  padding: "8px 12px",
-                  cursor: "pointer",
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePrev();
+                  setImageLoading(true);
                 }}
+                style={{
+                  background: "rgba(255,255,255,0.9)",
+                  border: "none",
+                  padding: "10px 16px",
+                  cursor: "pointer",
+                  borderRadius: "6px",
+                  fontWeight: 600,
+                }}
+                aria-label="Previous image"
               >
-                Previous
+                ← Previous
               </button>
               <button
-                onClick={handleNext}
-                style={{
-                  background: "#fff",
-                  border: "none",
-                  padding: "8px 12px",
-                  cursor: "pointer",
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNext();
+                  setImageLoading(true);
                 }}
+                style={{
+                  background: "rgba(255,255,255,0.9)",
+                  border: "none",
+                  padding: "10px 16px",
+                  cursor: "pointer",
+                  borderRadius: "6px",
+                  fontWeight: 600,
+                }}
+                aria-label="Next image"
               >
-                Next
+                Next →
               </button>
             </div>
           </div>

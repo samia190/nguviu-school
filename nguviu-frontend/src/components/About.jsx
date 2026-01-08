@@ -135,15 +135,15 @@ export default function About({ user }) {
       />
 
       {/* MOTTO */}
-      <div style={{ marginTop: "30px", marginBottom: "20px" }}>
+      <div style={{ marginTop: "30px", marginBottom: "20px", textAlign: "left" }}>
         <EditableSubheading
           value={content.mottoHeading || "MOTTO"}
           onSave={(val) => updateSection("mottoHeading", val)}
           isAdmin={user?.role === "admin"}
           level={3}
-          style={{ color: "#2c3e50", fontWeight: "bold" }}
+          style={{ color: "#2c3e50", fontWeight: "bold", textAlign: "left" }}
         />
-        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px" }}>
+        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px", textAlign: "left" }}>
           <EditableText
             value={content.motto || "Strive for Excellence"}
             onSave={(val) => updateSection("motto", val)}
@@ -153,15 +153,15 @@ export default function About({ user }) {
       </div>
 
       {/* VISION */}
-      <div style={{ marginTop: "30px", marginBottom: "20px" }}>
+      <div style={{ marginTop: "30px", marginBottom: "20px", textAlign: "left" }}>
         <EditableSubheading
           value={content.visionHeading || "VISION"}
           onSave={(val) => updateSection("visionHeading", val)}
           isAdmin={user?.role === "admin"}
           level={3}
-          style={{ color: "#2c3e50", fontWeight: "bold" }}
+          style={{ color: "#2c3e50", fontWeight: "bold", textAlign: "left" }}
         />
-        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px" }}>
+        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px", textAlign: "left" }}>
           <EditableText
             value={
               content.vision ||
@@ -174,15 +174,15 @@ export default function About({ user }) {
       </div>
 
       {/* MISSION */}
-      <div style={{ marginTop: "30px", marginBottom: "20px" }}>
+      <div style={{ marginTop: "30px", marginBottom: "20px", textAlign: "left" }}>
         <EditableSubheading
           value={content.missionHeading || "MISSION"}
           onSave={(val) => updateSection("missionHeading", val)}
           isAdmin={user?.role === "admin"}
           level={3}
-          style={{ color: "#2c3e50", fontWeight: "bold" }}
+          style={{ color: "#2c3e50", fontWeight: "bold", textAlign: "left" }}
         />
-        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px" }}>
+        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px", textAlign: "left" }}>
           <EditableText
             value={
               content.mission ||
@@ -195,55 +195,41 @@ export default function About({ user }) {
       </div>
 
       {/* CORE VALUES */}
-      <div style={{ marginTop: "30px", marginBottom: "20px" }}>
-        <EditableSubheading
-          value={content.coreValuesHeading || "CORE VALUES"}
-          onSave={(val) => updateSection("coreValuesHeading", val)}
-          isAdmin={user?.role === "admin"}
-          level={3}
-          style={{ color: "#2c3e50", fontWeight: "bold" }}
-        />
-
-        {/* Admin edits text, public sees list */}
-        {user?.role === "admin" ? (
-          <EditableText
-            value={
-              content.coreValues ||
-              "Responsibility\nAccountability & Transparency\nHonesty\nIntegrity\nRespect\nTeam Work\nHumility\nProfessionalism\nSelf & Emotional Awareness\nCreativity & Innovation"
-            }
-            onSave={(val) => updateSection("coreValues", val)}
-            isAdmin
-          />
-        ) : (
-          <ul
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "8px",
-              paddingLeft: "20px",
-              lineHeight: "1.8",
-              color: "#34495e",
-              fontSize: "1.05rem",
-              marginTop: "12px"
-            }}
-          >
-            {coreValues.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        )}
+      <div style={{ marginTop: "30px", marginBottom: "20px", textAlign: "left" }}>
+        <h3 style={{ color: "#2c3e50", fontWeight: "bold", fontSize: "1.3rem", marginBottom: "15px", textAlign: "left" }}>
+          CORE VALUES
+        </h3>
+        <ul style={{
+          listStyleType: "disc",
+          paddingLeft: "40px",
+          color: "#34495e",
+          fontSize: "1.05rem",
+          lineHeight: "2",
+          textAlign: "left"
+        }}>
+          <li>Responsibility</li>
+          <li>Accountability & Transparency</li>
+          <li>Honesty</li>
+          <li>Integrity</li>
+          <li>Respect</li>
+          <li>Team Work</li>
+          <li>Humility</li>
+          <li>Professionalism</li>
+          <li>Self & Emotional Awareness</li>
+          <li>Creativity & Innovation</li>
+        </ul>
       </div>
 
       {/* PROMISE */}
-      <div style={{ marginTop: "30px", marginBottom: "20px" }}>
+      <div style={{ marginTop: "30px", marginBottom: "20px", textAlign: "left" }}>
         <EditableSubheading
           value={content.promiseHeading || "Our Promise"}
           onSave={(val) => updateSection("promiseHeading", val)}
           isAdmin={user?.role === "admin"}
           level={3}
-          style={{ color: "#2c3e50", fontWeight: "bold" }}
+          style={{ color: "#2c3e50", fontWeight: "bold", textAlign: "left" }}
         />
-        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px" }}>
+        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px", textAlign: "left" }}>
           <EditableText
             value={content.promise || "Excellence, Our Choice"}
             onSave={(val) => updateSection("promise", val)}

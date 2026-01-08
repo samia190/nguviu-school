@@ -148,6 +148,14 @@ button:focus,a:focus,input:focus,textarea:focus{outline:2px solid #4f46e5;outlin
   grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
   gap:12px;
 }
+
+/* Optimized gallery grid for better mobile performance */
+.gallery-grid-optimized{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  gap:1rem;
+}
+
 .gallery-item{
   background:#fff;
   border-radius:10px;
@@ -156,7 +164,14 @@ button:focus,a:focus,input:focus,textarea:focus{outline:2px solid #4f46e5;outlin
   display:flex;
   flex-direction:column;
   align-items:stretch;
+  transition:transform 0.2s ease, box-shadow 0.2s ease;
 }
+
+.gallery-item:hover{
+  transform:translateY(-4px);
+  box-shadow:0 4px 12px rgba(0,0,0,0.18);
+}
+
 .gallery-thumb{
   display:block;
   padding:0;border:0;background:transparent;cursor:pointer;text-align:left;
@@ -164,14 +179,43 @@ button:focus,a:focus,input:focus,textarea:focus{outline:2px solid #4f46e5;outlin
 .gallery-thumb img{width:100%;height:180px;object-fit:cover;display:block}
 .gallery-caption{padding:8px 10px;font-size:13px;font-weight:500;text-align:center}
 
+/* Shimmer animation for loading placeholders */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Tablet optimizations */
 @media (max-width:767px){
   .gallery-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+  .gallery-grid-optimized{
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:0.75rem;
+  }
   .gallery-thumb img{height:140px}
 }
 
-@media (max-width:420px){
+/* Mobile optimizations - multiple columns for better space usage */
+@media (max-width:480px){
   .gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .gallery-grid-optimized{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:0.5rem;
+  }
+  .gallery-thumb img{height:140px}
+  .gallery-caption{font-size:11px;padding:6px 8px}
+}
+
+/* Extra small devices - still 2 columns but smaller */
+@media (max-width:360px){
+  .gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .gallery-grid-optimized{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:0.4rem;
+  }
   .gallery-thumb img{height:120px}
+  .gallery-caption{font-size:10px;padding:4px 6px}
+  .gallery-item{border-radius:8px}
 }
 
 /* Lightbox / full screen viewer */

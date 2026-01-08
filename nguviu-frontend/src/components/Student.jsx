@@ -574,17 +574,34 @@ export default function Student({ user, subRoute }) {
               isAdmin={isAdmin}
             />
 
-            <div className="gallery-grid" style={{ marginTop: 12 }}>
+            <div className="gallery-grid gallery-grid-optimized" style={{ marginTop: 12 }}>
               {academicGalleryFiles.map((file, idx) => (
                 <div key={file.url} className="gallery-item">
                   <button
                     className="gallery-thumb"
                     onClick={() => openViewer(academicGalleryFiles, idx)}
                     aria-label={`Open image ${idx + 1}`}
+                    style={{
+                      border: "none",
+                      padding: 0,
+                      background: "none",
+                      cursor: "pointer",
+                      width: "100%",
+                      display: "block",
+                    }}
                   >
-                    <LazyImage src={safePath(file.url)} alt={file.name} />
+                    <LazyImage 
+                      src={safePath(file.url)} 
+                      alt={file.name || `Academic life ${idx + 1}`}
+                      style={{
+                        width: "100%",
+                        height: "180px",
+                        objectFit: "cover",
+                        borderRadius: "8px",
+                      }}
+                    />
                   </button>
-                  <div className="gallery-caption">{file.name}</div>
+                  {file.name && <div className="gallery-caption">{file.name}</div>}
                 </div>
               ))}
             </div>
@@ -605,17 +622,34 @@ export default function Student({ user, subRoute }) {
               isAdmin={isAdmin}
             />
 
-            <div className="gallery-grid" style={{ marginTop: 12 }}>
+            <div className="gallery-grid gallery-grid-optimized" style={{ marginTop: 12 }}>
               {cocurricularGalleryFiles.map((file, idx) => (
                 <div key={file.url} className="gallery-item">
                   <button
                     className="gallery-thumb"
                     onClick={() => openViewer(cocurricularGalleryFiles, idx)}
                     aria-label={`Open image ${idx + 1}`}
+                    style={{
+                      border: "none",
+                      padding: 0,
+                      background: "none",
+                      cursor: "pointer",
+                      width: "100%",
+                      display: "block",
+                    }}
                   >
-                    <LazyImage src={safePath(file.url)} alt={file.name} />
+                    <LazyImage 
+                      src={safePath(file.url)} 
+                      alt={file.name || `Co-curricular activity ${idx + 1}`}
+                      style={{
+                        width: "100%",
+                        height: "180px",
+                        objectFit: "cover",
+                        borderRadius: "8px",
+                      }}
+                    />
                   </button>
-                  <div className="gallery-caption">{file.name}</div>
+                  {file.name && <div className="gallery-caption">{file.name}</div>}
                 </div>
               ))}
             </div>
