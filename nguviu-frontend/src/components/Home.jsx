@@ -134,7 +134,7 @@ export default function Home({ user, setRoute }) {
       key: "student",
       title: "student life",
       text: "Learn about our mission, history, values, and vision.",
-      image: "/images/std 1.jpg",
+      image: "/images/gallery/school life/std 1.jpg",
       childContainers: [
         {
           title: "Students Engaged in Current Affairs Reading",
@@ -143,26 +143,26 @@ export default function Home({ user, setRoute }) {
         },
         {
           
-          image: "/images/students/IMG_0778.jpg",
+          image: "/images/students/IMG_0778.JPG",
         },
         {
-          image: "/images/students/IMG_1067.jpg  ",
-        },
-        {
-          
-          image: "/images/students/life.jpg",
+          image: "/images/students/IMG_1067.JPG",
         },
         {
           
-          image: "/images/students/std 4.jpg",
+          image: "/images/students/life.JPG",
+        },
+        {
+          
+          image: "/images/students/std 4.JPG",
         },
         {
          
-          image: "/images/students/sc.jpg",
+          image: "/images/students/sc.JPG",
         },
         {
           
-          image: "/images/students/std 2.jpg",
+          image: "/images/students/std 2.JPG",
         },
       ],
     },
@@ -171,7 +171,7 @@ export default function Home({ user, setRoute }) {
       key: "admissions",
       title: "Admission Process",
       text: "See the full admission process and join our school.",
-      image: "/images/admissions/admission 1.jpeg",
+      image: "/images/admission/admission 1.jpeg",
       childContainers: [
         {
           title: "Admission Requirements",
@@ -300,7 +300,7 @@ export default function Home({ user, setRoute }) {
         {
           title: "Cultural Celebrations",
           text: "A glimpse of our cultural festivals and events.",
-          image: "/images/gallery/arts/19.jpg",
+          image: "/images/gallery/arts/19.JPG",
         },
         {
           title: "Graduation Ceremony",
@@ -310,7 +310,7 @@ export default function Home({ user, setRoute }) {
         {
           title: "Field Trips",
           text: "Our students' educational field trips and excursions.",
-          image: "/images/gallery/tours/IMG_0986.jpg",
+          image: "/images/gallery/tours/IMG_0986.JPG",
         },
         {
           title: "Community Service",
@@ -320,7 +320,7 @@ export default function Home({ user, setRoute }) {
         {
           title: "Student Performances",
           text: "Talent shows, performances, and arts exhibitions.",
-          image: "/images/gallery/arts/04.jpg",
+          image: "/images/gallery/arts/04.JPG",
         },
       ],
     },
@@ -399,7 +399,7 @@ export default function Home({ user, setRoute }) {
                       {child.image && (
                         <div className="section-image">
                           <img
-                            src={safePath(child.image || "/images/hike.jpg")}
+                            src={safePath(child.image || "/images/hike.jpeg")}
                             alt=""
                             loading="lazy"
                             decoding="async"
@@ -407,6 +407,7 @@ export default function Home({ user, setRoute }) {
                               width: "100%",
                               height: "100%",
                               objectFit: "cover",
+                              objectPosition: "center",
                             }}
                           />
                         </div>
@@ -433,12 +434,19 @@ export default function Home({ user, setRoute }) {
     <section style={{ padding: 0, position: "relative", overflow: "hidden" }}>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {/* Video and Image Slider Section */}
+      {/* Video and Image Slider Section - Full Width */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           marginBottom: 20,
+          width: "100vw",
+          position: "relative",
+          left: "50%",
+          right: "50%",
+          marginLeft: "-50vw",
+          marginRight: "-50vw",
+          padding: 0,
         }}
       >
         <div
@@ -446,7 +454,7 @@ export default function Home({ user, setRoute }) {
           style={{
             position: "relative",
             flex: 1,
-            marginRight: 20,
+            marginRight: 0,
             height: "400px",
           }}
         >
@@ -507,8 +515,7 @@ const ImageSlider = () => {
     "/images/background images/deputy.jpeg",
     "/images/background images/img 1.jpeg",
     "/images/background images/lab 1.jpeg",
-    "/images/background images/student 01.jpeg",
-    "/images/background images/school3.jpeg",
+    "/images/background images/students 01.jpeg",
 
   ];
 

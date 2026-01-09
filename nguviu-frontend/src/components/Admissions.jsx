@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import EditableFileList from "./EditableFileList";
-import Admission from "./Admission";
+import AdmissionForm from "./AdmissionForm";
 import { get } from "../utils/api";
 
 export default function Admissions({ user }) {
@@ -115,7 +115,7 @@ export default function Admissions({ user }) {
 
       {/* Embedded admission submission form */}
       <section style={{ marginTop: "2rem" }}>
-        <Admission />
+        <AdmissionForm />
       </section>
     </section>
   );

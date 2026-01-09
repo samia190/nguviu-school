@@ -46,9 +46,10 @@ export default function About({ user }) {
   };
 
   return (
-    <section style={{ padding: 20 }}>
+    <section style={{ padding: 20 }} className="about-page">
       {/* ================= HERO / TOP BACKGROUND SECTION ================= */}
       <div
+        className="about-hero"
         style={{
             position: "relative",
     width: "100vw",
@@ -56,7 +57,7 @@ export default function About({ user }) {
     transform: "translateX(-50%)",
     maxHeight: 1000,
     overflow: "hidden",
-    height: 500,
+    height: window.innerWidth <= 480 ? 300 : 500,
           backgroundImage: `url(${encodeURI(
             resolvePath(content.heroBackgroundUrl || "images/background images/hero.JPG")
           )})`,
@@ -116,6 +117,7 @@ export default function About({ user }) {
 
       {/* ================= MAIN ABOUT CONTENT ================= */}
 
+      <div className="about-content">
       {/* TITLE */}
       <EditableHeading
         value={content.title || "About Nguviu Girls' School"}
@@ -199,7 +201,7 @@ export default function About({ user }) {
         <h3 style={{ color: "#2c3e50", fontWeight: "bold", fontSize: "1.3rem", marginBottom: "15px", textAlign: "left" }}>
           CORE VALUES
         </h3>
-        <ul style={{
+        <ul className="about-core-values" style={{
           listStyleType: "disc",
           paddingLeft: "40px",
           color: "#34495e",
@@ -237,26 +239,23 @@ export default function About({ user }) {
           />
         </div>
       </div>
+      </div>
 
       {/* ================= PRINCIPAL AND DEPUTY SECTION ================= */}
       <div
+        className="about-leadership"
         style={{
           marginTop: 40,
           paddingTop: 20,
           borderTop: "1px solid #eee",
-          display: "flex",
-          justifyContent: "space-between",
-          gap: "20px", // Space between Principal and Deputy sections
         }}
       >
-        {/* PRINCIPAL SECTION */}
+        {/* PRINCIPAL SECTION - CENTERED AT TOP */}
         <div
-
+          className="about-leader-card about-principal"
           style={{
-            textAlignLast: "center",
             textAlign: "center",
-            flex: 1,
-            textweight: "bold",
+            margin: "0 auto 30px auto",
             maxWidth: 500,
           }}
         >
@@ -267,6 +266,7 @@ export default function About({ user }) {
               borderRadius: "50%",
               overflow: "hidden",
               marginBottom: 16,
+              margin: "0 auto 16px auto",
               border: "3px solid #ddd",
             }}
           >
@@ -282,7 +282,7 @@ export default function About({ user }) {
             />
           </div>
 
-          <h3>Principal's Remarks</h3>,
+          <h3>Chief Principal's Remarks</h3>
           <p style={{ fontWeight: "bold" }}>Dr. Elizabeth Musili</p>
 
           <EditableText
@@ -295,45 +295,100 @@ export default function About({ user }) {
           />
         </div>
 
-        {/* DEPUTY PRINCIPAL SECTION */}
+        {/* DEPUTY PRINCIPALS - TWO COLUMNS BELOW */}
         <div
+          className="about-deputies"
           style={{
-            flex: 1,
-            textAlign: "center",
-            maxWidth: 500,
+            display: "flex",
+            justifyContent: "space-between",
+            gap: "20px",
           }}
         >
+          {/* DEPUTY PRINCIPAL 1 - LEFT */}
           <div
+            className="about-leader-card"
             style={{
-              width: 180,
-              height: 180,
-              borderRadius: "50%",
-              overflow: "hidden",
-              marginBottom: 16,
-              border: "3px solid #ddd",
+              flex: 1,
+              textAlign: "center",
+              maxWidth: 500,
             }}
           >
-            <img
-              src={safePath(content.deputyImageUrl || "/images/background images/deputy.jpeg")}
-              alt="Deputy Principal"
+            <div
               style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover"
+                width: 180,
+                height: 180,
+                borderRadius: "50%",
+                overflow: "hidden",
+                marginBottom: 16,
+                margin: "0 auto 16px auto",
+                border: "3px solid #ddd",
               }}
+            >
+              <img
+                src={safePath(content.deputyImageUrl || "/images/background images/deputy.jpeg")}
+                alt="Deputy Principal"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover"
+                }}
+              />
+            </div>
+
+            <h3>Deputy Principal (Administration)</h3>
+            <p style={{ fontWeight: "bold" }}>Ms. Magret Kariuki</p>
+            <EditableText
+              value={
+                content.deputyMessage ||
+                "As the Deputy Principal, I am committed to ensuring that each student receives the guidance and support necessary for their personal and academic growth."
+              }
+              onSave={(val) => updateSection("deputyMessage", val)}
+              isAdmin={user?.role === "admin"}
             />
           </div>
 
-          <h3>Deputy Principal Remarks(Administration)</h3>
-          <p style={{ fontWeight: "bold" }}>Ms. Magret kariuki</p>
-          <EditableText
-            value={
-              content.deputyMessage ||
-              "As the Deputy Principal, I am committed to ensuring that each student receives the guidance and support necessary for their personal and academic growth."
-            }
-            onSave={(val) => updateSection("deputyMessage", val)}
-            isAdmin={user?.role === "admin"}
-          />
+          {/* DEPUTY PRINCIPAL 2 - RIGHT */}
+          <div
+            className="about-leader-card"
+            style={{
+              flex: 1,
+              textAlign: "center",
+              maxWidth: 500,
+            }}
+          >
+            <div
+              style={{
+                width: 180,
+                height: 180,
+                borderRadius: "50%",
+                overflow: "hidden",
+                marginBottom: 16,
+                margin: "0 auto 16px auto",
+                border: "3px solid #ddd",
+              }}
+            >
+              <img
+                src={safePath(content.deputy2ImageUrl || "/images/background images/deputy.jpeg")}
+                alt="Deputy Principal 2"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover"
+                }}
+              />
+            </div>
+
+            <h3>Deputy Principal (Academics)</h3>
+            <p style={{ fontWeight: "bold" }}>Ms. Joyce Ngina Nyingi</p>
+            <EditableText
+              value={
+                content.deputy2Message ||
+                "Our academic programs are designed to challenge and inspire students to reach their full potential and excel in all areas of learning."
+              }
+              onSave={(val) => updateSection("deputy2Message", val)}
+              isAdmin={user?.role === "admin"}
+            />
+          </div>
         </div>
       </div>
 

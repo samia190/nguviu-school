@@ -20,6 +20,14 @@ body { font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', Roboto, 'Hel
   padding: 28px;
 }
 
+@media (max-width:900px){
+  .admin-main-bg { padding: 12px; }
+}
+
+@media (max-width:600px){
+  .admin-main-bg { padding: 8px; }
+}
+
 .admin-app { display:flex; min-height:100vh; }
 .admin-sidebar { width: 260px; background: linear-gradient(180deg,#ffffff 0%, #f8fafc 100%); border-right:1px solid #e6edf3; padding:18px; box-shadow: inset -1px 0 0 rgba(0,0,0,0.02); }
 .admin-sidebar .logo { font-weight:700; margin-bottom:12px; }
@@ -36,8 +44,8 @@ body { font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', Roboto, 'Hel
 .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .topbar .search { flex:1; max-width:480px }
 .topbar .user { display:flex; gap:10px; align-items:center }
-@media (max-width:900px){ .admin-sidebar { display:none; } .grid { grid-template-columns: repeat(2,1fr); } }
-@media (max-width:600px){ .grid { grid-template-columns: 1fr; } }
+@media (max-width:900px){ .admin-sidebar { width: 200px; font-size:0.85rem; overflow-y:auto; max-height:100vh; } .admin-sidebar h2 { font-size:1.1rem; } .grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width:600px){ .grid { grid-template-columns: 1fr; } .admin-sidebar { width: 180px; font-size:0.8rem; padding:12px 8px; } .admin-sidebar h2 { font-size:1rem; } .menu-item { padding:6px 8px; font-size:0.75rem; } }
 
 .widget { display:flex; align-items:center; justify-content:space-between; gap:12px }
 .widget .left { display:flex; gap:12px; align-items:center }
@@ -79,8 +87,7 @@ body { font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', Roboto, 'Hel
 /* subtle page texture using inline svg data-uri */
 .admin-main-bg::before { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><defs><linearGradient id='g' x1='0' x2='1'><stop offset='0' stop-color='%23ffffff' stop-opacity='0.0'/><stop offset='1' stop-color='%23f3f8ff' stop-opacity='0.02'/></linearGradient></defs><rect width='100%' height='100%' fill='url(%23g)'/></svg>"); opacity:0.9; mix-blend-mode:overlay; border-radius:0 }
 
-/* small responsive tweaks */
-@media (max-width:900px){ .grid { grid-template-columns: repeat(2,1fr); } .admin-sidebar { width: 64px; padding:12px } .admin-sidebar .logo { display:none } .menu-item { font-size:12px } }
+/* small responsive tweaks - removed duplicate conflicting media query */
 
 .fade-enter { opacity:0; transform: translateY(-6px) }
 .fade-enter-active { opacity:1; transform:none; transition: all 220ms ease }

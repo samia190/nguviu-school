@@ -19,6 +19,7 @@ h1,h2,h3,h4{font-family:Georgia, 'Times New Roman', serif;color:#1b1b1b}
 html,body,#root{height:100%}
 body{
   margin:0;
+  padding:0;
   color:var(--text-color);
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
@@ -28,6 +29,11 @@ body{
 
 /* Containers - preserve structure but add safe padding */
 section{max-width:var(--max-site-width);margin:0 auto;padding:0 var(--fluid-padding)}
+
+/* Mobile: remove all section padding for full-width content */
+@media (max-width: 480px) {
+  section{padding:0;margin:0 auto}
+}
 
 /* Fluid typography (mobile-first) */
 h1{font-size:clamp(1.4rem,4.6vw,2.4rem);line-height:1.15;margin:0.6rem 0}
@@ -71,6 +77,7 @@ nav button{padding:6px 10px;font-size:0.95rem}
   align-items:center;
   justify-content:flex-start;
   min-width:160px;
+  margin:0;
 }
 .section-image{
   width:100%;
@@ -119,17 +126,60 @@ button:focus,a:focus,input:focus,textarea:focus{outline:2px solid #4f46e5;outlin
   .video-section, .image-slider{min-height:400px}
 }
 
-/* Smaller screens: make child containers stack or show two per row depending on space */
-@media (max-width: 767px){
-  .section-child{flex:1 1 48%;min-width:46%}
-  .section-image{height:140px}
-  .section-child-text{font-size:0.9rem}
-}
-
-@media (max-width: 420px){
-  .section-child{flex:1 1 100%;min-width:100%}
-  .section-image{height:120px}
-  .section-child-text{font-size:0.85rem}
+/* Smartphones only: Show 2 cards per row - full width */
+@media (max-width: 480px){
+  .section-child{flex:1 1 49.5%;min-width:49.5%;max-width:49.5%;margin:0;padding:6px}
+  .section-image{height:120px;margin-bottom:6px}
+  .section-child-text{font-size:0.85rem;margin:0 4px 6px 4px}
+  .section-child-title{margin:4px 0 2px 0;font-size:0.9rem}
+  .section-child-button{padding:6px 10px;margin-top:6px;font-size:0.85rem}
+  
+  /* Gallery optimizations */
+  .gallery-grid{grid-template-columns:repeat(2, 1fr);gap:8px}
+  .gallery-thumb img{height:140px}
+  .gallery-caption{font-size:12px;padding:6px 8px}
+  
+  /* About page mobile optimizations */
+  .about-page{padding:0 !important}
+  .about-hero{height:300px !important}
+  .about-content{padding:0 12px;margin-top:16px}
+  .about-core-values{padding-left:20px !important;font-size:0.95rem !important}
+  .about-leadership{padding:0 4px !important}
+  .about-principal{margin-bottom:20px !important}
+  .about-principal > div:first-child{width:100px !important;height:100px !important}
+  .about-principal h3{font-size:1rem !important}
+  .about-principal p{font-size:0.85rem !important}
+  .about-deputies{gap:8px !important}
+  .about-deputies .about-leader-card{max-width:49% !important;flex:1 1 49% !important}
+  .about-deputies .about-leader-card > div:first-child{width:70px !important;height:70px !important}
+  .about-deputies .about-leader-card h3{font-size:0.85rem !important;margin:4px 0 !important}
+  .about-deputies .about-leader-card p{font-size:0.8rem !important;margin:2px 0 !important}
+  .about-deputies .about-leader-card div{font-size:0.85rem !important}
+  
+  /* Student page mobile optimizations */
+  .student-page{padding:0 !important;margin:0 !important}
+  div > section{padding:0 8px !important}
+  div > h1{font-size:1.5rem !important;margin:12px 8px !important}
+  
+  /* General mobile optimizations for all pages */
+  h1{font-size:1.5rem !important}
+  h2{font-size:1.3rem !important}
+  h3{font-size:1.1rem !important}
+  p{font-size:0.9rem}
+  
+  /* Tables responsive */
+  table{font-size:0.85rem}
+  th, td{padding:6px 4px}
+  
+  /* Forms responsive */
+  input, textarea, select{font-size:0.9rem;padding:8px}
+  button{font-size:0.9rem;padding:8px 12px}
+  
+  /* Images full width on mobile */
+  img{max-width:100%;height:auto}
+  
+  /* Reduce spacing */
+  .content-section{margin-bottom:16px}
 }
 
 @media (min-width: 90rem){ /* 1440px */

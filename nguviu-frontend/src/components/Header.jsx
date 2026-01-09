@@ -261,6 +261,33 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
           )}
         </div>
 
+        {/* Apply Now Button - Highlighted */}
+        <button 
+          onClick={() => go("admission")} 
+          style={{
+            ...navButtonStyle(route === "admission"),
+            background: route === "admission" ? "#fff" : "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
+            color: route === "admission" ? "#28a745" : "#fff",
+            fontWeight: "bold",
+            padding: "8px 16px",
+            boxShadow: "0 4px 8px rgba(40, 167, 69, 0.3)",
+            border: route === "admission" ? "2px solid #28a745" : "none",
+            transition: "all 0.3s ease",
+          }}
+          onMouseEnter={(e) => {
+            if (route !== "admission") {
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 6px 12px rgba(40, 167, 69, 0.4)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.boxShadow = "0 4px 8px rgba(40, 167, 69, 0.3)";
+          }}
+        >
+          📝 Apply Now
+        </button>
+
         {/* Auth buttons or user info */}
         {!user ? (
           <>

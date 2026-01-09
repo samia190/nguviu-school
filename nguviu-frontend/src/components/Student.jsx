@@ -91,19 +91,11 @@ export default function Student({ user, subRoute }) {
     },
     {
       name: "",
-      url: "/images/students/IMG_0786.JPG",
+      url: "/images/students/student life 1.JPG",
     },
     {
       name: "",
-      url: "/images/students/student life.JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/life 2.JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/life 1.JPG",
+      url: "/images/students/life (2).JPG",
     },
     {
       name: "",
@@ -119,7 +111,7 @@ export default function Student({ user, subRoute }) {
     },
     {
       name: "",
-      url: "/images/students/sc(2).JPG",
+      url: "/images/students/sc (2).JPG",
     },
     {
       name: "",
@@ -206,6 +198,11 @@ export default function Student({ user, subRoute }) {
   const [viewerIndex, setViewerIndex] = useState(0);
   const [viewerList, setViewerList] = useState([]);
 
+  // Gallery carousel state
+  const [academicStartIndex, setAcademicStartIndex] = useState(0);
+  const [cocurricularStartIndex, setCocurricularStartIndex] = useState(0);
+  const imagesPerPage = 4; // 2 rows x 2 columns
+
   function openViewer(list, index) {
     setViewerList(list || []);
     setViewerIndex(index || 0);
@@ -224,6 +221,26 @@ export default function Student({ user, subRoute }) {
     setViewerIndex((i) => (viewerList.length ? (i - 1 + viewerList.length) % viewerList.length : i));
   }
 
+  function nextAcademicPage() {
+    setAcademicStartIndex((prev) => 
+      Math.min(prev + imagesPerPage, academicGalleryFiles.length - imagesPerPage)
+    );
+  }
+
+  function prevAcademicPage() {
+    setAcademicStartIndex((prev) => Math.max(0, prev - imagesPerPage));
+  }
+
+  function nextCocurricularPage() {
+    setCocurricularStartIndex((prev) => 
+      Math.min(prev + imagesPerPage, cocurricularGalleryFiles.length - imagesPerPage)
+    );
+  }
+
+  function prevCocurricularPage() {
+    setCocurricularStartIndex((prev) => Math.max(0, prev - imagesPerPage));
+  }
+
   useEffect(() => {
     if (!viewerOpen) return;
     function onKey(e) {
@@ -236,10 +253,11 @@ export default function Student({ user, subRoute }) {
   }, [viewerOpen, viewerList]);
 
   return (
-    <div>
+    <div className="student-page">
       {/* ================= HERO VIDEO SECTION ================= */}
       {/* ================= HERO VIDEO SECTION ================= */}
 <div
+  className="student-hero"
   style={{
     position: "relative",
     width: "100vw",
@@ -325,6 +343,7 @@ export default function Student({ user, subRoute }) {
 
       {/* ---------- TABS ---------- */}
       <div
+        className="student-tabs"
         style={{
           display: "flex",
           gap: "10px",
@@ -574,36 +593,63 @@ export default function Student({ user, subRoute }) {
               isAdmin={isAdmin}
             />
 
-            <div className="gallery-grid gallery-grid-optimized" style={{ marginTop: 12 }}>
-              {academicGalleryFiles.map((file, idx) => (
-                <div key={file.url} className="gallery-item">
-                  <button
-                    className="gallery-thumb"
-                    onClick={() => openViewer(academicGalleryFiles, idx)}
-                    aria-label={`Open image ${idx + 1}`}
-                    style={{
-                      border: "none",
-                      padding: 0,
-                      background: "none",
-                      cursor: "pointer",
-                      width: "100%",
-                      display: "block",
-                    }}
-                  >
-                    <LazyImage 
-                      src={safePath(file.url)} 
-                      alt={file.name || `Academic life ${idx + 1}`}
-                      style={{
-                        width: "100%",
-                        height: "180px",
-                        objectFit: "cover",
-                        borderRadius: "8px",
-                      }}
-                    />
-                  </button>
-                  {file.name && <div className="gallery-caption">{file.name}</div>}
-                </div>
-              ))}
+            <div style={{ position: "relative", marginTop: 12 }}>
+              {academicStartIndex > 0 && (
+                <button
+                  onClick={prevAcademicPage}
+                  className="gallery-nav gallery-nav-prev"
+                  aria-label="Previous images"
+                >
+                  ‹
+                </button>
+              )}
+              
+              <div className="gallery-grid gallery-grid-optimized">
+                {academicGalleryFiles
+                  .slice(academicStartIndex, academicStartIndex + imagesPerPage)
+                  .map((file, idx) => {
+                    const actualIndex = academicStartIndex + idx;
+                    return (
+                      <div key={file.url} className="gallery-item">
+                        <button
+                          className="gallery-thumb"
+                          onClick={() => openViewer(academicGalleryFiles, actualIndex)}
+                          aria-label={`Open image ${actualIndex + 1}`}
+                          style={{
+                            border: "none",
+                            padding: 0,
+                            background: "none",
+                            cursor: "pointer",
+                            width: "100%",
+                            display: "block",
+                          }}
+                        >
+                          <LazyImage 
+                            src={safePath(file.url)} 
+                            alt={file.name || `Academic life ${actualIndex + 1}`}
+                            style={{
+                              width: "100%",
+                              height: "180px",
+                              objectFit: "cover",
+                              borderRadius: "8px",
+                            }}
+                          />
+                        </button>
+                        {file.name && <div className="gallery-caption">{file.name}</div>}
+                      </div>
+                    );
+                  })}
+              </div>
+
+              {academicStartIndex + imagesPerPage < academicGalleryFiles.length && (
+                <button
+                  onClick={nextAcademicPage}
+                  className="gallery-nav gallery-nav-next"
+                  aria-label="Next images"
+                >
+                  ›
+                </button>
+              )}
             </div>
 
             {/* Co-curricular Group */}
@@ -622,36 +668,63 @@ export default function Student({ user, subRoute }) {
               isAdmin={isAdmin}
             />
 
-            <div className="gallery-grid gallery-grid-optimized" style={{ marginTop: 12 }}>
-              {cocurricularGalleryFiles.map((file, idx) => (
-                <div key={file.url} className="gallery-item">
-                  <button
-                    className="gallery-thumb"
-                    onClick={() => openViewer(cocurricularGalleryFiles, idx)}
-                    aria-label={`Open image ${idx + 1}`}
-                    style={{
-                      border: "none",
-                      padding: 0,
-                      background: "none",
-                      cursor: "pointer",
-                      width: "100%",
-                      display: "block",
-                    }}
-                  >
-                    <LazyImage 
-                      src={safePath(file.url)} 
-                      alt={file.name || `Co-curricular activity ${idx + 1}`}
-                      style={{
-                        width: "100%",
-                        height: "180px",
-                        objectFit: "cover",
-                        borderRadius: "8px",
-                      }}
-                    />
-                  </button>
-                  {file.name && <div className="gallery-caption">{file.name}</div>}
-                </div>
-              ))}
+            <div style={{ position: "relative", marginTop: 12 }}>
+              {cocurricularStartIndex > 0 && (
+                <button
+                  onClick={prevCocurricularPage}
+                  className="gallery-nav gallery-nav-prev"
+                  aria-label="Previous images"
+                >
+                  ‹
+                </button>
+              )}
+              
+              <div className="gallery-grid gallery-grid-optimized">
+                {cocurricularGalleryFiles
+                  .slice(cocurricularStartIndex, cocurricularStartIndex + imagesPerPage)
+                  .map((file, idx) => {
+                    const actualIndex = cocurricularStartIndex + idx;
+                    return (
+                      <div key={file.url} className="gallery-item">
+                        <button
+                          className="gallery-thumb"
+                          onClick={() => openViewer(cocurricularGalleryFiles, actualIndex)}
+                          aria-label={`Open image ${actualIndex + 1}`}
+                          style={{
+                            border: "none",
+                            padding: 0,
+                            background: "none",
+                            cursor: "pointer",
+                            width: "100%",
+                            display: "block",
+                          }}
+                        >
+                          <LazyImage 
+                            src={safePath(file.url)} 
+                            alt={file.name || `Co-curricular activity ${actualIndex + 1}`}
+                            style={{
+                              width: "100%",
+                              height: "180px",
+                              objectFit: "cover",
+                              borderRadius: "8px",
+                            }}
+                          />
+                        </button>
+                        {file.name && <div className="gallery-caption">{file.name}</div>}
+                      </div>
+                    );
+                  })}
+              </div>
+
+              {cocurricularStartIndex + imagesPerPage < cocurricularGalleryFiles.length && (
+                <button
+                  onClick={nextCocurricularPage}
+                  className="gallery-nav gallery-nav-next"
+                  aria-label="Next images"
+                >
+                  ›
+                </button>
+              )}
             </div>
 
             {/* Lightbox viewer */}

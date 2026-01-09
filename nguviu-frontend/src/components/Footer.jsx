@@ -77,17 +77,61 @@ export default function Footer() {
             flex: 1 1 150px;
             min-width: 100px;
           }
+          
+          /* Mobile footer optimization */
+          @media (max-width: 480px) {
+            .footer-top {
+              flex-direction: column !important;
+              gap: 16px !important;
+            }
+            .footer-brand {
+              width: 100%;
+            }
+            .footer-partnerships {
+              min-width: 100% !important;
+              flex: none !important;
+            }
+            .footer-partnerships h4 {
+              font-size: 14px !important;
+            }
+            .footer-partnerships img {
+              width: 60px !important;
+              height: 30px !important;
+            }
+            .footer-credits {
+              min-width: 100% !important;
+              font-size: 12px !important;
+            }
+            .footer-columns {
+              gap: 16px !important;
+            }
+            .footer-column {
+              flex: 1 1 45% !important;
+              min-width: 45% !important;
+            }
+            .footer-column h4 {
+              font-size: 14px !important;
+            }
+            .footer-column ul {
+              font-size: 13px !important;
+              margin: 0 !important;
+            }
+            .footer-contact-info {
+              font-size: 13px !important;
+            }
+          }
         `}
       </style>
 
       <footer
         style={{
           background: "#7506065d",
-          padding: "20px 40px",
+          padding: window.innerWidth <= 480 ? "16px 12px" : "20px 40px",
           borderTop: "1px solid #5a3fd2ff",
         }}
       >
         <div
+          className="footer-top"
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -97,7 +141,7 @@ export default function Footer() {
         >
           {/* ================= SCHOOL BRANDING ================= */}
           <div
-            className="brand"
+            className="brand footer-brand"
             style={{ display: "flex", alignItems: "center", gap: 12 }}
           >
             <img
@@ -114,7 +158,7 @@ export default function Footer() {
           </div>
 
           {/* ================= COLLABORATORS ================= */}
-          <div style={{ flex: 1, minWidth: 500 }}>
+          <div className="footer-partnerships" style={{ flex: 1, minWidth: 500 }}>
             <h4 style={{ marginBottom: 8 }}>KENYAN CURRUCULUM PATNERSHIP</h4>
             <div
               style={{
@@ -183,7 +227,7 @@ export default function Footer() {
           </div>
 
           {/* ================= CREDITS ================= */}
-          <div style={{ fontSize: 14, color: "#555", minWidth: 160 }}>
+          <div className="footer-credits" style={{ fontSize: 14, color: "#555", minWidth: 160 }}>
             Built <br />
             Designed and developed by Samia
           </div>
@@ -206,7 +250,7 @@ export default function Footer() {
               </span>
               <span>Contact</span>
             </h4>
-            <div style={{ fontSize: 16, color: "#4812deff", lineHeight: 1.7 }}>
+            <div className="footer-contact-info" style={{ fontSize: 16, color: "#4812deff", lineHeight: 1.7 }}>
               Nguviu Girls' Senior School <br />
               P.O Box 12,60100 EMBU—  <br />
               Phone: 0113688538<br />
