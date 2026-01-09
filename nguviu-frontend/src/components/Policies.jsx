@@ -25,7 +25,7 @@ export default function Policies({ user }) {
   }
 
   return (
-    <section style={{ padding: 20 }}>
+    <section style={{ padding: "20px 8px" }}>
       <EditableHeading
         value={content.title || "School Policies"}
         onSave={(val) => updateSection("title", val)}

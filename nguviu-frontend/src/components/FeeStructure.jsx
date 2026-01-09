@@ -111,7 +111,7 @@ export default function FeeStructure({ user }) {
   });
 
   return (
-    <section style={{ padding: 20, maxWidth: 960, margin: "0 auto" }}>
+    <section style={{ padding: "20px 8px" }}>
       <header style={{ marginBottom: "1rem" }}>
         <h1>{title}</h1>
         <p style={{ fontSize: "0.95rem" }}>{intro}</p>

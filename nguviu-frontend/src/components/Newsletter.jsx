@@ -74,10 +74,10 @@ export default function Newsletter() {
   const attachments = content?.attachments || [];
 
   return (
-    <main className="page newsletter-page" style={{ padding: "1rem" }}>
+    <main className="page newsletter-page" style={{ padding: "1rem 8px" }}>
       <header style={{ marginBottom: "1rem" }}>
         <h1>{introTitle}</h1>
-        <p style={{ maxWidth: "720px" }}>{introBody}</p>
+        <p>{introBody}</p>
       </header>
 
       {error && <p style={{ color: "red" }}>{error}</p>}

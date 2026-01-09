@@ -25,7 +25,7 @@ export default function Legal({ user }) {
   }
 
   return (
-    <section style={{ padding: 20 }}>
+    <section style={{ padding: "20px 8px" }}>
       <EditableHeading
         value={content.title || "Legal Information"}
         onSave={(val) => updateSection("title", val)}

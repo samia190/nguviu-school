@@ -66,7 +66,7 @@ function StudentSubmissionForm({ user }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginTop: 16, maxWidth: 500 }}>
+    <form onSubmit={handleSubmit} style={{ marginTop: 16 }}>
       <div style={{ marginBottom: 8 }}>
         <label style={{ display: "block", marginBottom: 4 }}>
           Level / Class
@@ -1118,7 +1118,7 @@ export default function HomeworkPortal({ user }) {
   }
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: "20px 8px" }}>
       {/* MAIN HEADING */}
       <EditableHeading
         value="Senior School Homework Portal – CBC & KCSE"
