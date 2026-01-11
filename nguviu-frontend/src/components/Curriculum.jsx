@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import { get } from "../utils/api";
 import { safePath } from "../utils/paths";
+import LazyImage from "./LazyImage";
+import LazyVideo from "./LazyVideo";
 
 export default function Curriculum() {
   const [items, setItems] = useState([]);
@@ -64,7 +66,7 @@ export default function Curriculum() {
                         className="media-thumb image-thumb"
                         onClick={() => setLightboxUrl(m.url)}
                       >
-                        <img src={safePath(m.url)} alt={m.originalName || "Curriculum"} />
+                        <LazyImage src={safePath(m.url)} alt={m.originalName || "Curriculum"} />
                       </div>
                     );
                   }
@@ -72,7 +74,7 @@ export default function Curriculum() {
                   if (isVideo) {
                     return (
                       <div key={i} className="media-thumb video-thumb">
-                        <video src={safePath(m.url)} controls />
+                        <LazyVideo src={safePath(m.url)} controls />
                       </div>
                     );
                   }
@@ -112,7 +114,7 @@ export default function Curriculum() {
             >
               ×
             </button>
-            <img src={safePath(lightboxUrl)} alt="Preview" />
+            <LazyImage src={safePath(lightboxUrl)} alt="Preview" />
           </div>
         </div>
       )}

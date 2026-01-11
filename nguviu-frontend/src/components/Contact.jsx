@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { get, post } from "../utils/api";
+import Loader from "./Loader";
 
 function buildWhatsappHref(number, customLink) {
   if (customLink && customLink.trim()) return customLink.trim();
@@ -86,7 +87,7 @@ export default function Contact({ user }) {
     return (
       <section style={{ padding: 20 }}>
         <h1>Contact Us</h1>
-        <p>Loading…</p>
+        <Loader message="Loading contact information…" />
       </section>
     );
   }
@@ -108,11 +109,11 @@ export default function Contact({ user }) {
   const waHref = buildWhatsappHref(whatsappNumber, whatsappLink);
 
   return (
-    <section style={{ padding: 20, maxWidth: 1100, margin: "0 auto" }}>
-      <header style={{ marginBottom: "1rem" }}>
-        <h1>{title}</h1>
-        <p style={{ fontSize: "0.95rem" }}>{intro}</p>
-      </header>
+    <section style={{ padding: "20px 8px", textAlign: "left" }}>
+      <div style={{ marginBottom: "1.5rem" }}>
+        <h1 style={{ marginBottom: "0.5rem", textAlign: "left" }}>{title}</h1>
+        <p style={{ fontSize: "0.95rem", margin: 0, textAlign: "left" }}>{intro}</p>
+      </div>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 

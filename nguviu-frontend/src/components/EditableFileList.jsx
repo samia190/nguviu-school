@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { get } from "../utils/api";
 import { safePath } from "../utils/paths";
+import LazyImage from "./LazyImage";
+import LazyVideo from "./LazyVideo";
 
 function getHref(file) {
   return file?.downloadUrl || file?.url || "";
@@ -145,7 +147,7 @@ export default function EditableFileList({ files = [], onSave, isAdmin }) {
           }}
           onClick={() => setLightboxSrc(href)}
         >
-          <img
+          <LazyImage
             src={safePath(href)}
             alt={getTitle(file) || getHeading(file)}
             style={{
@@ -161,7 +163,8 @@ export default function EditableFileList({ files = [], onSave, isAdmin }) {
 
     if (isVideo(file)) {
       return (
-        <video
+        <LazyVideo
+          src={safePath(href)}
           controls
           style={{
             width: "100%",
@@ -172,7 +175,7 @@ export default function EditableFileList({ files = [], onSave, isAdmin }) {
         >
           <source src={safePath(href)} />
           Your browser does not support the video tag.
-        </video>
+        </LazyVideo>
       );
     }
 
@@ -237,7 +240,7 @@ export default function EditableFileList({ files = [], onSave, isAdmin }) {
         >
           ✕
         </button>
-        <img
+        <LazyImage
           src={safePath(lightboxSrc)}
           alt=""
           style={{

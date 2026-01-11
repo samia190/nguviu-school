@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import LazyVideo from "./LazyVideo";
+import LazyImage from "./LazyImage";
 import { get, patch } from "../utils/api";
 import EditableHeading from "../components/EditableHeading";
 import EditableText from "../components/EditableText";
@@ -459,10 +459,10 @@ export default function Home({ user, setRoute }) {
           }}
         >
           {/* Lazy-loaded hero video */}
-          <LazyVideo autoPlay loop muted>
+          <video autoPlay loop muted style={{ width: "100%", height: "100%", objectFit: "cover" }}>
             <source src={safePath("/images/videos/vid 1.mp4")} type="video/mp4" />
             Your browser does not support the video tag.
-          </LazyVideo>
+          </video>
 
           <div className="welcome-text video-text">
             Welcome to NGUVIU GIRLS' SENIOR SCHOOL!

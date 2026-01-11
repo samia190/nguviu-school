@@ -13,6 +13,7 @@ import Footer from "./components/Footer";
 import Loader from "./components/Loader";
 import Login from "./components/Login";
 import SignUp from "./components/SignUp";
+import ResetPassword from "./components/ResetPassword";
 import AdminDashboard from "./components/AdminDashboard";
 import DevLogin from "./components/DevLogin";
 import Curriculum from "./components/Curriculum";
@@ -431,7 +432,10 @@ export default function App() {
               return <SearchResults user={user} />;
 
             case "login":
-              return <Login onAuth={handleAuth} user={user} />;
+              return <Login onAuth={handleAuth} navigate={setRoute} user={user} />;
+
+            case "reset-password":
+              return <ResetPassword navigate={setRoute} user={user} />;
 
             case "dev-login":
               return <DevLogin />;

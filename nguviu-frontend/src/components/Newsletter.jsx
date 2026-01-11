@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { get } from "../utils/api";
 import EditableFileList from "./EditableFileList";
+import Loader from "./Loader";
 
 const postsWrapperStyle = {
   display: "flex",
@@ -59,7 +60,7 @@ export default function Newsletter() {
     return (
       <main className="page newsletter-page">
         <h1>Newsletter</h1>
-        <p>Loading…</p>
+        <Loader message="Loading newsletter…" />
       </main>
     );
   }
@@ -74,11 +75,11 @@ export default function Newsletter() {
   const attachments = content?.attachments || [];
 
   return (
-    <main className="page newsletter-page" style={{ padding: "1rem 8px" }}>
-      <header style={{ marginBottom: "1rem" }}>
-        <h1>{introTitle}</h1>
-        <p>{introBody}</p>
-      </header>
+    <main className="page newsletter-page" style={{ padding: "1rem 8px", textAlign: "left" }}>
+      <div style={{ marginBottom: "1.5rem" }}>
+        <h1 style={{ marginBottom: "0.5rem", textAlign: "left" }}>{introTitle}</h1>
+        <p style={{ margin: 0, textAlign: "left" }}>{introBody}</p>
+      </div>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 

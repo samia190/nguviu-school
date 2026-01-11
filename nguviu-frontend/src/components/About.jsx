@@ -4,6 +4,7 @@ import EditableText from "../components/EditableText";
 import EditableHeading from "../components/EditableHeading";
 import EditableSubheading from "../components/EditableSubheading";
 import { safePath } from "../utils/paths";
+import LazyImage from "./LazyImage";
 
 export default function About({ user }) {
   const [content, setContent] = useState({});
@@ -367,7 +368,7 @@ export default function About({ user }) {
                 border: "3px solid #ddd",
               }}
             >
-              <img
+              <LazyImage
                 src={safePath(content.deputy2ImageUrl || "/images/background images/deputy.jpeg")}
                 alt="Deputy Principal 2"
                 style={{

@@ -294,7 +294,7 @@ export default function PerformanceManagement({ user }) {
       <h2>Performance Management</h2>
       <p>Manage all content, records, files, and charts for the Performance page.</p>
 
-      {loading && <p>Loading…</p>}
+      {loading && <Loader message="Loading performance data…" size={100} />}
       {error && <p style={{ color: "red" }}>{error}</p>}
       {saving && <p style={{ color: "#555" }}>Saving…</p>}
 

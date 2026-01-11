@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import EditableFileList from "./EditableFileList";
 import { get, upload as apiUpload, del } from "../utils/api";
+import Loader from "./Loader";
 
 export default function FeeStructure({ user }) {
   const [content, setContent] = useState(null);
@@ -12,41 +13,29 @@ export default function FeeStructure({ user }) {
   const [downloadFile, setDownloadFile] = useState(null);
   const [uploadingDownload, setUploadingDownload] = useState(false);
 
-  // Load Fee Structure content from the generic content system
+  // Load both content and downloads in parallel for faster loading
   useEffect(() => {
-    async function fetchContent() {
+    async function fetchData() {
       try {
         setLoading(true);
         setError("");
-        const data = await get("/api/content/feestructure");
-        setContent(data || null);
-        setLoading(false);
+        
+        // Parallel API calls for faster loading
+        const [contentData, downloadsData] = await Promise.all([
+          get("/api/content/feestructure").catch(() => null),
+          get("/api/downloads").catch(() => [])
+        ]);
+        
+        setContent(contentData || null);
+        setDownloads(downloadsData || []);
       } catch (err) {
         console.error(err);
-        if (err && err.status === 404) {
-          setContent(null);
-        } else {
-          setError("Failed to load fee structure content.");
-        }
+        setError("Failed to load fee structure content.");
+      } finally {
         setLoading(false);
       }
     }
-    fetchContent();
-  }, []);
-
-  // Load download files (PDFs etc.)
-  useEffect(() => {
-    async function fetchDownloads() {
-      try {
-        setError("");
-        const data = await get("/api/downloads");
-        setDownloads(data || []);
-      } catch (err) {
-        console.error(err);
-        setError((prev) => prev || "Failed to load downloadable files.");
-      }
-    }
-    fetchDownloads();
+    fetchData();
   }, []);
 
   async function handleDownloadSubmit(e) {
@@ -77,9 +66,9 @@ export default function FeeStructure({ user }) {
 
   if (loading) {
     return (
-      <section style={{ padding: 20 }}>
+      <section style={{ padding: "20px 8px" }}>
         <h1>Fee Structure</h1>
-        <p>Loading…</p>
+        <Loader message="Loading fee structure…" />
       </section>
     );
   }
@@ -111,27 +100,27 @@ export default function FeeStructure({ user }) {
   });
 
   return (
-    <section style={{ padding: "20px 8px" }}>
-      <header style={{ marginBottom: "1rem" }}>
-        <h1>{title}</h1>
-        <p style={{ fontSize: "0.95rem" }}>{intro}</p>
-      </header>
+    <section style={{ padding: "20px 8px", textAlign: "left" }}>
+      <div style={{ marginBottom: "1.5rem" }}>
+        <h1 style={{ marginBottom: "0.5rem", textAlign: "left" }}>{title}</h1>
+        <p style={{ fontSize: "0.95rem", margin: 0, textAlign: "left" }}>{intro}</p>
+      </div>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p style={{ color: "red", textAlign: "left" }}>{error}</p>}
 
-      <section style={{ marginTop: "1rem" }}>
-        <h2>Important Notes</h2>
-        <p style={{ whiteSpace: "pre-wrap" }}>{notes}</p>
+      <section style={{ marginTop: "1rem", textAlign: "left" }}>
+        <h2 style={{ textAlign: "left" }}>Important Notes</h2>
+        <p style={{ whiteSpace: "pre-wrap", textAlign: "left" }}>{notes}</p>
       </section>
 
-      <section style={{ marginTop: "1rem" }}>
-        <h2>Payment Information</h2>
-        <p style={{ whiteSpace: "pre-wrap" }}>{paymentInfo}</p>
+      <section style={{ marginTop: "1rem", textAlign: "left" }}>
+        <h2 style={{ textAlign: "left" }}>Payment Information</h2>
+        <p style={{ whiteSpace: "pre-wrap", textAlign: "left" }}>{paymentInfo}</p>
       </section>
 
       {/* Attachments managed via Admin -> Fee Structure */}
-      <section style={{ marginTop: "1.5rem" }}>
-        <h2>Fee Structure Documents &amp; Media</h2>
+      <section style={{ marginTop: "1.5rem", textAlign: "left" }}>
+        <h2 style={{ textAlign: "left" }}>Fee Structure Documents &amp; Media</h2>
         {downloadableAttachments.length === 0 && (
           <p>
             No fee structure documents have been uploaded yet. Please check back
@@ -144,9 +133,9 @@ export default function FeeStructure({ user }) {
       </section>
 
       {/* Separate "Downloadable files" section using /api/downloads */}
-      <section style={{ marginTop: "2rem" }}>
-        <h2>Downloadable Files</h2>
-        <p style={{ fontSize: "0.9rem" }}>
+      <section style={{ marginTop: "2rem", textAlign: "left" }}>
+        <h2 style={{ textAlign: "left" }}>Downloadable Files</h2>
+        <p style={{ fontSize: "0.9rem", textAlign: "left" }}>
           Official fee breakdown PDFs, bank details, and other important
           documents.
         </p>
@@ -197,13 +186,8 @@ export default function FeeStructure({ user }) {
                   <button
                     onClick={async () => {
                       try {
-                        try {
-                          await del(`/api/downloads/${file._id}`);
-                          setDownloads((prev) => prev.filter((f) => f._id !== file._id));
-                        } catch (err) {
-                          console.error(err);
-                          setError("Failed to delete file.");
-                        }
+                        await del(`/api/downloads/${file._id}`);
+                        setDownloads((prev) => prev.filter((f) => f._id !== file._id));
                       } catch (err) {
                         console.error(err);
                         setError("Failed to delete file.");

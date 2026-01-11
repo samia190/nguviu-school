@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { get } from "../utils/api";
 import EditableFileList from "./EditableFileList";
+import Loader from "./Loader";
 
 const eventsWrapperStyle = {
   display: "flex",
@@ -60,7 +61,7 @@ export default function Events() {
     return (
       <main className="page events-page">
         <h1>Events</h1>
-        <p>Loading…</p>
+        <Loader message="Loading events…" />
       </main>
     );
   }
@@ -75,11 +76,11 @@ export default function Events() {
   const attachments = content?.attachments || [];
 
   return (
-    <main className="page events-page" style={{ padding: "1rem" }}>
-      <header style={{ marginBottom: "1rem" }}>
-        <h1>{introTitle}</h1>
-        <p style={{ maxWidth: "720px" }}>{introBody}</p>
-      </header>
+    <main className="page events-page" style={{ padding: "1rem 8px", textAlign: "left" }}>
+      <div style={{ marginBottom: "1.5rem" }}>
+        <h1 style={{ marginBottom: "0.5rem", textAlign: "left" }}>{introTitle}</h1>
+        <p style={{ margin: 0, textAlign: "left" }}>{introBody}</p>
+      </div>
 
       {/* Back to Newsletter link */}
       <div style={backCardStyle}>

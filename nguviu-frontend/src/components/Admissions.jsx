@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import EditableFileList from "./EditableFileList";
 import AdmissionForm from "./AdmissionForm";
 import { get } from "../utils/api";
+import Loader from "./Loader";
 
 export default function Admissions({ user }) {
   const [content, setContent] = useState(null);
@@ -29,7 +30,7 @@ export default function Admissions({ user }) {
     return (
       <section style={{ padding: 20 }}>
         <h1>Admissions</h1>
-        <p>Loading…</p>
+        <Loader message="Loading admissions information…" />
       </section>
     );
   }
@@ -72,11 +73,11 @@ export default function Admissions({ user }) {
   const attachments = content.attachments || [];
 
   return (
-    <section style={{ padding: 20, maxWidth: 900, margin: "8 auto" }}>
-      <header style={{ marginBottom: "1rem" }}>
-        <h1>{title}</h1>
-        <p style={{ fontSize: "0.98rem", color: "black", fontStyle: "italic" }}>{overview}</p>
-      </header>
+    <section style={{ padding: "20px 8px", textAlign: "left" }}>
+      <div style={{ marginBottom: "1.5rem" }}>
+        <h1 style={{ marginBottom: "0.5rem", textAlign: "left" }}>{title}</h1>
+        <p style={{ fontSize: "0.98rem", color: "black", fontStyle: "italic", margin: 0, textAlign: "left" }}>{overview}</p>
+      </div>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { get, put, upload } from "../utils/api";
+import Loader from "./Loader";
 
 export default function AboutManagement() {
   const [content, setContent] = useState(null);
@@ -147,7 +148,7 @@ export default function AboutManagement() {
     return (
       <section>
         <h2>About Page Management</h2>
-        <p>Loading…</p>
+        <Loader message="Loading about page content…" />
       </section>
     );
   }

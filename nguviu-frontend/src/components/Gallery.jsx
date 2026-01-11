@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { safePath } from "../utils/paths";
 import { get } from "../utils/api";
 import LazyImage from "./LazyImage";
+import { OptimizedBackgroundImage } from "./OptimizedImage";
 
 export default function Gallery() {
   const [items, setItems] = useState([]);
@@ -243,7 +244,8 @@ export default function Gallery() {
     <div className="gallery-page">
       <section style={{ padding: 20 }}>
       {/* ================= HERO BACKGROUND SECTION ================= */}
-      <div
+      <OptimizedBackgroundImage
+        src="/images/gallery/gallary.JPG"
         className="gallery-hero"
         style={{
           position: "relative",
@@ -253,9 +255,6 @@ export default function Gallery() {
           minHeight: 420,
           overflow: "hidden",
           marginBottom: 30,
-          backgroundImage: `url(${
-            "/images/arts/background-hero.jpg" // Background image from public folder
-          })`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -295,7 +294,7 @@ export default function Gallery() {
             </p>
           </div>
         </div>
-      </div>
+      </OptimizedBackgroundImage>
 
       <h2>Gallery</h2>
       <p style={{ maxWidth: 720, color: "#4b5563", fontSize: 14 }}>

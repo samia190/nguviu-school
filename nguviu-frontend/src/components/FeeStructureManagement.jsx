@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { get, put, upload } from "../utils/api";
+import Loader from "./Loader";
 
 function fileHref(file) {
   return file?.downloadUrl || file?.url || file?.fileUrl || "";
@@ -181,7 +182,7 @@ export default function FeeStructureManagement() {
     return (
       <section>
         <h2>Fee Structure Management</h2>
-        <p>Loading…</p>
+        <Loader message="Loading fee structure content…" />
       </section>
     );
   }
