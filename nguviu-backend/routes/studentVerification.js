@@ -31,7 +31,9 @@ router.post("/verify", async (req, res) => {
         otherNames: student.otherNames,
         class: student.class,
         stream: student.stream,
+        assessmentNumber: student.assessmentNumber,
         photoUrl: student.photoUrl,
+        websiteUrl: student.websiteUrl || "https://stangela-nguviu.ac.ke",
         status: student.status,
         yearOfAdmission: student.yearOfAdmission,
         idCardIssueDate: student.idCardIssueDate,
@@ -64,7 +66,10 @@ router.post("/generate-token/:studentId", requireRole('admin'), async (req, res)
       student: {
         admissionNumber: student.admissionNumber,
         fullName: student.fullName,
-        class: student.class
+        class: student.class,
+        assessmentNumber: student.assessmentNumber,
+        photoUrl: student.photoUrl,
+        websiteUrl: student.websiteUrl || "https://stangela-nguviu.ac.ke"
       },
       expiresIn: "2 minutes"
     });

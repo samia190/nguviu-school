@@ -1,12 +1,12 @@
 {
   "@context": "https://schema.org",
   "@type": "EducationalOrganization",
-  "name": "NGUVIU GIRLS School",
+  "name": "NGUVIU GIRLS SENIOR School",
   "alternateName": "NGUVIU GIRLS",
   "description": "Excellence in Education - A leading girls' school offering quality education with comprehensive curriculum, dedicated staff, excellent facilities, and strong academic performance.",
-  "url": "https://your-domain.com",
-  "logo": "https://your-domain.com/header/logo.PNG",
-  "image": "https://your-domain.com/header/logo.PNG",
+  "url": "https://nguviugirsseniorschool.co.ke",
+  "logo": "https://nguviugirsseniorschool.co.ke/header/logo.PNG",
+  "image": "https://nguviugirsseniorschool.co.ke/header/logo.PNG",
   "email": "info@nguviugirls.school",
   "telephone": "+XXX-XXX-XXXX",
   "address": {

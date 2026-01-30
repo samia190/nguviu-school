@@ -15,7 +15,7 @@ $sitemapPath = Join-Path $projectRoot "nguviu-frontend\public\sitemap.xml"
 if (Test-Path $sitemapPath) {
     Write-Host "  [OK] File exists" -ForegroundColor Green
     $content = Get-Content $sitemapPath -Raw
-    if ($content -match 'https://your-domain\.com') {
+    if ($content -match 'https://nguviugirsseniorschool.co.ke\.com') {
         Write-Host "  [WARNING] Domain not updated (still using placeholder)" -ForegroundColor Yellow
     }
 } else {
@@ -29,7 +29,7 @@ $robotsPath = Join-Path $projectRoot "nguviu-frontend\public\robots.txt"
 if (Test-Path $robotsPath) {
     Write-Host "  [OK] File exists" -ForegroundColor Green
     $content = Get-Content $robotsPath -Raw
-    if ($content -match 'https://your-domain\.com') {
+    if ($content -match 'https://nguviugirsseniorschool.co.ke\.com') {
         Write-Host "  [WARNING] Domain not updated (still using placeholder)" -ForegroundColor Yellow
     }
 } else {

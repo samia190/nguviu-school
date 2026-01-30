@@ -37,6 +37,9 @@ const StudentSchema = new mongoose.Schema(
     // Photo
     photoUrl: { type: String },
     
+    // School Website
+    websiteUrl: { type: String, default: "https://stangela-nguviu.ac.ke" },
+    
     // ID Card Security
     idCardSecret: { type: String, required: true }, // Unique secret for this student
     idCardIssueDate: { type: Date },
@@ -78,10 +81,15 @@ StudentSchema.methods.generateVerificationToken = function() {
   const timestamp = Date.now();
   const nonce = crypto.randomBytes(16).toString('hex');
   
-  // Create payload
+  // Create payload with enhanced verification data
   const payload = {
     id: this._id.toString(),
     admissionNumber: this.admissionNumber,
+    assessmentNumber: this.assessmentNumber,
+    class: this.class,
+    stream: this.stream,
+    photoUrl: this.photoUrl,
+    websiteUrl: this.websiteUrl || "https://stangela-nguviu.ac.ke",
     version: this.idCardVersion,
     timestamp,
     nonce
@@ -106,7 +114,7 @@ StudentSchema.statics.verifyToken = async function(token) {
   try {
     // Decode token
     const decoded = JSON.parse(Buffer.from(token, 'base64url').toString());
-    const { id, admissionNumber, version, timestamp, nonce, signature } = decoded;
+    const { id, admissionNumber, assessmentNumber, class: studentClass, stream, photoUrl, websiteUrl, version, timestamp, nonce, signature } = decoded;
     
     // Check token age (valid for 2 minutes to prevent replay attacks)
     const tokenAge = Date.now() - timestamp;
@@ -145,7 +153,7 @@ StudentSchema.statics.verifyToken = async function(token) {
     const combinedSecret = `${student.idCardSecret}:${globalSecret}`;
     const expectedSignature = crypto
       .createHmac('sha256', combinedSecret)
-      .update(JSON.stringify({ id, admissionNumber, version, timestamp, nonce }))
+      .update(JSON.stringify({ id, admissionNumber, assessmentNumber, class: studentClass, stream, photoUrl, websiteUrl, version, timestamp, nonce }))
       .digest('hex');
     
     if (signature !== expectedSignature) {

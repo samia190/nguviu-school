@@ -3,10 +3,12 @@ import QRCode from "qrcode";
 import JsBarcode from "jsbarcode";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { post } from "../utils/api";
 
 export default function StudentIDCard({ student, onClose }) {
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [showBack, setShowBack] = useState(false);
+  const [qrError, setQrError] = useState("");
   const frontRef = useRef(null);
   const backRef = useRef(null);
 
@@ -17,13 +19,14 @@ export default function StudentIDCard({ student, onClose }) {
 
   async function generateQRCode() {
     try {
-      const verificationData = JSON.stringify({
-        admissionNumber: student.admissionNumber,
-        name: student.fullName,
-        dob: student.dateOfBirth
-      });
+      // Generate secure verification token from backend
+      const response = await post(`/api/student-verification/generate-token/${student._id}`);
       
-      const qrDataUrl = await QRCode.toDataURL(verificationData, {
+      // Create verification URL with token (includes assessment number, class, website, and photo)
+      const baseUrl = window.location.origin;
+      const verificationUrl = `${baseUrl}/#/verify-student?t=${encodeURIComponent(response.token)}`;
+      
+      const qrDataUrl = await QRCode.toDataURL(verificationUrl, {
         errorCorrectionLevel: 'H',
         width: 200,
         margin: 1,
@@ -34,8 +37,10 @@ export default function StudentIDCard({ student, onClose }) {
       });
       
       setQrCodeUrl(qrDataUrl);
+      setQrError("");
     } catch (err) {
       console.error("Error generating QR code:", err);
+      setQrError("Failed to generate secure QR code. Admin access required.");
     }
   }
 
@@ -288,7 +293,7 @@ export default function StudentIDCard({ student, onClose }) {
             alignItems: 'center',
             gap: '5px'
           }}>
-            {qrCodeUrl && (
+            {qrCodeUrl ? (
               <>
                 <img 
                   src={qrCodeUrl} 
@@ -299,6 +304,19 @@ export default function StudentIDCard({ student, onClose }) {
                   SCAN TO VERIFY
                 </div>
               </>
+            ) : qrError ? (
+              <div style={{ 
+                fontSize: '8px', 
+                textAlign: 'center', 
+                color: '#dc2626',
+                padding: '5px'
+              }}>
+                {qrError}
+              </div>
+            ) : (
+              <div style={{ fontSize: '9px', textAlign: 'center' }}>
+                Loading QR...
+              </div>
             )}
           </div>
         </div>
@@ -390,7 +408,7 @@ export default function StudentIDCard({ student, onClose }) {
               </div>
             </div>
             {/* QR Code on Back */}
-            {qrCodeUrl && (
+            {qrCodeUrl ? (
               <div style={{ flex: '0 0 80px' }}>
                 <img 
                   src={qrCodeUrl} 
@@ -398,7 +416,19 @@ export default function StudentIDCard({ student, onClose }) {
                   style={{ width: '80px', height: '80px', border: '2px solid #000' }}
                 />
               </div>
-            )}
+            ) : qrError ? (
+              <div style={{ 
+                flex: '0 0 80px',
+                fontSize: '8px', 
+                textAlign: 'center', 
+                color: '#dc2626',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                QR Error
+              </div>
+            ) : null}
           </div>
 
           {/* Motto, Vision, Mission */}

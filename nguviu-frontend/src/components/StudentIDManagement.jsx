@@ -480,11 +480,29 @@ export default function StudentIDManagement({ user }) {
             width: "100%",
             textAlign: "center"
           }} onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ marginTop: 0, color: "#059669" }}>Student ID QR Code</h2>
+            <h2 style={{ marginTop: 0, color: "#059669" }}>Enhanced Student ID QR Code</h2>
             <h3 style={{ margin: "0 0 16px 0", color: "#1f2937" }}>{selectedStudent.fullName}</h3>
-            <p style={{ margin: "0 0 24px 0", fontSize: "14px", color: "#6b7280" }}>
-              Admission Number: <strong>{selectedStudent.admissionNumber}</strong>
-            </p>
+            <div style={{ 
+              margin: "0 0 24px 0", 
+              fontSize: "14px", 
+              color: "#6b7280",
+              display: "grid",
+              gap: "8px",
+              textAlign: "left",
+              maxWidth: "400px",
+              marginLeft: "auto",
+              marginRight: "auto"
+            }}>
+              <div><strong>Admission Number:</strong> {selectedStudent.admissionNumber}</div>
+              {selectedStudent.assessmentNumber && (
+                <div><strong>Assessment Number:</strong> {selectedStudent.assessmentNumber}</div>
+              )}
+              <div><strong>Class:</strong> {selectedStudent.class}{selectedStudent.stream ? ` - ${selectedStudent.stream}` : ''}</div>
+              <div><strong>Website:</strong> <span style={{ color: "#2563eb" }}>{selectedStudent.websiteUrl || "https://stangela-nguviu.ac.ke"}</span></div>
+              {selectedStudent.photoUrl && (
+                <div><strong>Photo:</strong> ✓ Included</div>
+              )}
+            </div>
             
             <div style={{
               background: "#f9fafb",

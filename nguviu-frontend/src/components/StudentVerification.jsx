@@ -280,6 +280,13 @@ export default function StudentVerification() {
                 value={verificationData.admissionNumber}
                 highlight={true}
               />
+              {verificationData.assessmentNumber && (
+                <DetailRow 
+                  label="Assessment Number" 
+                  value={verificationData.assessmentNumber}
+                  highlight={true}
+                />
+              )}
               <DetailRow 
                 label="Class" 
                 value={`${verificationData.class}${verificationData.stream ? ' - ' + verificationData.stream : ''}`}
@@ -293,6 +300,12 @@ export default function StudentVerification() {
                 value={verificationData.status}
                 color={verificationData.status === 'Active' ? '#059669' : '#dc2626'}
               />
+              {verificationData.websiteUrl && (
+                <DetailRow 
+                  label="School Website" 
+                  value={<a href={verificationData.websiteUrl} target="_blank" rel="noopener noreferrer" className="allow-click" style={{ color: '#2563eb', textDecoration: 'underline' }}>{verificationData.websiteUrl}</a>}
+                />
+              )}
             </div>
           </div>
 

@@ -18,7 +18,7 @@ if (Test-Path $sitemapPath) {
     
     # Check if domain is updated
     $content = Get-Content $sitemapPath -Raw
-    if ($content -match 'https://your-domain\.com') {
+    if ($content -match 'https://nguviugirsseniorschool.co.ke') {
         Write-Host "   ⚠️  WARNING: Domain not updated (still using placeholder)" -ForegroundColor Yellow
         $warnings++
     } else {
@@ -51,7 +51,7 @@ if (Test-Path $robotsPath) {
     $content = Get-Content $robotsPath -Raw
     
     # Check if domain is updated
-    if ($content -match 'https://your-domain\.com') {
+    if ($content -match 'https://nguviugirsseniorschool.co.ke') {
         Write-Host "   ⚠️  WARNING: Domain not updated (still using placeholder)" -ForegroundColor Yellow
         $warnings++
     } else {
@@ -109,7 +109,7 @@ if (Test-Path $indexPath) {
     }
     
     # Check if domain is updated
-    if ($content -match 'https://your-domain\.com') {
+    if ($content -match 'https://nguviugirsseniorschool.co.ke') {
         Write-Host "   ⚠️  WARNING: Domain not updated in meta tags" -ForegroundColor Yellow
         $warnings++
     } else {
