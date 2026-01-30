@@ -7,31 +7,31 @@
   <!-- Home Page -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/</loc>
-    <lastmod>2026-01-17</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>10.0</priority>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>always</changefreq>
+    <priority>1.0</priority>
   </url>
   
   <!-- About Section -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/about</loc>
-    <lastmod>2026-01-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>9.9</priority>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>
   
   <!-- Admissions -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/admissions</loc>
-    <lastmod>2026-01-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>21.9</priority>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>
   
   <!-- Events -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/events</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -39,7 +39,7 @@
   <!-- Fee Structure -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/feestructure</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -47,56 +47,56 @@
   <!-- Curriculum -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/curriculum</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/curriculum/overview</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/curriculum/primary</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/curriculum/secondary</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/curriculum/syllabus</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/curriculum/extracurricular</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/curriculum/assessment</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/curriculum/careers</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -104,7 +104,7 @@
   <!-- Performance -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/performance</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -112,7 +112,7 @@
   <!-- Policies -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/policies</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -120,7 +120,7 @@
   <!-- Parents -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/parents</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -128,7 +128,7 @@
   <!-- Student Portal -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/student</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -136,28 +136,28 @@
   <!-- Staff -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/staff</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/staff/leadership</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/staff/teaching</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/staff/support</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -165,7 +165,7 @@
   <!-- Gallery -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/gallery</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -173,7 +173,7 @@
   <!-- Legal -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/legal</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -181,7 +181,7 @@
   <!-- Newsletter -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/newsletter</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -189,7 +189,7 @@
   <!-- Contact -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/contact</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -197,7 +197,7 @@
   <!-- Homework Portal -->
   <url>
     <loc>https://nguviugirsseniorschool.co.ke/portal/homework</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-30</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>

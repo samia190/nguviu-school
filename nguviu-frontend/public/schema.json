@@ -7,15 +7,15 @@
   "url": "https://nguviugirsseniorschool.co.ke",
   "logo": "https://nguviugirsseniorschool.co.ke/header/logo.PNG",
   "image": "https://nguviugirsseniorschool.co.ke/header/logo.PNG",
-  "email": "info@nguviugirls.school",
-  "telephone": "+XXX-XXX-XXXX",
+  "email": "nguviugirls@yahoo.com",
+  "telephone": "+254-113688538",
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Your Street Address",
-    "addressLocality": "Your City",
-    "addressRegion": "Your Region/State",
-    "postalCode": "Your Postal Code",
-    "addressCountry": "Your Country"
+    "streetAddress": "nguviu",
+    "addressLocality": "embu",
+    "addressRegion": "embu north",
+    "postalCode": "10001",
+    "addressCountry": "Kenya"
   },
   "geo": {
     "@type": "GeoCoordinates",
@@ -31,16 +31,16 @@
     {
       "@type": "ContactPoint",
       "contactType": "Admissions",
-      "telephone": "+XXX-XXX-XXXX",
-      "email": "admissions@nguviugirls.school",
-      "availableLanguage": "English"
+      "email": "nguviugirls@yahoo.com",
+  "telephone": "+254-113688538",
+      "availableLanguage": "English , kiswahili"
     },
     {
       "@type": "ContactPoint",
       "contactType": "General Inquiries",
-      "telephone": "+XXX-XXX-XXXX",
-      "email": "info@nguviugirls.school",
-      "availableLanguage": "English"
+     "email": "nguviugirls@yahoo.com",
+  "telephone": "+254-113688538",
+      "availableLanguage": "English , kiswahili"
     }
   ],
   "offers": {
