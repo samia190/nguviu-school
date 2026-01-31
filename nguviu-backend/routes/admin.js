@@ -279,3 +279,5 @@ router.put("/users/:id/role", async (req, res) => {
     res.status(500).json({ ok: false, error: "Failed to update role" });
   }
 });
+
+export default router;
