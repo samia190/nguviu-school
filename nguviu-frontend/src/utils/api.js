@@ -103,9 +103,8 @@ export async function put(path, body) {
   return apiFetch(path, { method: "PUT", body });
 }
 
-export async function del(path) {
-  return apiFetch(path, { method: "DELETE" });
-}
+
+
 
 export function upload(url, formData, extraHeaders = {}, options = {}) {
   const fullUrl = url.startsWith("http") ? url : `${API_ORIGIN.replace(/\/+$/,'')}${url.startsWith("/")?"":'/'}${url}`;
