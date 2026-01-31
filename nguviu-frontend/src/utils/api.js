@@ -103,9 +103,6 @@ export async function put(path, body) {
   return apiFetch(path, { method: "PUT", body });
 }
 
-
-
-
 export function upload(url, formData, extraHeaders = {}, options = {}) {
   const fullUrl = url.startsWith("http") ? url : `${API_ORIGIN.replace(/\/+$/,'')}${url.startsWith("/")?"":'/'}${url}`;
   const token = getToken();
