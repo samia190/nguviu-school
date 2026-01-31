@@ -201,4 +201,23 @@ router.put("/users/:id/role", async (req, res) => {
     console.error("Failed to update user role:", err);
     res.status(500).json({ ok: false, error: "Failed to update role" });
   }
+  const {
+  deleteMedia,
+  replaceMedia,
+} = require("../controllers/content.controller");
+
+router.delete(
+  "/api/admin/content/:contentId/media/:mediaId",
+  adminAuth,
+  deleteMedia
+);
+
+router.put(
+  "/api/admin/content/:contentId/media/:mediaId",
+  adminAuth,
+  upload.single("file"),
+  replaceMedia
+);
+
+  
 });

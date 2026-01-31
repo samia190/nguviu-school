@@ -179,4 +179,20 @@ export async function fetchFooterLinks() {
   return get("/api/footer-links");  // Fetch footer links using the existing `get` function
 }
 
+export async function del(url) {
+  const res = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg || "Delete failed");
+  }
+
+  return res.json();
+}
+
 export { apiFetch };

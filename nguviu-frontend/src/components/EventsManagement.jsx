@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { get, put, upload } from "../utils/api";
+import { get, put, upload, del } from "../utils/api";
+
 
 function fileHref(file) {
   return file?.downloadUrl || file?.url || "";
@@ -166,6 +168,36 @@ export default function EventsManagement() {
       setError(err.message || "Error saving media details");
     }
   }
+  async function handleDeleteMedia(mediaId) {
+  if (!content?._id) return;
+
+  if (!window.confirm("Delete this file permanently?")) return;
+
+  try {
+    await del(`/api/admin/content/${content._id}/media/${mediaId}`);
+    setSuccess("Media deleted.");
+    await fetchContent();
+  } catch (err) {
+    setError(err.message || "Failed to delete media");
+  }
+}
+
+async function handleReplaceMedia(mediaId, newFile) {
+  const fd = new FormData();
+  fd.append("file", newFile);
+
+  try {
+    await upload(
+      `/api/admin/content/${content._id}/media/${mediaId}`,
+      fd
+    );
+    setSuccess("Media replaced.");
+    await fetchContent();
+  } catch (err) {
+    setError("Failed to replace media");
+  }
+}
+
 
   // -------- Events list --------
   function handleEventFormChange(e) {
@@ -357,6 +389,39 @@ export default function EventsManagement() {
               borderRadius: 4,
             }}
           >
+            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+  <button
+    type="button"
+    onClick={() => handleDeleteMedia(file._id)}
+    style={{
+      backgroundColor: "#fee2e2",
+      border: "1px solid #fecaca",
+      padding: "4px 8px",
+      cursor: "pointer",
+    }}
+  >
+    Delete
+  </button>
+
+  <label style={{ fontSize: "0.8rem", cursor: "pointer" }}>
+    Replace
+    <input
+      type="file"
+      hidden
+      onChange={(e) =>
+        e.target.files &&
+        handleReplaceMedia(file._id, e.target.files[0])
+      }
+    />
+  </label>
+</div>
+
+
+
+
+
+
+
             <div style={{ marginBottom: "0.25rem", fontSize: "0.85rem" }}>
               File: {file.originalName || file.name || "(unnamed)"}{" "}
               {file.mimetype ? ` · ${file.mimetype}` : ""}{" "}
@@ -405,6 +470,12 @@ export default function EventsManagement() {
           <button onClick={handleSaveMediaDetails} style={{ marginTop: "0.5rem" }}>
             Save Media Titles & Descriptions
           </button>
+
+       
+
+
+
+
         )}
       </div>
 
