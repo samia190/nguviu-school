@@ -216,7 +216,11 @@ router.put("/content/:contentId/media/:mediaId", upload.single("file"), async (r
   }
 });
 
-export default router;
+/**
+ * GET /api/admin/users
+ * List all users with filtering and pagination
+ */
+router.get("/users", async (req, res) => {
   try {
     const page = Math.max(0, parseInt(req.query.page || "0", 10));
     const limit = Math.min(200, parseInt(req.query.limit || "50", 10));

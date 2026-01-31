@@ -109,11 +109,14 @@ export function upload(url, formData, extraHeaders = {}, options = {}) {
   const headers = { ...extraHeaders };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
+  // Support method option (default to POST, but allow PUT for media replacement)
+  const method = options.method || "POST";
+
   if (options.setLoading) options.setLoading(true);
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", fullUrl, true);
+    xhr.open(method, fullUrl, true);
 
     Object.entries(headers).forEach(([k, v]) => {
       try { xhr.setRequestHeader(k, v); } catch (e) {}
@@ -176,19 +179,33 @@ export async function fetchFooterLinks() {
 }
 
 export async function del(url) {
-  const res = await fetch(url, {
+  const fullUrl = url.startsWith("http") ? url : `${API_ORIGIN.replace(/\/+$/,'')}${url.startsWith("/")?"":'/'}${url}`;
+  const token = getToken();
+  const headers = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(fullUrl, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
+    headers,
   });
 
-  if (!res.ok) {
-    const msg = await res.text();
-    throw new Error(msg || "Delete failed");
+  const text = await res.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = text;
   }
 
-  return res.json();
+  if (!res.ok) {
+    const err = new Error(`${data?.error || res.statusText || "Delete failed"} (url: ${fullUrl})`);
+    err.status = res.status;
+    err.body = data;
+    err.url = fullUrl;
+    throw err;
+  }
+
+  return data;
 }
 
 export { apiFetch };

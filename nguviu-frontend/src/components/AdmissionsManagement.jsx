@@ -184,6 +184,38 @@ export default function AdmissionsManagement() {
     }
   }
 
+  async function handleDeleteMedia(mediaId) {
+    if (!content?._id) return;
+
+    if (!window.confirm("Delete this file permanently?")) return;
+
+    try {
+      await del(`/api/admin/content/${content._id}/media/${mediaId}`);
+      setSuccess("Media deleted.");
+      await fetchContent();
+    } catch (err) {
+      setError(err.message || "Failed to delete media");
+    }
+  }
+
+  async function handleReplaceMedia(mediaId, newFile) {
+    const fd = new FormData();
+    fd.append("file", newFile);
+
+    try {
+      await upload(
+        `/api/admin/content/${content._id}/media/${mediaId}`,
+        fd,
+        {},
+        { method: "PUT" }
+      );
+      setSuccess("Media replaced.");
+      await fetchContent();
+    } catch (err) {
+      setError("Failed to replace media");
+    }
+  }
+
   if (loading) {
     return (
       <section>

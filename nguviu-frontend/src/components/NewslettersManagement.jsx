@@ -182,7 +182,9 @@ export default function NewslettersManagement() {
     try {
       await upload(
         `/api/admin/content/${content._id}/media/${mediaId}`,
-        fd
+        fd,
+        {},
+        { method: "PUT" }
       );
       setSuccess("Media replaced.");
       await fetchContent();
