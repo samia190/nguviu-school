@@ -139,11 +139,84 @@ router.post("/content", upload.array("files", 10), async (req, res) => {
   }
 });
 
-export default router;
+// --- Admin media management endpoints ---
+/**
+ * DELETE /api/admin/content/:contentId/media/:mediaId
+ * Delete a media file from a content document
+ */
+router.delete("/content/:contentId/media/:mediaId", async (req, res) => {
+  try {
+    const { contentId, mediaId } = req.params;
+    
+    const content = await Content.findById(contentId);
+    if (!content) return res.status(404).json({ error: "Content not found" });
 
-// --- Admin user management endpoints ---
-// Note: router is already protected by requireRole(["admin"]) at top
-router.get("/users", async (req, res) => {
+    const attachment = content.attachments.id(mediaId);
+    if (!attachment) return res.status(404).json({ error: "Media not found" });
+
+    // Optional: delete physical file
+    // if (attachment.url && !attachment.url.startsWith("http")) {
+    //   const filePath = path.join(process.cwd(), attachment.url.replace(/^\//, ""));
+    //   try { fs.unlinkSync(filePath); } catch (e) {}
+    // }
+
+    attachment.deleteOne();
+    await content.save();
+
+    res.json({ success: true, message: "Media deleted" });
+  } catch (err) {
+    console.error("Failed to delete media:", err);
+    res.status(500).json({ error: "Failed to delete media" });
+  }
+});
+
+/**
+ * PUT /api/admin/content/:contentId/media/:mediaId
+ * Replace a media file in a content document
+ */
+router.put("/content/:contentId/media/:mediaId", upload.single("file"), async (req, res) => {
+  try {
+    const { contentId, mediaId } = req.params;
+    
+    if (!req.file) {
+      return res.status(400).json({ error: "No file provided" });
+    }
+
+    const content = await Content.findById(contentId);
+    if (!content) return res.status(404).json({ error: "Content not found" });
+
+    const attachment = content.attachments.id(mediaId);
+    if (!attachment) return res.status(404).json({ error: "Media not found" });
+
+    const useS3 = isS3Enabled();
+    let newUrl;
+
+    if (useS3) {
+      const uploaded = await uploadBufferToS3(req.file.buffer, req.file.originalname, req.file.mimetype);
+      newUrl = uploaded.url;
+    } else {
+      const saved = saveBufferToDisk(req.file.buffer, req.file.originalname, uploadsDir);
+      newUrl = saved.url;
+    }
+
+    // Update attachment
+    attachment.url = newUrl;
+    attachment.originalName = req.file.originalname;
+    attachment.mimetype = req.file.mimetype;
+    attachment.size = req.file.size;
+    attachment.downloadUrl = makeDownloadUrl(req, newUrl);
+    attachment.uploadedAt = new Date();
+
+    await content.save();
+
+    res.json({ success: true, message: "Media replaced", attachment });
+  } catch (err) {
+    console.error("Failed to replace media:", err);
+    res.status(500).json({ error: "Failed to replace media" });
+  }
+});
+
+export default router;
   try {
     const page = Math.max(0, parseInt(req.query.page || "0", 10));
     const limit = Math.min(200, parseInt(req.query.limit || "50", 10));
@@ -201,23 +274,4 @@ router.put("/users/:id/role", async (req, res) => {
     console.error("Failed to update user role:", err);
     res.status(500).json({ ok: false, error: "Failed to update role" });
   }
-  const {
-  deleteMedia,
-  replaceMedia,
-} = require("../controllers/content.controller");
-
-router.delete(
-  "/api/admin/content/:contentId/media/:mediaId",
-  adminAuth,
-  deleteMedia
-);
-
-router.put(
-  "/api/admin/content/:contentId/media/:mediaId",
-  adminAuth,
-  upload.single("file"),
-  replaceMedia
-);
-
-  
 });

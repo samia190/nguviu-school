@@ -32,15 +32,15 @@
       "@type": "ContactPoint",
       "contactType": "Admissions",
       "email": "nguviugirls@yahoo.com",
-  "telephone": "+254-113688538",
-      "availableLanguage": "English , kiswahili"
+      "telephone": "+254-113688538",
+      "availableLanguage": "English, Kiswahili"
     },
     {
       "@type": "ContactPoint",
       "contactType": "General Inquiries",
-     "email": "nguviugirls@yahoo.com",
-  "telephone": "+254-113688538",
-      "availableLanguage": "English , kiswahili"
+      "email": "nguviugirls@yahoo.com",
+      "telephone": "+254-113688538",
+      "availableLanguage": "English, Kiswahili"
     }
   ],
   "offers": {

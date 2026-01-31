@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import notify from "../utils/notify";
 import AdminButton from "./AdminButton";
-import { get, put, upload } from "../utils/api";
+import { get, put, upload, del } from "../utils/api";
 import Loader from "./Loader";
 
 function fileHref(file) {
@@ -365,12 +365,39 @@ export default function AdmissionsManagement() {
             </div>
 
             {fileHref(file) && (
-              <div style={{ fontSize: "0.85rem" }}>
+              <div style={{ fontSize: "0.85rem", marginBottom: "0.5rem" }}>
                 <a href={fileHref(file)} target="_blank" rel="noreferrer">
                   Open file
                 </a>
               </div>
             )}
+
+            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+              <button
+                type="button"
+                onClick={() => handleDeleteMedia(file._id)}
+                style={{
+                  backgroundColor: "#fee2e2",
+                  border: "1px solid #fecaca",
+                  padding: "4px 8px",
+                  cursor: "pointer",
+                }}
+              >
+                Delete
+              </button>
+
+              <label style={{ fontSize: "0.8rem", cursor: "pointer" }}>
+                Replace
+                <input
+                  type="file"
+                  hidden
+                  onChange={(e) =>
+                    e.target.files?.[0] &&
+                    handleReplaceMedia(file._id, e.target.files[0])
+                  }
+                />
+              </label>
+            </div>
           </div>
         ))}
 

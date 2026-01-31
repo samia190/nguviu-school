@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { get, put, upload } from "../utils/api";
 import { get, put, upload, del } from "../utils/api";
 
 
