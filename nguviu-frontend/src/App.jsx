@@ -340,10 +340,13 @@ export default function App() {
 
       <main
         style={{
-          padding: 20,
+          padding: "0 16px 20px 16px",
           minHeight: "60vh",
           opacity: loading ? 0 : 1,
           transition: "opacity 0.3s ease-in",
+          width: "100%",
+          maxWidth: "100%",
+          boxSizing: "border-box",
         }} 
       >
        

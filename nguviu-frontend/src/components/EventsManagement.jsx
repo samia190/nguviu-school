@@ -383,114 +383,244 @@ async function handleReplaceMedia(mediaId, newFile) {
         </form>
       </div>
 
-      {/* Media titles/descriptions */}
-      <div style={{ marginBottom: "1.5rem" }}>
-        <h3>Media Titles & Descriptions</h3>
-        {attachments.length === 0 && <p>No media uploaded yet.</p>}
-
-        {attachments.map((file, idx) => (
-          <div
-            key={idx}
-            style={{
-              marginBottom: "0.75rem",
-              padding: "0.5rem",
-              border: "1px solid #ddd",
-              borderRadius: 4,
-            }}
-          >
-            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
-  <button
-    type="button"
-    onClick={() => {
-      const id = file._id || file.id || file.url || file.downloadUrl || file.originalName || file.name;
-      handleDeleteMedia(id);
-    }}
-    style={{
-      backgroundColor: "#fee2e2",
-      border: "1px solid #fecaca",
-      padding: "4px 8px",
-      cursor: "pointer",
-    }}
-    title={file._id ? "Delete file" : "Delete (fallback matching by URL/name)"}
-  >
-    Delete
-  </button>
-
-  <label style={{ fontSize: "0.8rem", cursor: "pointer" }}>
-    Replace
-    <input
-      type="file"
-      hidden
-      onChange={(e) => {
-        const id = file._id || file.id || file.url || file.downloadUrl || file.originalName || file.name;
-        if (e.target.files && e.target.files[0]) {
-          handleReplaceMedia(id, e.target.files[0]);
-        }
-      }}
-    />
-  </label>
-</div>
-
-
-
-
-
-
-
-            <div style={{ marginBottom: "0.25rem", fontSize: "0.85rem" }}>
-              File: {file.originalName || file.name || "(unnamed)"}{" "}
-              {file.mimetype ? ` · ${file.mimetype}` : ""}{" "}
-              {file.size ? ` · ${(file.size / 1024).toFixed(1)} KB` : ""}
-            </div>
-
-            <div style={{ marginBottom: "0.25rem" }}>
-              <label style={{ display: "block", fontWeight: "bold" }}>Title</label>
-              <input
-                type="text"
-                value={file.title || ""}
-                onChange={(e) =>
-                  handleMediaMetaChange(idx, "title", e.target.value)
-                }
-                placeholder="Title shown on public page"
-                style={{ width: "100%", padding: "4px" }}
-              />
-            </div>
-
-            <div style={{ marginBottom: "0.25rem" }}>
-              <label style={{ display: "block", fontWeight: "bold" }}>
-                Description / Caption
-              </label>
-              <textarea
-                value={file.description || ""}
-                onChange={(e) =>
-                  handleMediaMetaChange(idx, "description", e.target.value)
-                }
-                rows={2}
-                placeholder="Short description shown under the media"
-                style={{ width: "100%", padding: "4px" }}
-              />
-            </div>
-
-            {fileHref(file) && (
-              <div style={{ fontSize: "0.85rem" }}>
-                <a href={fileHref(file)} target="_blank" rel="noreferrer">
-                  Open file
-                </a>
-              </div>
-            )}
+      {/* Media titles/descriptions - HORIZONTAL GRID LAYOUT */}
+      <div style={{ marginBottom: "2rem" }}>
+        <h3 style={{ marginBottom: "1rem", color: "#1e293b" }}>📁 Media Files ({attachments.length})</h3>
+        {attachments.length === 0 && (
+          <div style={{ 
+            padding: "2rem", 
+            background: "linear-gradient(135deg, #f8fafc, #f1f5f9)", 
+            borderRadius: "12px", 
+            textAlign: "center",
+            border: "2px dashed #cbd5e1"
+          }}>
+            <p style={{ color: "#64748b", margin: 0 }}>No media uploaded yet. Upload files above to get started.</p>
           </div>
-        ))}
+        )}
+
+        {/* HORIZONTAL GRID - 3 columns on desktop, 2 on tablet, 1 on mobile */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+          gap: "1.25rem",
+        }}>
+          {attachments.map((file, idx) => {
+            const isVideo = file.mimetype?.startsWith("video/");
+            const isImage = file.mimetype?.startsWith("image/");
+            const href = fileHref(file);
+            
+            return (
+              <div
+                key={idx}
+                style={{
+                  background: "#ffffff",
+                  borderRadius: "12px",
+                  boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
+                  overflow: "hidden",
+                  transition: "transform 0.2s, box-shadow 0.2s",
+                  border: "1px solid #e2e8f0",
+                }}
+              >
+                {/* Media Preview */}
+                <div style={{ 
+                  height: "140px", 
+                  background: "linear-gradient(135deg, #1e293b, #334155)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
+                  overflow: "hidden"
+                }}>
+                  {isImage && href && (
+                    <img 
+                      src={href} 
+                      alt={file.title || file.originalName}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  )}
+                  {isVideo && (
+                    <div style={{ textAlign: "center", color: "#fff" }}>
+                      <span style={{ fontSize: "2.5rem" }}>🎬</span>
+                      <p style={{ margin: "4px 0 0", fontSize: "0.75rem", opacity: 0.8 }}>Video</p>
+                    </div>
+                  )}
+                  {!isImage && !isVideo && (
+                    <div style={{ textAlign: "center", color: "#fff" }}>
+                      <span style={{ fontSize: "2.5rem" }}>📄</span>
+                      <p style={{ margin: "4px 0 0", fontSize: "0.75rem", opacity: 0.8 }}>Document</p>
+                    </div>
+                  )}
+                  {/* File type badge */}
+                  <span style={{
+                    position: "absolute",
+                    top: "8px",
+                    right: "8px",
+                    background: "rgba(0,0,0,0.6)",
+                    color: "#fff",
+                    padding: "2px 8px",
+                    borderRadius: "4px",
+                    fontSize: "0.7rem",
+                    fontWeight: "600"
+                  }}>
+                    {file.mimetype?.split("/")[1]?.toUpperCase() || "FILE"}
+                  </span>
+                </div>
+
+                {/* Card Content */}
+                <div style={{ padding: "1rem" }}>
+                  {/* File info */}
+                  <p style={{ 
+                    fontSize: "0.75rem", 
+                    color: "#64748b", 
+                    margin: "0 0 0.75rem",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis"
+                  }}>
+                    {file.originalName || file.name || "(unnamed)"} · {file.size ? `${(file.size / 1024).toFixed(0)} KB` : ""}
+                  </p>
+
+                  {/* Title input */}
+                  <div style={{ marginBottom: "0.5rem" }}>
+                    <input
+                      type="text"
+                      value={file.title || ""}
+                      onChange={(e) => handleMediaMetaChange(idx, "title", e.target.value)}
+                      placeholder="Enter title..."
+                      style={{ 
+                        width: "100%", 
+                        padding: "8px 10px", 
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "6px",
+                        fontSize: "0.85rem",
+                        boxSizing: "border-box"
+                      }}
+                    />
+                  </div>
+
+                  {/* Description input */}
+                  <div style={{ marginBottom: "0.75rem" }}>
+                    <textarea
+                      value={file.description || ""}
+                      onChange={(e) => handleMediaMetaChange(idx, "description", e.target.value)}
+                      rows={2}
+                      placeholder="Add description..."
+                      style={{ 
+                        width: "100%", 
+                        padding: "8px 10px", 
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "6px",
+                        fontSize: "0.8rem",
+                        resize: "none",
+                        boxSizing: "border-box"
+                      }}
+                    />
+                  </div>
+
+                  {/* Open file link */}
+                  {href && (
+                    <a 
+                      href={href} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      style={{ 
+                        fontSize: "0.8rem", 
+                        color: "#2563eb",
+                        textDecoration: "none",
+                        display: "inline-block",
+                        marginBottom: "0.75rem"
+                      }}
+                    >
+                      🔗 Open file
+                    </a>
+                  )}
+
+                  {/* ACTION BUTTONS - DELETE AND REPLACE */}
+                  <div style={{ 
+                    display: "flex", 
+                    gap: "0.5rem", 
+                    paddingTop: "0.75rem", 
+                    borderTop: "1px solid #f1f5f9"
+                  }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const id = file._id || file.id || file.url || file.downloadUrl || file.originalName || file.name;
+                        handleDeleteMedia(id);
+                      }}
+                      style={{
+                        flex: 1,
+                        backgroundColor: "#dc2626",
+                        color: "#fff",
+                        border: "none",
+                        padding: "10px 12px",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontWeight: "600",
+                        fontSize: "0.8rem",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "4px"
+                      }}
+                    >
+                      🗑️ Delete
+                    </button>
+
+                    <label
+                      style={{
+                        flex: 1,
+                        backgroundColor: "#2563eb",
+                        color: "#fff",
+                        padding: "10px 12px",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontWeight: "600",
+                        fontSize: "0.8rem",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "4px",
+                        textAlign: "center"
+                      }}
+                    >
+                      🔄 Replace
+                      <input
+                        type="file"
+                        hidden
+                        onChange={(e) => {
+                          const id = file._id || file.id || file.url || file.downloadUrl || file.originalName || file.name;
+                          if (e.target.files && e.target.files[0]) {
+                            handleReplaceMedia(id, e.target.files[0]);
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
         {attachments.length > 0 && (
-          <button onClick={handleSaveMediaDetails} style={{ marginTop: "0.5rem" }}>
-            Save Media Titles & Descriptions
+          <button 
+            onClick={handleSaveMediaDetails} 
+            style={{ 
+              marginTop: "1.5rem",
+              background: "linear-gradient(135deg, #10b981, #059669)",
+              color: "#fff",
+              border: "none",
+              padding: "12px 24px",
+              borderRadius: "8px",
+              fontWeight: "600",
+              fontSize: "0.9rem",
+              cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)"
+            }}
+          >
+            💾 Save All Media Details
           </button>
-
-       
-
-
-
-
         )}
       </div>
 

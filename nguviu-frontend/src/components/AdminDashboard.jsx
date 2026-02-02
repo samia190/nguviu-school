@@ -159,9 +159,12 @@ export default function AdminDashboard({ user }) {
     <section
       style={{
         display: "flex",
-        gap: "1rem",
-        alignItems: "flex-start",
-        minHeight: "70vh",
+        gap: "0",
+        alignItems: "stretch",
+        minHeight: "80vh",
+        width: "100%",
+        margin: "0 -16px",
+        boxSizing: "border-box",
       }}
     >
       <Notifications />
