@@ -2,6 +2,15 @@
 import React, { useState } from "react";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import { 
+  PerformanceDashboard, 
+  TrendBadge, 
+  RiskIndicator,
+  ProgressChart,
+  SubjectRadarChart,
+  RecommendationsCard,
+  PredictionCard
+} from "./PerformanceCharts";
 
 const StudentResults = ({ user }) => {
   const [step, setStep] = useState("verification"); // verification, results
@@ -15,6 +24,7 @@ const StudentResults = ({ user }) => {
   const [results, setResults] = useState([]);
   const [latestResult, setLatestResult] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [showDetailedAnalysis, setShowDetailedAnalysis] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedResult, setSelectedResult] = useState(null);
@@ -634,9 +644,39 @@ const StudentResults = ({ user }) => {
                 padding: "20px",
                 marginBottom: "25px"
               }}>
-                <h3 style={{ margin: "0 0 15px 0", color: "#1976d2", fontSize: "18px", display: "flex", alignItems: "center", gap: "8px" }}>
-                  📊 Performance Insights
-                </h3>
+                <div style={{ 
+                  display: "flex", 
+                  justifyContent: "space-between", 
+                  alignItems: "center",
+                  marginBottom: "15px",
+                  flexWrap: "wrap",
+                  gap: "10px"
+                }}>
+                  <h3 style={{ margin: 0, color: "#1976d2", fontSize: "18px", display: "flex", alignItems: "center", gap: "8px" }}>
+                    📊 Performance Insights
+                  </h3>
+                  
+                  {/* Overall Trend Badge */}
+                  {latestResult.historicalAnalysis?.overallTrend && (
+                    <TrendBadge trend={latestResult.historicalAnalysis.overallTrend} size="medium" />
+                  )}
+                </div>
+
+                {/* Risk Indicator for high/medium risk */}
+                {latestResult.riskLevel && latestResult.riskLevel !== 'low' && (
+                  <RiskIndicator 
+                    riskLevel={latestResult.riskLevel} 
+                    riskFactors={latestResult.riskFactors} 
+                  />
+                )}
+
+                {/* Prediction Card */}
+                {latestResult.projectedNextTermAverage && (
+                  <PredictionCard 
+                    currentAverage={latestResult.averageMarks}
+                    projectedAverage={latestResult.projectedNextTermAverage}
+                  />
+                )}
 
                 {latestResult.performanceChange !== undefined && latestResult.performanceChange !== null && (
                   <div style={{
@@ -663,6 +703,62 @@ const StudentResults = ({ user }) => {
                   </div>
                 )}
 
+                {/* First Result Analysis */}
+                {latestResult.firstResultAnalysis?.isFirstResult && (
+                  <div style={{
+                    padding: "12px 15px",
+                    background: "#e8f5e9",
+                    borderRadius: "8px",
+                    marginBottom: "12px"
+                  }}>
+                    <div style={{ fontWeight: "600", color: "#2e7d32", marginBottom: "8px" }}>
+                      🎯 First Term Analysis:
+                    </div>
+                    <div style={{ fontSize: "13px", color: "#555" }}>
+                      <p style={{ margin: "5px 0" }}>
+                        <strong>Strongest:</strong> {latestResult.firstResultAnalysis.strongestSubject || 'N/A'}
+                      </p>
+                      <p style={{ margin: "5px 0" }}>
+                        <strong>Needs Focus:</strong> {latestResult.firstResultAnalysis.weakestSubject || 'N/A'}
+                      </p>
+                      <p style={{ margin: "5px 0" }}>
+                        <strong>Balance Score:</strong> {latestResult.firstResultAnalysis.balanceScore || 0}% 
+                        <span style={{ fontSize: "11px", color: "#888", marginLeft: "5px" }}>
+                          (How evenly distributed your marks are)
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Consistently Weak/Strong Subjects (from history) */}
+                {latestResult.consistentlyWeakSubjects && latestResult.consistentlyWeakSubjects.length > 0 && (
+                  <div style={{
+                    padding: "10px 15px",
+                    background: "#ffebee",
+                    borderRadius: "8px",
+                    marginBottom: "12px"
+                  }}>
+                    <div style={{ fontWeight: "600", color: "#c62828", marginBottom: "8px" }}>
+                      🔴 Consistently Needs Improvement:
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                      {latestResult.consistentlyWeakSubjects.map((subject, idx) => (
+                        <span key={idx} style={{
+                          background: "#ffcdd2",
+                          color: "#b71c1c",
+                          padding: "4px 10px",
+                          borderRadius: "12px",
+                          fontSize: "12px",
+                          fontWeight: "600"
+                        }}>
+                          {subject}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {latestResult.weakSubjects && latestResult.weakSubjects.length > 0 && (
                   <div style={{
                     padding: "10px 15px",
@@ -671,13 +767,40 @@ const StudentResults = ({ user }) => {
                     marginBottom: "12px"
                   }}>
                     <div style={{ fontWeight: "600", color: "#e65100", marginBottom: "8px" }}>
-                      ⚠️ Areas Needing Attention:
+                      ⚠️ Areas Needing Attention (This Term):
                     </div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                       {latestResult.weakSubjects.map((subject, idx) => (
                         <span key={idx} style={{
                           background: "#ffccbc",
                           color: "#bf360c",
+                          padding: "4px 10px",
+                          borderRadius: "12px",
+                          fontSize: "12px",
+                          fontWeight: "600"
+                        }}>
+                          {subject}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {latestResult.consistentlyStrongSubjects && latestResult.consistentlyStrongSubjects.length > 0 && (
+                  <div style={{
+                    padding: "10px 15px",
+                    background: "#e8f5e9",
+                    borderRadius: "8px",
+                    marginBottom: "12px"
+                  }}>
+                    <div style={{ fontWeight: "600", color: "#2e7d32", marginBottom: "8px" }}>
+                      🌟 Consistently Strong:
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                      {latestResult.consistentlyStrongSubjects.map((subject, idx) => (
+                        <span key={idx} style={{
+                          background: "#a5d6a7",
+                          color: "#1b5e20",
                           padding: "4px 10px",
                           borderRadius: "12px",
                           fontSize: "12px",
@@ -698,7 +821,7 @@ const StudentResults = ({ user }) => {
                     marginBottom: "12px"
                   }}>
                     <div style={{ fontWeight: "600", color: "#2e7d32", marginBottom: "8px" }}>
-                      ⭐ Strong Areas:
+                      ⭐ Strong Areas (This Term):
                     </div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                       {latestResult.strongSubjects.map((subject, idx) => (
@@ -717,14 +840,43 @@ const StudentResults = ({ user }) => {
                   </div>
                 )}
 
+                {/* Improved/Declined Subjects */}
+                {latestResult.improvedSubjects && latestResult.improvedSubjects.length > 0 && (
+                  <div style={{
+                    padding: "10px 15px",
+                    background: "#e3f2fd",
+                    borderRadius: "8px",
+                    marginBottom: "12px"
+                  }}>
+                    <div style={{ fontWeight: "600", color: "#1565c0", marginBottom: "8px" }}>
+                      📈 Most Improved:
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                      {latestResult.improvedSubjects.map((subject, idx) => (
+                        <span key={idx} style={{
+                          background: "#bbdefb",
+                          color: "#0d47a1",
+                          padding: "4px 10px",
+                          borderRadius: "12px",
+                          fontSize: "12px",
+                          fontWeight: "600"
+                        }}>
+                          {subject}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {latestResult.improvementAreas && latestResult.improvementAreas.length > 0 && (
                   <div style={{
                     padding: "10px 15px",
                     background: "white",
-                    borderRadius: "8px"
+                    borderRadius: "8px",
+                    marginBottom: "12px"
                   }}>
                     <div style={{ fontWeight: "600", color: "#1976d2", marginBottom: "8px" }}>
-                      📝 Holiday Study Recommendations:
+                      📝 Study Recommendations:
                     </div>
                     <ul style={{ margin: "8px 0 0 20px", padding: 0, color: "#555", fontSize: "14px", lineHeight: "1.8" }}>
                       {latestResult.improvementAreas.map((area, idx) => (
@@ -733,6 +885,40 @@ const StudentResults = ({ user }) => {
                     </ul>
                   </div>
                 )}
+
+                {/* Toggle Detailed Analysis Button */}
+                <button
+                  onClick={() => setShowDetailedAnalysis(!showDetailedAnalysis)}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    background: showDetailedAnalysis ? "#667eea" : "white",
+                    color: showDetailedAnalysis ? "white" : "#667eea",
+                    border: "2px solid #667eea",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    transition: "all 0.3s",
+                    marginTop: "10px"
+                  }}
+                >
+                  {showDetailedAnalysis ? "📊 Hide Detailed Analysis" : "📊 View Detailed Analysis & Charts"}
+                </button>
+              </div>
+            )}
+
+            {/* Detailed Analysis with Charts */}
+            {showDetailedAnalysis && latestResult.subjects && latestResult.subjects.length > 0 && (
+              <div style={{ marginBottom: "25px" }}>
+                <PerformanceDashboard result={latestResult} showDetailed={true} />
+              </div>
+            )}
+
+            {/* Smart Recommendations (if available and not showing detailed) */}
+            {!showDetailedAnalysis && latestResult.recommendations && latestResult.recommendations.length > 0 && (
+              <div style={{ marginBottom: "25px" }}>
+                <RecommendationsCard recommendations={latestResult.recommendations.slice(0, 3)} />
               </div>
             )}
 

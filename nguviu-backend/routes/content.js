@@ -170,8 +170,19 @@ router.patch("/:type/:field", async (req, res) => {
   const { type, field } = req.params;
   const value = req.body?.value;
 
-  // Only allow a small set of editable fields to avoid accidental writes
-  const ALLOWED = new Set(["title", "body", "intro", "formHeading", "listHeading", "pageBackground"]);
+  // Allow a wider set of editable fields for various admin management pages
+  const ALLOWED = new Set([
+    "title", "body", "intro", "formHeading", "listHeading", "pageBackground",
+    // Staff management
+    "staffList",
+    // Parents management  
+    "announcements", "resources", "events",
+    // Students management
+    "downloads", "faqs",
+    // Performance management
+    "results", "reports", "charts", "resultsHeading", "highlightsHeading", 
+    "highlights", "reportsHeading", "chartsHeading"
+  ]);
   if (!ALLOWED.has(field)) {
     return res.status(400).json({ error: "Field not editable" });
   }

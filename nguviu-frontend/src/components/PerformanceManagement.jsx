@@ -91,7 +91,7 @@ function downloadText(filename, text, mime = "text/plain") {
 }
 
 export default function PerformanceManagement({ user }) {
-  const isAdmin = user?.role === "admin";
+  // Admin check removed - this component is already inside admin-only dashboard
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -165,7 +165,6 @@ export default function PerformanceManagement({ user }) {
   }, []);
 
   async function saveSection(section, value) {
-    if (!isAdmin) return;
     setSaving(true);
     try {
       await patch(`/api/content/performance/${section}`, { value });
@@ -280,21 +279,12 @@ export default function PerformanceManagement({ user }) {
     window.print();
   }
 
-  if (!isAdmin) {
-    return (
-      <section style={{ padding: 20 }}>
-        <h2>Performance Management</h2>
-        <p style={{ color: "crimson" }}>Access denied: Admins only.</p>
-      </section>
-    );
-  }
-
   return (
     <section style={{ padding: 20 }}>
       <h2>Performance Management</h2>
       <p>Manage all content, records, files, and charts for the Performance page.</p>
 
-      {loading && <Loader message="Loading performance data…" size={100} />}
+      {loading && <p style={{ color: "#555" }}>Loading performance data…</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
       {saving && <p style={{ color: "#555" }}>Saving…</p>}
 

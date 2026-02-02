@@ -24,6 +24,9 @@ import StaffManagement from "./StaffManagement";
 import RoleManagement from "./RoleManagement";
 import MagazineManagement from "./MagazineManagement";
 
+// Universal subpage management component
+import SubpageManagement from "./SubpageManagement";
+
 import { get, patch } from "../utils/api";
 import PageBackgroundManagement from "./PageBackgroundManagement";
 import Notifications from "./Notifications";
@@ -119,167 +122,118 @@ export default function AdminDashboard({ user }) {
   }
 
   const sections = [
-    "dashboard",
-    "submissions",
-    "roles",
-    "admissions",
-    "feeStructure",
-    "newsletters",
-    "magazine",
-    "events",
-    "gallery",
-    "legal",
-    "about",
-    "contact",
-    "curriculum",
-    "performance",
-    "policies",
-    "parents",
-    "students",
-    "staff",
-    // Add fine-grained content keys for staff, student and curriculum
-    "staff/leadership",
-    "staff/teaching",
-    "staff/support",
-    "student/admissions-guide",
-    "student/fees",
-    "student/exams",
-    "student/clubs",
-    "student/support-services",
-    "curriculum/overview",
-    "curriculum/primary",
-    "curriculum/secondary",
-    "curriculum/syllabus",
-    "curriculum/extracurricular",
-    "curriculum/assessment",
-    "pagebackground",
+    { key: "dashboard", label: "Dashboard", icon: "🏠", color: "#3b82f6" },
+    { key: "submissions", label: "Submissions", icon: "📬", color: "#8b5cf6" },
+    { key: "roles", label: "Roles", icon: "👥", color: "#ec4899" },
+    { key: "admissions", label: "Admissions", icon: "📝", color: "#10b981" },
+    { key: "feeStructure", label: "Fee Structure", icon: "💰", color: "#f59e0b" },
+    { key: "newsletters", label: "Newsletters", icon: "📰", color: "#06b6d4" },
+    { key: "magazine", label: "Magazine", icon: "📖", color: "#6366f1" },
+    { key: "events", label: "Events", icon: "📅", color: "#ef4444" },
+    { key: "gallery", label: "Gallery", icon: "🖼️", color: "#14b8a6" },
+    { key: "legal", label: "Legal", icon: "⚖️", color: "#64748b" },
+    { key: "about", label: "About", icon: "ℹ️", color: "#0ea5e9" },
+    { key: "contact", label: "Contact", icon: "📞", color: "#22c55e" },
+    { key: "curriculum", label: "Curriculum", icon: "📚", color: "#a855f7" },
+    { key: "performance", label: "Performance", icon: "📊", color: "#f97316" },
+    { key: "policies", label: "Policies", icon: "📋", color: "#84cc16" },
+    { key: "parents", label: "Parents", icon: "👨‍👩‍👧", color: "#e11d48" },
+    { key: "students", label: "Students", icon: "🎓", color: "#0891b2" },
+    { key: "staff", label: "Staff", icon: "👔", color: "#7c3aed" },
+    { key: "pagebackground", label: "Backgrounds", icon: "🎨", color: "#db2777" },
+  ];
+
+  const subSections = [
+    { key: "staff/leadership", label: "Staff Leadership", contentTypes: ["text", "staffList", "images"] },
+    { key: "staff/teaching", label: "Staff Teaching", contentTypes: ["text", "staffList", "images"] },
+    { key: "staff/support", label: "Staff Support", contentTypes: ["text", "staffList", "images"] },
+    { key: "students/admissions-guide", label: "Student Admissions Guide", contentTypes: ["text", "table", "files"] },
+    { key: "students/fees", label: "Student Fees", contentTypes: ["text", "table", "files"] },
+    { key: "students/exams", label: "Student Exams", contentTypes: ["text", "table", "files"] },
+    { key: "students/clubs", label: "Student Clubs", contentTypes: ["text", "images"] },
+    { key: "students/support-services", label: "Student Support Services", contentTypes: ["text", "staffList"] },
+    { key: "parents/communication", label: "Parents Communication", contentTypes: ["text", "files"] },
+    { key: "parents/resources", label: "Parents Resources", contentTypes: ["text", "files"] },
+    { key: "parents/calendar", label: "Parents Calendar", contentTypes: ["text", "table"] },
+    { key: "curriculum/overview", label: "Curriculum Overview", contentTypes: ["text", "images"] },
+    { key: "curriculum/primary", label: "Curriculum Primary", contentTypes: ["text", "table"] },
+    { key: "curriculum/secondary", label: "Curriculum Secondary", contentTypes: ["text", "table"] },
+    { key: "curriculum/syllabus", label: "Curriculum Syllabus", contentTypes: ["text", "table", "files"] },
+    { key: "curriculum/extracurricular", label: "Curriculum Extracurricular", contentTypes: ["text", "images"] },
+    { key: "curriculum/assessment", label: "Curriculum Assessment", contentTypes: ["text", "table"] },
+    { key: "curriculum/careers", label: "Curriculum Careers", contentTypes: ["text", "files"] },
   ];
 
   return (
-    <section
-      style={{
-        display: "flex",
-        gap: "0",
-        alignItems: "stretch",
-        minHeight: "80vh",
-        width: "100%",
-        margin: "0 -16px",
-        boxSizing: "border-box",
-      }}
-    >
+    <section className="admin-dashboard-wrapper">
       <Notifications />
-      {/* Sidebar */}
-      <aside className="admin-sidebar">
-        <h2 style={{ marginTop: 0, marginBottom: "0.75rem" }}>Admin Panel</h2>
-        {user && (
-          <p style={{ fontSize: "0.85rem", marginTop: 0, color: "#4b5563" }}>
-            Logged in as <strong>{user.email}</strong> {user.role && <span>({user.role})</span>}
-          </p>
+      
+      {/* MODERN HORIZONTAL NAVIGATION */}
+      <div className="admin-nav-container">
+        <div className="admin-nav-header">
+          <h1 className="admin-title">🛠️ Admin Dashboard</h1>
+          {user && (
+            <p className="admin-user-info">
+              Welcome, <strong>{user.email}</strong> <span className="role-badge">{user.role}</span>
+            </p>
+          )}
+        </div>
+        
+        {/* HORIZONTAL GRID OF NAVIGATION CARDS */}
+        <div className="admin-nav-grid">
+          {sections.map((item) => {
+            const isActive = activeSection === item.key;
+            return (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => setActiveSection(item.key)}
+                className={`admin-nav-card ${isActive ? "active" : ""}`}
+                style={{ "--card-color": item.color }}
+              >
+                <span className="nav-card-icon">{item.icon}</span>
+                <span className="nav-card-label">{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* SUB-SECTIONS DROPDOWN */}
+        {(activeSection.includes("staff") || activeSection.includes("students") || activeSection.includes("parents") || activeSection.includes("curriculum")) && (
+          <div className="admin-subsections">
+            <label>Sub-section:</label>
+            <select 
+              value={activeSection}
+              onChange={(e) => setActiveSection(e.target.value)}
+              className="admin-select"
+            >
+              {subSections
+                .filter((s) => s.key.startsWith(activeSection.split("/")[0]))
+                .map((sub) => (
+                  <option key={sub.key} value={sub.key}>{sub.label}</option>
+                ))}
+            </select>
+          </div>
         )}
-
-        <nav>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {sections.map((key) => {
-              const label =
-                {
-                  dashboard: "Dashboard",
-                  admissions: "Admissions",
-                  feeStructure: "Fee Structure",
-                  newsletters: "Newsletters",
-                  magazine: "School Magazine",
-                  events: "Events",
-                  gallery: "Gallery",
-                  legal: "Legal",
-                  about: "About Page",
-                  contact: "Contact Page",
-                  curriculum: "Curriculum Page",
-                  performance: "Performance Page",
-                  policies: "Policies Page",
-                  parents: "Parents Page",
-                  students: "Students Page",
-                  staff: "Staff Page",
-                  "staff/leadership": "Staff Leadership",
-                  "staff/teaching": "Staff Teaching",
-                  "staff/support": "Staff Support",
-                  "student/admissions-guide": "Student Admissions Guide",
-                  "student/fees": "Student Fees",
-                  "student/exams": "Student Exams",
-                  "student/clubs": "Student Clubs",
-                  "student/support-services": "Student Support Services",
-                  "curriculum/overview": "Curriculum Overview",
-                  "curriculum/primary": "Curriculum Primary",
-                  "curriculum/secondary": "Curriculum Secondary",
-                  "curriculum/syllabus": "Curriculum Syllabus",
-                  "curriculum/extracurricular": "Curriculum Extracurricular",
-                  "curriculum/assessment": "Curriculum Assessment",
-                  pagebackground: "Page Background",
-                }[key] || key;
-
-              const active = activeSection === key;
-
-              return (
-                <li key={key} style={{ marginBottom: 4 }}>
-                  <button
-                    type="button"
-                    onClick={() => setActiveSection(key)}
-                    className={`menu-item ${active ? "active" : ""}`}
-                  >
-                    {label}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-      </aside>
+      </div>
 
       {/* Main content */}
-      <main className="admin-main-bg" style={{ flexGrow: 1 }}>
-        {/* Generic editor for nested keys like staff/leadership or curriculum/overview */}
-        {activeSection.includes("/") && (
-          <section style={{ padding: 20 }}>
-            <h2>{
-              {
-                "staff/leadership": "Staff Leadership",
-                "staff/teaching": "Staff Teaching",
-                "staff/support": "Staff Support",
-                "student/admissions-guide": "Student Admissions Guide",
-                "student/fees": "Student Fees",
-                "student/exams": "Student Exams",
-                "student/clubs": "Student Clubs",
-                "student/support-services": "Student Support Services",
-                "curriculum/overview": "Curriculum Overview",
-                "curriculum/primary": "Curriculum Primary",
-                "curriculum/secondary": "Curriculum Secondary",
-                "curriculum/syllabus": "Curriculum Syllabus",
-                "curriculum/extracurricular": "Curriculum Extracurricular",
-                "curriculum/assessment": "Curriculum Assessment",
-              }[activeSection] || activeSection
-            }</h2>
-
-            <p style={{ marginTop: 6, color: "#444" }}>
-              Edit content for <strong>{activeSection}</strong>
-            </p>
-
-            <div style={{ marginTop: 12 }}>
-              <textarea
-                value={genericValue}
-                onChange={(e) => setGenericValue(e.target.value)}
-                rows={10}
-                style={{ width: "100%", padding: 12, fontSize: 14 }}
+      <main className="admin-main-content">
+        {/* Subpage Management for nested keys like staff/leadership or curriculum/overview */}
+        {activeSection.includes("/") && (() => {
+          const subConfig = subSections.find(s => s.key === activeSection);
+          if (subConfig) {
+            return (
+              <SubpageManagement
+                key={activeSection}
+                pageType={activeSection}
+                pageTitle={subConfig.label}
+                contentTypes={subConfig.contentTypes || ["text"]}
               />
-
-              <div style={{ marginTop: 10 }}>
-                <button
-                  className="btn"
-                  onClick={() => updateSection(activeSection, genericValue)}
-                >
-                  Save
-                </button>
-              </div>
-            </div>
-          </section>
-        )}
+            );
+          }
+          return null;
+        })()}
         {activeSection === "dashboard" && (
           <>
             <EditableHeading

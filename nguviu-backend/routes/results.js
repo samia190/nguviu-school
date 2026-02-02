@@ -6,6 +6,8 @@ import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { performCompleteAnalysis } from "../utils/performanceAnalysis.js";
+import { extractResultFromPDF } from "../utils/pdfExtraction.js";
 
 const router = express.Router();
 
@@ -36,68 +38,31 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
-// Helper function to analyze performance
+// Enhanced helper function to analyze performance using full history
 async function analyzePerformance(studentId, currentResult) {
   try {
-    // Get previous term's result
-    const previousResults = await Result.find({
+    // Fetch ALL results for this student
+    const allResults = await Result.find({
       studentId,
-      published: true,
-      _id: { $ne: currentResult._id }
-    })
-    .sort({ year: -1, term: -1 })
-    .limit(1);
-
-    if (previousResults.length === 0) {
-      return {
-        performanceChange: null,
-        improvementAreas: ["First term - establish baseline performance"]
-      };
-    }
-
-    const previous = previousResults[0];
-    const performanceChange = currentResult.averageMarks - previous.averageMarks;
+      published: true
+    }).sort({ year: 1, term: 1 });
     
-    // Identify weak subjects (below student's own average)
-    const weakSubjects = currentResult.subjects
-      .filter(s => s.marks < currentResult.averageMarks)
-      .map(s => s.subjectName);
-    
-    const strongSubjects = currentResult.subjects
-      .filter(s => s.marks >= currentResult.averageMarks + 10)
-      .map(s => s.subjectName);
-
-    // Generate improvement suggestions
-    const improvementAreas = [];
-    
-    if (performanceChange < 0) {
-      improvementAreas.push("Overall performance declined - review study methods");
+    // Include current result if not already saved
+    let resultsToAnalyze = allResults;
+    if (!allResults.find(r => r._id?.toString() === currentResult._id?.toString())) {
+      resultsToAnalyze = [...allResults, currentResult];
     }
     
-    if (weakSubjects.length > 0) {
-      improvementAreas.push(`Focus on: ${weakSubjects.slice(0, 3).join(", ")}`);
-    }
+    // Perform complete analysis
+    const analysis = await performCompleteAnalysis(studentId, currentResult, resultsToAnalyze);
     
-    if (currentResult.averageMarks < 50) {
-      improvementAreas.push("Consider extra tutoring in weak subjects");
-    }
-    
-    if (currentResult.attendance && currentResult.attendance.daysAbsent > 5) {
-      improvementAreas.push("Improve attendance to enhance learning");
-    }
-
-    return {
-      previousTermAverage: previous.averageMarks,
-      performanceChange,
-      weakSubjects,
-      strongSubjects,
-      improvementAreas: improvementAreas.length > 0 ? improvementAreas : ["Keep up the good work!"]
-    };
+    return analysis;
   } catch (err) {
     console.error("Performance analysis error:", err);
     return {
       performanceChange: null,
-      improvementAreas: []
+      improvementAreas: [],
+      recommendations: []
     };
   }
 }
@@ -473,6 +438,149 @@ router.delete("/admin/:resultId", requireRole('admin'), async (req, res) => {
   } catch (err) {
     console.error("Delete result error:", err);
     return res.status(500).json({ error: "Failed to delete result" });
+  }
+});
+
+// Extract data from uploaded PDF (ADMIN only)
+router.post("/admin/extract-pdf", requireRole('admin'), upload.single('pdf'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No PDF file uploaded" });
+    }
+
+    // Extract data from PDF
+    const extractionResult = await extractResultFromPDF(req.file.path);
+    
+    // Keep the file for later use
+    const pdfUrl = `/results/${req.file.filename}`;
+    
+    return res.json({
+      success: true,
+      extraction: extractionResult,
+      pdfUrl,
+      pdfFilename: req.file.originalname,
+      message: extractionResult.confidence === 'high' 
+        ? 'Data extracted successfully with high confidence'
+        : extractionResult.confidence === 'medium'
+        ? 'Data extracted with medium confidence. Please verify.'
+        : 'Low confidence extraction. Manual entry may be needed.'
+    });
+
+  } catch (err) {
+    console.error("PDF extraction error:", err);
+    // Clean up uploaded file on error
+    if (req.file) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (e) {
+        console.error("Failed to delete file:", e);
+      }
+    }
+    return res.status(500).json({ 
+      error: "Failed to extract data from PDF",
+      message: err.message
+    });
+  }
+});
+
+// Re-analyze all results for a student (ADMIN only)
+router.post("/admin/reanalyze/:studentId", requireRole('admin'), async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    
+    // Get all results for this student
+    const results = await Result.find({ studentId }).sort({ year: -1, term: -1 });
+    
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No results found for this student" });
+    }
+    
+    // Re-analyze the latest result with full history
+    const latestResult = results[0];
+    const analysis = await analyzePerformance(studentId, latestResult);
+    
+    // Update the latest result with new analysis
+    await Result.findByIdAndUpdate(latestResult._id, {
+      ...analysis,
+      updatedAt: new Date()
+    });
+    
+    return res.json({
+      message: "Results re-analyzed successfully",
+      analysis,
+      resultsAnalyzed: results.length
+    });
+    
+  } catch (err) {
+    console.error("Re-analysis error:", err);
+    return res.status(500).json({ error: "Failed to re-analyze results" });
+  }
+});
+
+// Get detailed analysis for a specific result (ADMIN only)
+router.get("/admin/:resultId/analysis", requireRole('admin'), async (req, res) => {
+  try {
+    const result = await Result.findById(req.params.resultId);
+    
+    if (!result) {
+      return res.status(404).json({ error: "Result not found" });
+    }
+    
+    // Get full analysis
+    const analysis = await analyzePerformance(result.studentId, result);
+    
+    return res.json({
+      result,
+      analysis
+    });
+    
+  } catch (err) {
+    console.error("Get analysis error:", err);
+    return res.status(500).json({ error: "Failed to get analysis" });
+  }
+});
+
+// Batch re-analyze all students' results (ADMIN only)
+router.post("/admin/batch-reanalyze", requireRole('admin'), async (req, res) => {
+  try {
+    // Get all unique student IDs with results
+    const studentIds = await Result.distinct('studentId');
+    
+    let analyzed = 0;
+    let errors = 0;
+    
+    for (const studentId of studentIds) {
+      try {
+        const results = await Result.find({ studentId, published: true })
+          .sort({ year: -1, term: -1 });
+        
+        if (results.length > 0) {
+          const latestResult = results[0];
+          const analysis = await analyzePerformance(studentId, latestResult);
+          
+          await Result.findByIdAndUpdate(latestResult._id, {
+            ...analysis,
+            updatedAt: new Date()
+          });
+          
+          analyzed++;
+        }
+      } catch (e) {
+        console.error(`Error analyzing student ${studentId}:`, e);
+        errors++;
+      }
+    }
+    
+    return res.json({
+      message: "Batch re-analysis complete",
+      studentsAnalyzed: analyzed,
+      errors: errors,
+      totalStudents: studentIds.length
+    });
+    
+  } catch (err) {
+    console.error("Batch re-analysis error:", err);
+    return res.status(500).json({ error: "Failed to batch re-analyze" });
   }
 });
 

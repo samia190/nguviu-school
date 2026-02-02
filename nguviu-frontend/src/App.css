@@ -6,25 +6,35 @@
   text-align: left;
 }
 
-/* App.css */
+/* App.css - Full Width Layout */
 body {
-  background-image: url('path-to-your-background-image.jpg');
+  background-color: #f8fafc;
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
   margin: 0;
   padding: 0;
+  width: 100%;
 }
 
+/* FULL WIDTH CONTAINER */
+.full-width-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
 
-/* Global styles for background image */
-body {
-  background-image: url('path-to-your-background-image.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  margin: 0;
-  padding: 0;
+@media (max-width: 768px) {
+  .full-width-container {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .full-width-container {
+    padding: 0 12px;
+  }
 }
 
 /* Full-screen video container */

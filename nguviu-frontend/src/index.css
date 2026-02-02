@@ -31,6 +31,47 @@ body {
   width: 100%;
 }
 
+/* ========== GLOBAL FULL-WIDTH PAGE STYLES ========== */
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* All main page containers should use full width */
+.page,
+main,
+section,
+.home-page,
+.about-page,
+.contact-page,
+.admissions-page,
+.curriculum-page,
+.gallery-page,
+.events-page,
+.newsletter-page,
+.student-page,
+.staff-page,
+.performance-page,
+.policies-page,
+.parents-page,
+.legal-page,
+.fee-structure-page {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Ensure content sections stretch full width */
+main > section,
+main > div,
+main > article {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;

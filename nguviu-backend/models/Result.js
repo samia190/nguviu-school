@@ -65,12 +65,100 @@ const ResultSchema = new mongoose.Schema({
   uploadedPdfFilename: { type: String },
   isUploadedPdf: { type: Boolean, default: false }, // True if admin uploaded PDF
   
-  // Performance Tracking
+  // Performance Tracking - Basic
   previousTermAverage: { type: Number }, // For comparison
   performanceChange: { type: Number }, // +/- change from previous term
   weakSubjects: [String], // Subjects below average
   strongSubjects: [String], // Subjects above average
   improvementAreas: [String], // Suggested areas to work on
+  
+  // Enhanced Historical Analysis
+  historicalAnalysis: {
+    overallTrend: { 
+      type: String, 
+      enum: ['improving', 'declining', 'stable', 'fluctuating', 'first-term', ''],
+      default: ''
+    },
+    termCount: { type: Number, default: 1 },
+    peakAverage: { type: Number },
+    lowestAverage: { type: Number },
+    averageImprovement: { type: Number }, // Per-term average change
+    termAverages: [{
+      term: String,
+      year: Number,
+      average: Number
+    }]
+  },
+  
+  // Subject-Level Analysis
+  subjectAnalysis: [{
+    subjectName: { type: String },
+    trend: { 
+      type: String, 
+      enum: ['improving', 'declining', 'stable', 'fluctuating', ''],
+      default: ''
+    },
+    averageOverTime: { type: Number },
+    bestMark: { type: Number },
+    worstMark: { type: Number },
+    consistency: { type: Number }, // 0-100 stability score
+    changeFromPrevious: { type: Number }
+  }],
+  
+  // Consistently Tracked Subjects
+  consistentlyWeakSubjects: [String],
+  consistentlyStrongSubjects: [String],
+  improvedSubjects: [String],
+  declinedSubjects: [String],
+  
+  // Risk Assessment
+  riskLevel: { 
+    type: String, 
+    enum: ['low', 'medium', 'high', ''],
+    default: ''
+  },
+  riskFactors: [String],
+  
+  // Predictions
+  projectedNextTermAverage: { type: Number },
+  
+  // Smart Recommendations (Enhanced)
+  recommendations: [{
+    priority: { type: String, enum: ['urgent', 'high', 'medium', 'low'] },
+    category: { type: String, enum: ['subject', 'general', 'attendance', 'study-habits', 'goal'] },
+    title: { type: String },
+    detail: { type: String },
+    actions: [String]
+  }],
+  
+  // First Result Analysis (for students with only 1 result)
+  firstResultAnalysis: {
+    strongestSubject: { type: String },
+    weakestSubject: { type: String },
+    subjectSpread: { type: Number }, // Difference between highest and lowest
+    balanceScore: { type: Number }, // How evenly distributed the marks are (0-100)
+    subjectsAbove70: [String],
+    subjectsBelow50: [String],
+    isFirstResult: { type: Boolean, default: false }
+  },
+  
+  // Class/Benchmark Comparison
+  classComparison: {
+    classAverage: { type: Number },
+    aboveClassAverage: { type: Boolean },
+    percentile: { type: Number }, // Where student stands in class (0-100)
+    gradeDistribution: {
+      A: { type: Number },
+      B: { type: Number },
+      C: { type: Number },
+      D: { type: Number },
+      E: { type: Number }
+    }
+  },
+  
+  // PDF Extraction Data (if PDF was analyzed)
+  pdfExtracted: { type: Boolean, default: false },
+  pdfExtractionDate: { type: Date },
   
   // Additional information
   attendance: {
