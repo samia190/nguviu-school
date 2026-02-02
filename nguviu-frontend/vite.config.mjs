@@ -45,30 +45,25 @@ export default defineConfig({
     // Advanced code splitting for faster initial load
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          // Vendor chunks - separate for better caching
-          if (id.includes("node_modules")) {
-            if (id.includes("react") || id.includes("react-dom")) {
-              return "vendor-react";
-            }
-            if (id.includes("react-router")) {
-              return "vendor-router";
-            }
-            // Split other vendors
-            if (id.includes("axios") || id.includes("api")) {
-              return "vendor-api";
-            }
-            return "vendor-other";
-          }
-          // Component chunks
-          if (id.includes("/components/")) {
-            if (id.includes("Admin")) {
-              return "admin";
-            }
-            if (id.includes("Student")) {
-              return "student";
-            }
-          }
+        manualChunks: {
+          // Keep React and React-dependent UI libraries together
+          'vendor-react': [
+            'react',
+            'react-dom',
+            'react/jsx-runtime',
+            'react/jsx-dev-runtime',
+          ],
+          'vendor-router': [
+            'react-router-dom',
+            'react-router',
+          ],
+          'vendor-charts': [
+            'recharts',
+          ],
+          'vendor-pdf': [
+            'jspdf',
+            'jspdf-autotable',
+          ],
         },
         // Optimize chunk file names for caching
         chunkFileNames: "assets/js/[name]-[hash].js",
