@@ -202,10 +202,53 @@ function MenuButton({ route, setRoute, setLoading, user }) {
   );
 }
 
+// Helper: Get route from URL path
+function getRouteFromPath() {
+  const path = window.location.pathname;
+  // Remove leading slash and return route, default to "home" for root
+  const route = path.replace(/^\//, '') || 'home';
+  return route;
+}
+
 export default function App() {
-  const [route, setRoute] = useState("home");
+  // Initialize route from URL path for SEO/direct URL access
+  const [route, setRouteState] = useState(() => getRouteFromPath());
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+
+  // Wrapper to sync route state with browser URL
+  const setRoute = (newRoute) => {
+    setRouteState((prev) => {
+      // Push to history stack for back button
+      try {
+        window.__routeStack = window.__routeStack || [];
+        window.__routeStack.push(prev);
+      } catch (err) {}
+      
+      // Update browser URL without page reload
+      const newPath = newRoute === 'home' ? '/' : `/${newRoute}`;
+      window.history.pushState({ route: newRoute }, '', newPath);
+      
+      return newRoute;
+    });
+  };
+
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = (event) => {
+      const newRoute = event.state?.route || getRouteFromPath();
+      setRouteState(newRoute);
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    
+    // Set initial history state
+    const initialRoute = getRouteFromPath();
+    const initialPath = initialRoute === 'home' ? '/' : `/${initialRoute}`;
+    window.history.replaceState({ route: initialRoute }, '', initialPath);
+    
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Fast loader - optimized for sub-500ms load
   useEffect(() => {
@@ -230,21 +273,20 @@ export default function App() {
 
     // make router globally available and maintain a simple in-memory route stack
     window.__routeStack = window.__routeStack || [];
-    window.setRoute = (r) => {
-      setRoute((prev) => {
-        try {
-          window.__routeStack.push(prev);
-        } catch (err) {}
-        return r;
-      });
-    };
+    window.setRoute = setRoute;
     window.__goBack = () => {
       try {
         const last = window.__routeStack.pop();
-        if (last) setRoute(last);
-        else setRoute("home");
+        if (last) {
+          setRouteState(last);
+          const path = last === 'home' ? '/' : `/${last}`;
+          window.history.pushState({ route: last }, '', path);
+        } else {
+          setRouteState("home");
+          window.history.pushState({ route: "home" }, '', '/');
+        }
       } catch (err) {
-        setRoute("home");
+        setRouteState("home");
       }
     };
     window.__route = route;
