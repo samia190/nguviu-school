@@ -2,7 +2,7 @@
 
 ## Overview
 Complete system for managing and displaying school achievements, KCSE results, rankings, and performance metrics.
-
+## SCHOOL FEATURES
 ## Features
 
 ### For Admins (Performance Management):
