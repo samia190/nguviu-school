@@ -4,17 +4,25 @@ import path from "path";
 import File from "../models/File.js";
 import { isS3Enabled, uploadBufferToS3, saveBufferToDisk } from "../utils/storage.js";
 import { requireRole } from "../middleware/requireAuth.js";
+// ========== MEDIA OPTIMIZATION ==========
+import { optimizeMedia, mediaFileFilter } from "../middleware/mediaOptimizer.js";
 
 const router = express.Router();
 
 // Public endpoint for submitting admission forms
 const storage = multer.memoryStorage();
-const upload = multer({ storage, limits: { fileSize: 20 * 1024 * 1024 } });
+// ========== UPDATED: Added file filter for validation ==========
+const upload = multer({ 
+  storage, 
+  fileFilter: mediaFileFilter,  // Validate file types
+  limits: { fileSize: 25 * 1024 * 1024 } // 25MB limit
+});
 
+// ========== UPDATED: Added optimizeMedia() middleware after Multer ==========
 // POST /api/submit-form
 // fields: name, email, phone, classLevel
 // files: applicationForm (pdf), image (profile)
-router.post("/", upload.fields([ { name: "applicationForm", maxCount: 1 }, { name: "image", maxCount: 1 } ]), async (req, res) => {
+router.post("/", upload.fields([ { name: "applicationForm", maxCount: 1 }, { name: "image", maxCount: 1 } ]), optimizeMedia(), async (req, res) => {
   try {
     const { name, email, phone, classLevel } = req.body || {};
     const files = req.files || {};

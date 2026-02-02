@@ -11,6 +11,8 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const { sendEmail } = require('../utils/email-sender-fallback.js');
 import { isS3Enabled, uploadBufferToS3, saveBufferToDisk } from "../utils/storage.js";
+// ========== MEDIA OPTIMIZATION ==========
+import { optimizeMedia, mediaFileFilter } from "../middleware/mediaOptimizer.js";
 
 const router = express.Router();
 import { requireRole } from "../middleware/requireAuth.js";
@@ -25,7 +27,14 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // Use memory storage so we can forward to S3 or persist to disk
-const upload = multer({ storage: multer.memoryStorage() });
+// ========== UPDATED: Added file filter and size limits ==========
+const upload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: mediaFileFilter,  // Validate file types (images, videos, documents)
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB max (videos can be large)
+  },
+});
 
 function makeDownloadUrl(req, relPath) {
   if (!relPath) return relPath;
@@ -48,7 +57,8 @@ function makeDownloadUrl(req, relPath) {
  *  - body  (optional)  -> main text / description
  *  - files (optional)  -> field name "files"
  */
-router.post("/content", upload.array("files", 10), async (req, res) => {
+// ========== UPDATED: Added optimizeMedia() middleware after Multer ==========
+router.post("/content", upload.array("files", 10), optimizeMedia(), async (req, res) => {
   try {
     const { type, title, body = "" } = req.body;
 
@@ -66,18 +76,32 @@ router.post("/content", upload.array("files", 10), async (req, res) => {
     for (const f of files) {
       let relUrl;
       let name = f.originalname;
+      let thumbnailUrl = null;
 
       if (useS3) {
         const uploaded = await uploadBufferToS3(f.buffer, f.originalname, f.mimetype);
         relUrl = uploaded.url; // absolute
         name = uploaded.key;
+        
+        // ========== ADDED: Upload video thumbnail to S3 ==========
+        if (f._thumbnail) {
+          const thumbUpload = await uploadBufferToS3(f._thumbnail.buffer, f._thumbnail.name, f._thumbnail.mimetype);
+          thumbnailUrl = thumbUpload.url;
+        }
       } else {
         const saved = saveBufferToDisk(f.buffer, f.originalname, uploadsDir);
         relUrl = saved.url; // relative
         name = saved.filename;
+        
+        // ========== ADDED: Save video thumbnail to disk ==========
+        if (f._thumbnail) {
+          const thumbSaved = saveBufferToDisk(f._thumbnail.buffer, f._thumbnail.name, uploadsDir);
+          thumbnailUrl = thumbSaved.url;
+        }
       }
 
-      attachments.push({
+      // ========== UPDATED: Include thumbnail in attachment if present ==========
+      const attachment = {
         name: f.originalname,
         originalName: f.originalname,
         url: relUrl,
@@ -85,7 +109,13 @@ router.post("/content", upload.array("files", 10), async (req, res) => {
         mimetype: f.mimetype,
         size: f.size,
         uploadedAt: new Date(),
-      });
+      };
+      
+      if (thumbnailUrl) {
+        attachment.thumbnail = thumbnailUrl;
+      }
+      
+      attachments.push(attachment);
     }
 
     // If DB is not connected, skip persistence and return a transient content object
@@ -150,11 +180,32 @@ router.delete("/content/:contentId/media/:mediaId", async (req, res) => {
     
     const content = await Content.findById(contentId);
     if (!content) return res.status(404).json({ error: "Content not found" });
+    // Try to find attachment by Mongo subdocument id first
+    let attachment = content.attachments.id(mediaId);
 
-    const attachment = content.attachments.id(mediaId);
+    // If not found, allow fallback matching by url, downloadUrl, originalName or name
+    if (!attachment) {
+      const decoded = decodeURIComponent(mediaId || "");
+      attachment = (content.attachments || []).find((a) => {
+        if (!a) return false;
+        return (
+          String(a._id) === mediaId ||
+          String(a._id) === decoded ||
+          a.url === mediaId ||
+          a.url === decoded ||
+          a.downloadUrl === mediaId ||
+          a.downloadUrl === decoded ||
+          a.originalName === mediaId ||
+          a.originalName === decoded ||
+          a.name === mediaId ||
+          a.name === decoded
+        );
+      });
+    }
+
     if (!attachment) return res.status(404).json({ error: "Media not found" });
 
-    // Optional: delete physical file
+    // Optional: delete physical file when stored on disk
     // if (attachment.url && !attachment.url.startsWith("http")) {
     //   const filePath = path.join(process.cwd(), attachment.url.replace(/^\//, ""));
     //   try { fs.unlinkSync(filePath); } catch (e) {}
@@ -174,7 +225,8 @@ router.delete("/content/:contentId/media/:mediaId", async (req, res) => {
  * PUT /api/admin/content/:contentId/media/:mediaId
  * Replace a media file in a content document
  */
-router.put("/content/:contentId/media/:mediaId", upload.single("file"), async (req, res) => {
+// ========== UPDATED: Added optimizeMedia() middleware after Multer ==========
+router.put("/content/:contentId/media/:mediaId", upload.single("file"), optimizeMedia(), async (req, res) => {
   try {
     const { contentId, mediaId } = req.params;
     
@@ -185,7 +237,28 @@ router.put("/content/:contentId/media/:mediaId", upload.single("file"), async (r
     const content = await Content.findById(contentId);
     if (!content) return res.status(404).json({ error: "Content not found" });
 
-    const attachment = content.attachments.id(mediaId);
+    //CHECK IN ATTACHMENTS
+    // Find attachment by id first, otherwise try flexible matching (url/name)
+    let attachment = content.attachments.id(mediaId);
+    if (!attachment) {
+      const decoded = decodeURIComponent(mediaId || "");
+      attachment = (content.attachments || []).find((a) => {
+        if (!a) return false;
+        return (
+          String(a._id) === mediaId ||
+          String(a._id) === decoded ||
+          a.url === mediaId ||
+          a.url === decoded ||
+          a.downloadUrl === mediaId ||
+          a.downloadUrl === decoded ||
+          a.originalName === mediaId ||
+          a.originalName === decoded ||
+          a.name === mediaId ||
+          a.name === decoded
+        );
+      });
+    }
+
     if (!attachment) return res.status(404).json({ error: "Media not found" });
 
     const useS3 = isS3Enabled();

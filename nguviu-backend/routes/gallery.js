@@ -4,6 +4,8 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import GalleryItem from "../models/GalleryItem.js";
+// ========== MEDIA OPTIMIZATION ==========
+import { optimizeMedia, mediaFileFilter } from "../middleware/mediaOptimizer.js";
 
 const router = express.Router();
 
@@ -18,17 +20,12 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
 });
 
-// Optional: basic file type filter (you can loosen/tighten)
-function fileFilter(req, file, cb) {
-  // allow images, video, pdf, word, ppt, zip, etc.
-  cb(null, true);
-}
-
+// ========== UPDATED: Use media file filter for validation ==========
 const upload = multer({
   storage,
-  fileFilter,
+  fileFilter: mediaFileFilter,  // Validate file types (images, videos, documents)
   limits: {
-    fileSize: 25 * 1024 * 1024, // 25MB per file (change as you want)
+    fileSize: 100 * 1024 * 1024, // 100MB max (videos can be large)
     files: 150, // allow many files in request (frontend chunks anyway)
   },
 });
@@ -111,8 +108,9 @@ router.delete("/:id", async (req, res) => {
 // ATTACHMENTS (UPLOAD/DELETE)
 // =======================
 
+// ========== UPDATED: Added optimizeMedia() middleware after Multer ==========
 // POST /api/content/gallery/:id/attachments  (supports 100 files per request)
-router.post("/:id/attachments", upload.array("attachments", 100), async (req, res) => {
+router.post("/:id/attachments", upload.array("attachments", 100), optimizeMedia(), async (req, res) => {
   try {
     const item = await GalleryItem.findById(req.params.id);
     if (!item) return res.status(404).json({ error: "Gallery item not found" });
@@ -121,14 +119,27 @@ router.post("/:id/attachments", upload.array("attachments", 100), async (req, re
       return res.status(400).json({ error: "No files uploaded" });
     }
 
-    const added = req.files.map((f) => ({
-      originalName: f.originalname,
-      filename: f.filename,
-      url: `/uploads/${f.filename}`, // ✅ served by index.js
-      mimetype: f.mimetype,
-      size: f.size,
-      uploadedAt: new Date(),
-    }));
+    // ========== UPDATED: Use optimized file data & handle thumbnails ==========
+    const added = req.files.map((f) => {
+      const attachment = {
+        originalName: f.originalname,
+        filename: f.filename,
+        url: `/uploads/${f.filename}`, // ✅ served by index.js
+        mimetype: f.mimetype,
+        size: f.size,
+        uploadedAt: new Date(),
+      };
+      
+      // If video has thumbnail, save it and add to attachment
+      if (f._thumbnail) {
+        const thumbName = `${Date.now()}-${f._thumbnail.name}`;
+        const thumbPath = path.join(uploadsDir, thumbName);
+        fs.writeFileSync(thumbPath, f._thumbnail.buffer);
+        attachment.thumbnail = `/uploads/${thumbName}`;
+      }
+      
+      return attachment;
+    });
 
     item.attachments.push(...added);
     await item.save();

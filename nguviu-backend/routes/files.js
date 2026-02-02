@@ -7,6 +7,8 @@ import mongoose from "mongoose";
 import File from "../models/File.js";
 import { isS3Enabled, uploadBufferToS3, saveBufferToDisk } from "../utils/storage.js";
 import { requireRole } from "../middleware/requireAuth.js";
+// ========== MEDIA OPTIMIZATION ==========
+import { optimizeMedia, mediaFileFilter } from "../middleware/mediaOptimizer.js";
 
 const router = express.Router();
 
@@ -15,10 +17,12 @@ const uploadsDir = path.join(process.cwd(), "public", "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 // Use memory storage so we can optionally push to S3 or write to disk
+// ========== UPDATED: Added file filter for validation ==========
 const upload = multer({ 
   storage: multer.memoryStorage(),
+  fileFilter: mediaFileFilter,  // Validate file types (images, videos, documents)
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB max
+    fileSize: 100 * 1024 * 1024, // 100MB max (increased for videos)
   }
 });
 
@@ -33,8 +37,9 @@ function toAbsoluteUrl(req, relativePath) {
   return `${origin}${relativePath}`;
 }
 
+// ========== UPDATED: Added optimizeMedia() middleware after Multer ==========
 // ✅ POST: single file upload for magazine/general purposes
-router.post("/upload", upload.single("file"), async (req, res) => {
+router.post("/upload", upload.single("file"), optimizeMedia(), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
@@ -95,8 +100,9 @@ router.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
+// ========== UPDATED: Added optimizeMedia() middleware after Multer ==========
 // ✅ POST: upload student homework
-router.post("/", upload.array("attachments", 10), async (req, res) => {
+router.post("/", upload.array("attachments", 10), optimizeMedia(), async (req, res) => {
   try {
     const { level, subject, notes, studentEmail, studentRole } = req.body;
 

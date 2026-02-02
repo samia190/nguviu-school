@@ -57,7 +57,22 @@ function saveBufferToDisk(buffer, filename, uploadsDir) {
   return { filename: safeName, url: `/uploads/${safeName}` };
 }
 
-export { isS3Enabled, uploadBufferToS3, saveBufferToDisk };
+// ========== ADDED: Helper to save video thumbnails ==========
+/**
+ * Save a video thumbnail to storage (S3 or disk)
+ * @param {Buffer} thumbnailBuffer - The thumbnail image buffer
+ * @param {string} thumbnailName - The thumbnail filename
+ * @param {string} uploadsDir - Directory for disk storage
+ * @returns {Promise<{url: string, filename?: string, key?: string}>}
+ */
+async function saveThumbnail(thumbnailBuffer, thumbnailName, uploadsDir) {
+  if (isS3Enabled()) {
+    return uploadBufferToS3(thumbnailBuffer, thumbnailName, "image/jpeg");
+  }
+  return saveBufferToDisk(thumbnailBuffer, thumbnailName, uploadsDir);
+}
+
+export { isS3Enabled, uploadBufferToS3, saveBufferToDisk, saveThumbnail };
 
 async function deleteFromS3Key(key) {
   if (!s3Client) throw new Error("S3 client not configured");

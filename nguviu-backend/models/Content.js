@@ -21,6 +21,9 @@ const attachmentSchema = new mongoose.Schema({
   // Full absolute URL, e.g. "http:///uploads/file.pdf"
   downloadUrl: { type: String },
 
+  // ========== ADDED: Video thumbnail URL ==========
+  thumbnail: { type: String },
+
   mimetype: { type: String },
   size: { type: Number },
   uploadedAt: { type: Date, default: Date.now },

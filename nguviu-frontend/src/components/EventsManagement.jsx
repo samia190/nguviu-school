@@ -168,12 +168,15 @@ export default function EventsManagement() {
     }
   }
   async function handleDeleteMedia(mediaId) {
-  if (!content?._id) return;
+  if (!content?._id) {
+    setError("Cannot delete media: please save/upload at least one file first.");
+    return;
+  }
 
   if (!window.confirm("Delete this file permanently?")) return;
 
   try {
-    await del(`/api/admin/content/${content._id}/media/${mediaId}`);
+    await del(`/api/admin/content/${content._id}/media/${encodeURIComponent(mediaId)}`);
     setSuccess("Media deleted.");
     await fetchContent();
   } catch (err) {
@@ -182,12 +185,17 @@ export default function EventsManagement() {
 }
 
 async function handleReplaceMedia(mediaId, newFile) {
+  if (!content?._id) {
+    setError("Cannot replace media: please save/upload at least one file first.");
+    return;
+  }
+
   const fd = new FormData();
   fd.append("file", newFile);
 
   try {
     await upload(
-      `/api/admin/content/${content._id}/media/${mediaId}`,
+      `/api/admin/content/${content._id}/media/${encodeURIComponent(mediaId)}`,
       fd,
       {},
       { method: "PUT" }
@@ -195,7 +203,7 @@ async function handleReplaceMedia(mediaId, newFile) {
     setSuccess("Media replaced.");
     await fetchContent();
   } catch (err) {
-    setError("Failed to replace media");
+    setError(err.message || "Failed to replace media");
   }
 }
 
@@ -393,13 +401,17 @@ async function handleReplaceMedia(mediaId, newFile) {
             <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
   <button
     type="button"
-    onClick={() => handleDeleteMedia(file._id)}
+    onClick={() => {
+      const id = file._id || file.id || file.url || file.downloadUrl || file.originalName || file.name;
+      handleDeleteMedia(id);
+    }}
     style={{
       backgroundColor: "#fee2e2",
       border: "1px solid #fecaca",
       padding: "4px 8px",
       cursor: "pointer",
     }}
+    title={file._id ? "Delete file" : "Delete (fallback matching by URL/name)"}
   >
     Delete
   </button>
@@ -409,10 +421,12 @@ async function handleReplaceMedia(mediaId, newFile) {
     <input
       type="file"
       hidden
-      onChange={(e) =>
-        e.target.files &&
-        handleReplaceMedia(file._id, e.target.files[0])
-      }
+      onChange={(e) => {
+        const id = file._id || file.id || file.url || file.downloadUrl || file.originalName || file.name;
+        if (e.target.files && e.target.files[0]) {
+          handleReplaceMedia(id, e.target.files[0]);
+        }
+      }}
     />
   </label>
 </div>

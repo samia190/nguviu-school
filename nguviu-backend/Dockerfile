@@ -1,8 +1,9 @@
 # Use Alpine-based Node.js for minimal image size
 FROM node:20-alpine AS base
 
-# Add necessary build tools for native dependencies
-RUN apk add --no-cache python3 make g++
+# ========== UPDATED: Added ffmpeg for video processing ==========
+# Add necessary build tools for native dependencies + FFmpeg for video optimization
+RUN apk add --no-cache python3 make g++ ffmpeg
 
 WORKDIR /app
 
