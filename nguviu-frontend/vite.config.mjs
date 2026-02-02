@@ -88,18 +88,6 @@ export default defineConfig({
     target: "esnext",
     // Enable asset inlining for small files
     assetsInlineLimit: 4096,
-    // Aggressive minification
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console.logs in production
-        drop_debugger: true,
-        pure_funcs: ["console.log", "console.info"], // Remove specific functions
-        passes: 2, // Multiple compression passes
-      },
-      mangle: {
-        safari10: true,
-      },
-    },
   },
   // Optimize dependencies - preload critical packages
   optimizeDeps: {
