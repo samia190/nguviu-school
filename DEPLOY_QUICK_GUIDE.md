@@ -1,7 +1,7 @@
 # 🚀 Quick Deploy Guide - Mobile Optimization
 
 ## ✅ What Was Done
-
+## one
 ### Students Page & Gallery Page Optimizations:
 1. **Multi-column grid on mobile** (2-3 columns instead of 1)
 2. **Enhanced lazy loading** with smooth transitions
