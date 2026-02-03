@@ -13,8 +13,8 @@ async function run() {
   // Seed home
   const homeData = {
     type: 'home',
-    title: "Welcome to Nguviu Girls' School (Seed)",
-    intro: 'This is seeded intro for the home page.',
+    title: "Welcome to Nguviu Girls' School ",
+    intro: ' home page.',
     body: 'Seeded body content for home page.',
     attachments: [
       {
@@ -33,10 +33,10 @@ async function run() {
 
   const aboutData = {
     type: 'about',
-    title: "About Nguviu (Seed)",
-    intro: 'About page seeded intro.',
-    heroTitle: 'Our Mission (seed)',
-    heroSubtitle: 'Seeded subtitle',
+    title: "About Nguviu ",
+    intro: 'About page .',
+    heroTitle: 'Our Mission ',
+    heroSubtitle: 'To empower young women through education and holistic development, fostering leadership, innovation, and community engagement.',
     heroBackgroundUrl: '/images/background images/hero.JPG',
     attachments: [
       {
