@@ -91,11 +91,11 @@ A complete school magazine feature has been added to your website with the follo
 ## 📂 File Structure
 
 ```
-nguviu-backend/
+kangaru girls-backend/
   routes/
     schoolMagazine.js          # API endpoints
   
-nguviu-frontend/
+kangaru girls-frontend/
   src/
     components/
       SchoolMagazineViewer.jsx    # Public viewer

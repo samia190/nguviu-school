@@ -2,7 +2,7 @@
 # Checks if all SEO files are properly configured before deployment
 
 Write-Host ""
-Write-Host "SEO Setup Validation for NGUVIU GIRLS" -ForegroundColor Cyan
+Write-Host "SEO Setup Validation for KANGARU GIRLS" -ForegroundColor Cyan
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -11,11 +11,11 @@ $allGood = $true
 
 # Check sitemap.xml
 Write-Host "Checking sitemap.xml..." -ForegroundColor Yellow
-$sitemapPath = Join-Path $projectRoot "nguviu-frontend\public\sitemap.xml"
+$sitemapPath = Join-Path $projectRoot "kangaru girls-frontend\public\sitemap.xml"
 if (Test-Path $sitemapPath) {
     Write-Host "  [OK] File exists" -ForegroundColor Green
     $content = Get-Content $sitemapPath -Raw
-    if ($content -match 'https://nguviugirsseniorschool.co.ke\.com') {
+    if ($content -match 'https://kangarugirlssseniorschool.co.ke\.com') {
         Write-Host "  [WARNING] Domain not updated (still using placeholder)" -ForegroundColor Yellow
     }
 } else {
@@ -25,11 +25,11 @@ if (Test-Path $sitemapPath) {
 
 # Check robots.txt
 Write-Host "Checking robots.txt..." -ForegroundColor Yellow
-$robotsPath = Join-Path $projectRoot "nguviu-frontend\public\robots.txt"
+$robotsPath = Join-Path $projectRoot "kangaru girls-frontend\public\robots.txt"
 if (Test-Path $robotsPath) {
     Write-Host "  [OK] File exists" -ForegroundColor Green
     $content = Get-Content $robotsPath -Raw
-    if ($content -match 'https://nguviugirsseniorschool.co.ke\.com') {
+    if ($content -match 'https://kangarugirlssseniorschool.co.ke\.com') {
         Write-Host "  [WARNING] Domain not updated (still using placeholder)" -ForegroundColor Yellow
     }
 } else {
@@ -39,7 +39,7 @@ if (Test-Path $robotsPath) {
 
 # Check index.html
 Write-Host "Checking index.html meta tags..." -ForegroundColor Yellow
-$indexPath = Join-Path $projectRoot "nguviu-frontend\index.html"
+$indexPath = Join-Path $projectRoot "kangaru girls-frontend\index.html"
 if (Test-Path $indexPath) {
     $content = Get-Content $indexPath -Raw
     

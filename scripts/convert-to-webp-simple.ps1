@@ -18,8 +18,8 @@ Write-Host ""
 # Add .NET Image processing
 Add-Type -AssemblyName System.Drawing
 
-$frontendPublic = Join-Path $PSScriptRoot "..\nguviu-frontend\public\images"
-$backendPublic = Join-Path $PSScriptRoot "..\nguviu-backend\public\images"
+$frontendPublic = Join-Path $PSScriptRoot "..\kangaru girls-frontend\public\images"
+$backendPublic = Join-Path $PSScriptRoot "..\kangaru girls-backend\public\images"
 
 $directories = @($frontendPublic, $backendPublic)
 

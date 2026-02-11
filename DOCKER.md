@@ -26,16 +26,16 @@ This guide covers building and deploying optimized Docker images for Railway wit
 
 ### Backend
 ```bash
-cd nguviu-backend
-docker build -t nguviu-backend:latest .
+cd kangaru girls-backend
+docker build -t kangaru girls-backend:latest .
 ```
 
 Expected size: **~250-350 MB** (vs ~1GB+ with full Node.js image)
 
 ### Frontend
 ```bash
-cd nguviu-frontend
-docker build -t nguviu-frontend:latest .
+cd kangaru girls-frontend
+docker build -t kangaru girls-frontend:latest .
 ```
 
 Expected size: **~200-300 MB** (vs ~800MB+ without multi-stage)
@@ -61,7 +61,7 @@ Railway automatically detects and uses Dockerfiles when present in service root 
 ### Step 1: Deploy Backend
 
 1. Create a new Railway service from your GitHub repo
-2. Set **Root Directory**: `nguviu-backend`
+2. Set **Root Directory**: `kangaru girls-backend`
 3. Railway will auto-detect `Dockerfile`
 4. Set environment variables:
    ```
@@ -77,7 +77,7 @@ Railway automatically detects and uses Dockerfiles when present in service root 
 ### Step 2: Deploy Frontend
 
 1. Create another service in the same Railway project
-2. Set **Root Directory**: `nguviu-frontend`
+2. Set **Root Directory**: `kangaru girls-frontend`
 3. Railway will auto-detect `Dockerfile`
 4. Set environment variables:
    ```
@@ -98,19 +98,19 @@ Go back to backend service and update `CORS_ORIGINS` with the actual frontend UR
 
 ### Check built image size:
 ```bash
-docker images | grep nguviu
+docker images | grep kangaru girls
 ```
 
 You should see:
 ```
-nguviu-backend    latest    abc123def456    250MB
-nguviu-frontend   latest    xyz789uvw012    200MB
+kangaru girls-backend    latest    abc123def456    250MB
+kangaru girls-frontend   latest    xyz789uvw012    200MB
 ```
 
 ### Inspect image layers:
 ```bash
-docker history nguviu-backend:latest
-docker history nguviu-frontend:latest
+docker history kangaru girls-backend:latest
+docker history kangaru girls-frontend:latest
 ```
 
 ### Check running container stats:
@@ -122,7 +122,7 @@ docker stats
 
 ## 🎨 What's in Each Dockerfile
 
-### Backend (`nguviu-backend/Dockerfile`)
+### Backend (`kangaru girls-backend/Dockerfile`)
 - **Base**: `node:20-alpine` (minimal Node.js)
 - **Build tools**: Only python3, make, g++ for native deps (bcrypt)
 - **Dependencies**: Production only (`npm ci --only=production`)
@@ -130,7 +130,7 @@ docker stats
 - **Health check**: Validates `/api/health` endpoint
 - **Size**: ~250-350 MB
 
-### Frontend (`nguviu-frontend/Dockerfile`)
+### Frontend (`kangaru girls-frontend/Dockerfile`)
 - **Stage 1 (Builder)**: Builds optimized Vite app
   - Installs all dependencies
   - Runs `npm run build`
@@ -176,12 +176,12 @@ docker stats
 
 1. **Use BuildKit**:
    ```bash
-   DOCKER_BUILDKIT=1 docker build -t nguviu-backend .
+   DOCKER_BUILDKIT=1 docker build -t kangaru girls-backend .
    ```
 
 2. **Cache npm packages**:
    ```bash
-   docker build --cache-from nguviu-backend:latest -t nguviu-backend .
+   docker build --cache-from kangaru girls-backend:latest -t kangaru girls-backend .
    ```
 
 3. **Parallel builds**:
@@ -268,7 +268,7 @@ docker run -p 4000:4000 \
   -e MONGO_URI=your-connection-string \
   -e JWT_SECRET=test-secret \
   -e NODE_ENV=production \
-  nguviu-backend:latest
+  kangaru girls-backend:latest
 ```
 
 ### Test frontend:
@@ -276,7 +276,7 @@ docker run -p 4000:4000 \
 docker run -p 3000:3000 \
   -e VITE_API_URL=http://localhost:4000 \
   -e PORT=3000 \
-  nguviu-frontend:latest
+  kangaru girls-frontend:latest
 ```
 
 ### Test with docker-compose:

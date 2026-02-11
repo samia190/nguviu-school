@@ -10,7 +10,7 @@ The system uses **MongoDB** for user authentication, but there is currently no a
 
 1. **Navigate to backend directory:**
    ```powershell
-   cd nguviu-backend
+   cd kangaru girls-backend
    ```
 
 2. **Run the admin creation script:**
@@ -79,7 +79,7 @@ db.users.find({ role: "admin" }).pretty()
 
 ### Script fails with "MongoDB URI not found"
 
-Make sure you have set one of these environment variables in `nguviu-backend/.env`:
+Make sure you have set one of these environment variables in `kangaru girls-backend/.env`:
 - `MONGO_URI`
 - `MONGODB_URI`
 - `DATABASE_URL`
@@ -131,7 +131,7 @@ After creating admin:
 
 ## Files Modified/Created
 
-- ✅ `nguviu-backend/scripts/create-admin.js` - Script to create admin user
+- ✅ `kangaru girls-backend/scripts/create-admin.js` - Script to create admin user
 - 📝 `ADMIN_SETUP_GUIDE.md` - This guide
 
 ## Next Steps

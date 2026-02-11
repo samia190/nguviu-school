@@ -265,7 +265,7 @@ Security upgraded with comprehensive student identity verification.
 
 ### Backend Files:
 ```
-nguviu-backend/
+kangaru girls-backend/
 ├── models/
 │   ├── Result.js          ✅ Updated with all new fields
 │   └── Student.js         ✅ Added assessmentNumber field
@@ -278,7 +278,7 @@ nguviu-backend/
 
 ### Frontend Files:
 ```
-nguviu-frontend/
+kangaru girls-frontend/
 └── src/
     └── components/
         ├── ResultsManagement.jsx  ✅ PDF upload form added
@@ -387,10 +387,10 @@ VITE_API_URL=http://localhost:5000  # Frontend
 ```
 
 ### Directory Permissions:
-Ensure `nguviu-backend/public/results/` directory exists and is writable:
+Ensure `kangaru girls-backend/public/results/` directory exists and is writable:
 ```bash
-mkdir -p nguviu-backend/public/results
-chmod 755 nguviu-backend/public/results
+mkdir -p kangaru girls-backend/public/results
+chmod 755 kangaru girls-backend/public/results
 ```
 
 ### Database:

@@ -10,7 +10,7 @@ The QR codes now include the following information:
 
 1. ✅ **Assessment Number** (for CBC students)
 2. ✅ **Class and Stream**
-3. ✅ **School Website Link** (https://stangela-nguviu.ac.ke)
+3. ✅ **School Website Link** (https://kangaru -kangaru girls.ac.ke)
 4. ✅ **Student Photo URL** (if available)
 5. ✅ **Admission Number** (existing)
 6. ✅ **Full Student Details** (existing)
@@ -26,8 +26,8 @@ The QR codes now include the following information:
 
 ### Backend Changes
 
-#### 1. Student Model ([Student.js](nguviu-backend/models/Student.js))
-- Added `websiteUrl` field (default: "https://stangela-nguviu.ac.ke")
+#### 1. Student Model ([Student.js](kangaru girls-backend/models/Student.js))
+- Added `websiteUrl` field (default: "https://kangaru -kangaru girls.ac.ke")
 - Updated `generateVerificationToken()` to include:
   - Assessment number
   - Class and stream
@@ -35,7 +35,7 @@ The QR codes now include the following information:
   - Website URL
 - Updated `verifyToken()` to validate all new fields
 
-#### 2. Verification Routes ([studentVerification.js](nguviu-backend/routes/studentVerification.js))
+#### 2. Verification Routes ([studentVerification.js](kangaru girls-backend/routes/studentVerification.js))
 - Updated `/generate-token/:studentId` endpoint to return enhanced student data
 - Updated `/verify` endpoint to return:
   - Assessment number
@@ -44,12 +44,12 @@ The QR codes now include the following information:
 
 ### Frontend Changes
 
-#### 3. Verification Display ([StudentVerification.jsx](nguviu-frontend/src/components/StudentVerification.jsx))
+#### 3. Verification Display ([StudentVerification.jsx](kangaru girls-frontend/src/components/StudentVerification.jsx))
 - Added display for **Assessment Number** (when available)
 - Added clickable **School Website Link**
 - Enhanced layout to accommodate new information
 
-#### 4. ID Card Component ([StudentIDCard.jsx](nguviu-frontend/src/components/StudentIDCard.jsx))
+#### 4. ID Card Component ([StudentIDCard.jsx](kangaru girls-frontend/src/components/StudentIDCard.jsx))
 - Updated to use secure verification tokens
 - QR codes now link to verification page with encrypted data
 - Added error handling for QR generation failures
@@ -102,7 +102,7 @@ Assessment Number: 12345678 (for CBC students)
 Class: Form 3 - East
 Year of Admission: 2024
 Status: Active
-School Website: https://stangela-nguviu.ac.ke
+School Website: https://kangaru -kangaru girls.ac.ke
 ━━━━━━━━━━━━━━━━━━
 Verified At: [timestamp]
 Card Issued: [date]
@@ -149,7 +149,7 @@ Valid Until: [date]
   "class": "Form 3",
   "stream": "East",
   "photoUrl": "https://example.com/photo.jpg",
-  "websiteUrl": "https://stangela-nguviu.ac.ke",
+  "websiteUrl": "https://kangaru -kangaru girls.ac.ke",
   "version": 1,
   "timestamp": 1234567890,
   "nonce": "random_string",
@@ -168,7 +168,7 @@ Valid Until: [date]
     "class": "Form 3",
     "stream": "East",
     "photoUrl": "https://example.com/photo.jpg",
-    "websiteUrl": "https://stangela-nguviu.ac.ke",
+    "websiteUrl": "https://kangaru -kangaru girls.ac.ke",
     "status": "Active",
     "yearOfAdmission": 2024,
     "idCardIssueDate": "2025-01-01",

@@ -23,22 +23,22 @@ Access:
 
 ### Backend Only
 ```bash
-cd nguviu-backend
-docker build -t nguviu-backend .
+cd kangaru girls-backend
+docker build -t kangaru girls-backend .
 docker run -p 4000:4000 \
   -e MONGO_URI=your-uri \
   -e JWT_SECRET=secret \
   -e NODE_ENV=production \
-  nguviu-backend
+  kangaru girls-backend
 ```
 
 ### Frontend Only
 ```bash
-cd nguviu-frontend
-docker build -t nguviu-frontend .
+cd kangaru girls-frontend
+docker build -t kangaru girls-frontend .
 docker run -p 3000:3000 \
   -e VITE_API_URL=http://localhost:4000 \
-  nguviu-frontend
+  kangaru girls-frontend
 ```
 
 ---
@@ -101,13 +101,13 @@ docker-compose logs frontend
 docker ps
 
 # Inspect container
-docker inspect nguviu-backend
+docker inspect kangaru girls-backend
 
 # Execute command in container
-docker exec -it nguviu-backend sh
+docker exec -it kangaru girls-backend sh
 
 # Check image size
-docker images | grep nguviu
+docker images | grep kangaru girls
 
 # Check container stats
 docker stats
@@ -124,7 +124,7 @@ docker-compose down
 
 ### Remove images
 ```bash
-docker rmi nguviu-backend nguviu-frontend
+docker rmi kangaru girls-backend kangaru girls-frontend
 ```
 
 ### Clean everything (Docker system)
@@ -161,7 +161,7 @@ docker-compose up
 cat .env
 
 # Test MongoDB connection from container
-docker exec -it nguviu-backend sh
+docker exec -it kangaru girls-backend sh
 # Inside container:
 node -e "console.log(process.env.MONGO_URI)"
 ```
@@ -169,7 +169,7 @@ node -e "console.log(process.env.MONGO_URI)"
 ### "CORS error"
 ```bash
 # Ensure CORS_ORIGINS includes frontend URL
-docker exec -it nguviu-backend sh
+docker exec -it kangaru girls-backend sh
 # Inside container:
 node -e "console.log(process.env.CORS_ORIGINS)"
 ```
@@ -180,17 +180,17 @@ node -e "console.log(process.env.CORS_ORIGINS)"
 docker-compose build --no-cache
 
 # Check if package.json exists in image
-docker run --rm nguviu-backend ls -la
+docker run --rm kangaru girls-backend ls -la
 ```
 
 ### Image size too large
 ```bash
 # Check image size
-docker images | grep nguviu
+docker images | grep kangaru girls
 
 # Ensure .dockerignore excludes node_modules
-cat nguviu-backend/.dockerignore
-cat nguviu-frontend/.dockerignore
+cat kangaru girls-backend/.dockerignore
+cat kangaru girls-frontend/.dockerignore
 
 # Rebuild
 docker-compose build --no-cache
@@ -202,8 +202,8 @@ docker-compose build --no-cache
 
 | Image | Expected Size | Status |
 |-------|---------------|--------|
-| nguviu-backend | 250-350 MB | ✅ Optimized |
-| nguviu-frontend | 200-300 MB | ✅ Optimized |
+| kangaru girls-backend | 250-350 MB | ✅ Optimized |
+| kangaru girls-frontend | 200-300 MB | ✅ Optimized |
 | **Total** | **~500 MB** | ✅ Under Railway 4GB limit |
 
 ---
@@ -235,11 +235,11 @@ docker ps
 Railway will automatically use these Dockerfiles. Just ensure:
 
 1. **Backend service**:
-   - Root directory: `nguviu-backend`
+   - Root directory: `kangaru girls-backend`
    - Env vars: `MONGO_URI`, `JWT_SECRET`, `NODE_ENV=production`
 
 2. **Frontend service**:
-   - Root directory: `nguviu-frontend`
+   - Root directory: `kangaru girls-frontend`
    - Env var: `VITE_API_URL=<backend-railway-url>`
 
 Railway assigns `PORT` automatically - no need to set it!

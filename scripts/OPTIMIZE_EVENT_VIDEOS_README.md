@@ -1,7 +1,7 @@
 Quick guide — optimize-event-videos.ps1
 
 What it does
-- Transcodes any files beginning with `event` found in `nguviu-frontend/public/image/new`
+- Transcodes any files beginning with `event` found in `kangaru girls-frontend/public/image/new`
 - Produces: `*-optimized.mp4`, `*.webm`, `*-poster.jpg`, `*-poster.webp`
 - Writes `attachments.json` containing entries for each processed video
 
@@ -14,14 +14,14 @@ Open PowerShell at the repo root and run:
 
 ```powershell
 # dry-run (shows commands only)
-.\scripts\optimize-event-videos.ps1 -Path "nguviu-frontend\public\image\new" -WhatIf
+.\scripts\optimize-event-videos.ps1 -Path "kangaru girls-frontend\public\image\new" -WhatIf
 
 # actually run
-.\scripts\optimize-event-videos.ps1 -Path "nguviu-frontend\public\image\new"
+.\scripts\optimize-event-videos.ps1 -Path "kangaru girls-frontend\public\image\new"
 ```
 
 What to do after running
-- Verify the generated files appear in `nguviu-frontend/public/image/new`
+- Verify the generated files appear in `kangaru girls-frontend/public/image/new`
 - Upload them via Admin → Events → Upload Event Media (recommended)
 
 Manual DB import example (mongo shell)

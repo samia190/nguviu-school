@@ -1,6 +1,6 @@
 <#
 Optimize Event Videos
-- Place your raw videos in: nguviu-frontend\public\image\new\
+- Place your raw videos in: kangaru girls-frontend\public\image\new\
 - Filenames should start with: event (e.g. "event 1.mp4", "event2.mov")
 - Requires `ffmpeg` on PATH
 
@@ -11,12 +11,12 @@ What the script does for each matching file:
 - Emits an `attachments.json` manifest you can import into MongoDB or use with the Admin UI
 
 Usage:
-  .\optimize-event-videos.ps1 -Path "..\nguviu-frontend\public\image\new" -WhatIf:$false
+  .\optimize-event-videos.ps1 -Path "..\kangaru girls-frontend\public\image\new" -WhatIf:$false
 
 #>
 [CmdletBinding()]
 param(
-    [string]$Path = "nguviu-frontend\public\image\new",
+    [string]$Path = "kangaru girls-frontend\public\image\new",
     [switch]$WhatIf
 )
 

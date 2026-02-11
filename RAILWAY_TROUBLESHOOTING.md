@@ -54,7 +54,7 @@ This skips `devDependencies`, so vite wasn't available for `npm start` (which ru
 
 ```bash
 # Test production build locally
-cd nguviu-frontend
+cd kangaru girls-frontend
 rm -rf node_modules dist
 npm ci --only=production  # Simulates Railway
 npm run build             # Should work
@@ -63,7 +63,7 @@ npm start                 # Should work
 
 Expected output:
 ```
-> nguviu-frontend@1.1.0 start
+> kangaru girls-frontend@1.1.0 start
 > vite preview --host 0.0.0.0 --port ${PORT:-3000}
 
   ➜  Local:   http://localhost:3000/
@@ -147,10 +147,10 @@ node_modules
 
 ## Railway Configuration Summary
 
-### Frontend Service (nguviu-frontend)
+### Frontend Service (kangaru girls-frontend)
 
 **Settings:**
-- Root Directory: `nguviu-frontend`
+- Root Directory: `kangaru girls-frontend`
 - Builder: Nixpacks (auto-detected)
 
 **Build Settings:**
@@ -176,10 +176,10 @@ NODE_ENV=production
 }
 ```
 
-### Backend Service (nguviu-backend)
+### Backend Service (kangaru girls-backend)
 
 **Settings:**
-- Root Directory: `nguviu-backend`
+- Root Directory: `kangaru girls-backend`
 - Builder: Nixpacks (auto-detected)
 
 **Build Settings:**
@@ -295,7 +295,7 @@ Railway auto-replaces with actual domain.
 
 In Settings → Service:
 ```
-Watch Paths: nguviu-frontend/**
+Watch Paths: kangaru girls-frontend/**
 ```
 Only deploy when frontend files change.
 
