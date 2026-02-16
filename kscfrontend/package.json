@@ -5,15 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build:optimized": "npm run convert:webp && vite build",
+    "setup:images": "node scripts/setup-images.mjs",
+    "build": "npm run setup:images && vite build",
+    "build:optimized": "npm run setup:images && npm run convert:webp && vite build",
     "preview": "vite preview",
     "start": "serve dist",
     "optimize-images": "node scripts/optimize-images.js",
     "optimize:media": "node scripts/optimize-media.mjs",
     "convert:webp": "node scripts/convert-to-webp.mjs",
     "build:netlify": "npm run optimize:media && npm run build",
-    "build:render": "npm run convert:webp && npm run build"
+    "build:render": "npm run setup:images && npm run convert:webp && npm run build"
   },
   "engines": {
     "node": ">=18.18.0"
