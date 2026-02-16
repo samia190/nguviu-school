@@ -9,7 +9,14 @@ const API_ORIGIN = (() => {
 
   try {
     if (typeof import.meta !== "undefined") {
-      if (import.meta.env?.VITE_API_URL) return import.meta.env.VITE_API_URL;
+      if (import.meta.env?.VITE_API_URL) {
+        const apiUrl = import.meta.env.VITE_API_URL;
+        // Only return if not empty
+        if (apiUrl && apiUrl.trim()) {
+          if (typeof console !== "undefined") console.log("[API] Using VITE_API_URL:", apiUrl);
+          return apiUrl;
+        }
+      }
       if (import.meta.env?.VITE_API_ORIGIN) return import.meta.env.VITE_API_ORIGIN;
     }
   } catch {}
@@ -25,12 +32,15 @@ const API_ORIGIN = (() => {
   // or you can set window.__API_ORIGIN at runtime
   try {
     if (typeof import.meta !== "undefined" && import.meta.env?.MODE === "production") {
-      // Return empty string to use relative URLs - configure VITE_API_URL for different domain
+      // Production: use empty string for relative URLs (same domain)
+      // Or set VITE_API_URL for different domain
+      if (typeof console !== "undefined") console.log("[API] Production mode: using relative URLs");
       return "";
     }
   } catch {}
 
   // Local development: use empty origin so relative `/api/...` hits the Vite proxy
+  if (typeof console !== "undefined") console.log("[API] Development: using empty origin for Vite proxy");
   return "";
 })();
 

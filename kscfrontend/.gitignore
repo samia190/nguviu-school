@@ -12,8 +12,9 @@ dist
 dist-ssr
 *.local
 
-# Generated optimized media (non-source)
+# Generated and copied images (not tracked)
 public/.optimized/
+public/images/
 
 # Editor directories and files
 .vscode/*
