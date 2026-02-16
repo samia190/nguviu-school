@@ -4,11 +4,11 @@ import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
 import cors from "cors";
-import mongoose from "mongoose";
 import path from "path";
 import fs from "fs";
 import compression from "compression";
 import helmet from "helmet";
+import { connectToDatabase, isDbConnected as getDbConnected } from "./services/dbConnection.js";
 
 // Import route files
 import footerLinksRoutes from "./routes/footerLinks.js";
@@ -155,32 +155,15 @@ app.use("/api/performance", performanceRoutes);
 app.use("/api/school-magazine", schoolMagazineRoutes);
 app.use("/api/admissions", admissionsRoutes);
 
-// MongoDB connection setup — attempt to connect but don't crash the server
-const mongoUri =
-  process.env.MONGO_URI ||
-  process.env.MONGO_URL ||
-  process.env.MONGODB_URI ||
-  process.env.MONGODB_URL ||
-  process.env.DATABASE_URL;
+// ==========================================
+// DATABASE CONNECTION
+// ==========================================
 let dbConnected = false;
-if (!mongoUri) {
-  console.warn(
-    "⚠️ Mongo connection string not set (MONGO_URI/MONGO_URL/MONGODB_URI/DATABASE_URL) — running in degraded mode without DB"
-  );
-} else {
-  mongoose
-    .connect(mongoUri)
-    .then(() => {
-      dbConnected = true;
-      console.log("✅ Connected to MongoDB");
-    })
-    .catch((err) => {
-      dbConnected = false;
-      console.warn("⚠️ MongoDB connect error — continuing without DB:", err.message || err);
-    });
-}
+await connectToDatabase().then((connected) => {
+  dbConnected = connected;
+});
 
-// Export dbConnected flag so routes can optionally check it (not required)
+// Export dbConnected flag so routes can optionally check it
 export { dbConnected };
 
 // Health check route

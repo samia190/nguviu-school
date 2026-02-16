@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import path from 'path';
 import Content from '../models/Content.js';
 
-const mongo = process.env.MONGO_URI || 'mongodb://localhost:27017/kangaru_girls';
+const mongo = process.env.MONGO_URI || 'mongodb+srv://kangach:kangach19@19@cluster0.7bmfdr8.mongodb.net/?appName=Cluster0';
 
 async function run() {
   await mongoose.connect(mongo, { });

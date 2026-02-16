@@ -30,7 +30,7 @@ router.get("/", async (req, res) => {
       heroTitle: "",
       heroSubtitle: "",
       mottoHeading: "MOTTO",
-      motto: "Strive for Excellence",
+      motto: "GROW IN GRACE",
       visionHeading: "VISION",
       vision: "Holistically Developed Person",
       missionHeading: "MISSION",

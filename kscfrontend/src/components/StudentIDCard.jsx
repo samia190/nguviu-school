@@ -194,7 +194,7 @@ export default function StudentIDCard({ student, onClose }) {
             fontFamily: 'Brush Script MT, cursive',
             marginTop: '5px'
           }}>
-            Strive For Excellence
+            GROW IN GRACE
           </div>
         </div>
 
@@ -445,7 +445,7 @@ export default function StudentIDCard({ student, onClose }) {
                     Motto:
                   </td>
                   <td style={{ fontStyle: 'italic' }}>
-                    Strive for Excellence
+                    GROW IN GRACE
                   </td>
                 </tr>
                 <tr>
