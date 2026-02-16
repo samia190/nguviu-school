@@ -138,3 +138,194 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* ========== CURRICULUM PAGE STYLES ========== */
+
+/* School Profile Section */
+.school-profile-section {
+  margin: 2rem auto;
+  padding: 2rem;
+  max-width: 1200px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.profile-header h2 {
+  font-size: 2em;
+  color: #2c3e50;
+  margin: 0 0 0.5rem 0;
+}
+
+.profile-header .subtitle {
+  color: #555;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.profile-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+}
+
+.profile-info .info-item {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-left: 4px solid #007bff;
+  border-radius: 4px;
+}
+
+.profile-info .info-item strong {
+  color: #007bff;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+/* Subject Combinations */
+.subject-combinations-container {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.subject-combinations-container h3 {
+  font-size: 1.5em;
+  color: #2c3e50;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.combinations-intro {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.stream-section {
+  margin-bottom: 2rem;
+}
+
+.stream-title {
+  font-size: 1.2em;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  margin-top: 0;
+}
+
+.stream-title:nth-of-type(2) {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.stream-section:nth-child(2) .stream-title {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.stream-section:nth-child(3) .stream-title {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.combinations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.combination-card {
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.2rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.combination-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  transform: translateY(-2px);
+}
+
+.combo-code {
+  font-weight: bold;
+  color: #667eea;
+  font-size: 0.9rem;
+  margin-bottom: 0.8rem;
+  background: #e7f0ff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.combo-subjects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.subject-badge {
+  background: #f0f0f0;
+  color: #333;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  border: 1px solid #ddd;
+  transition: all 0.2s ease;
+}
+
+.combination-card:hover .subject-badge {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.section-divider {
+  margin: 2rem auto;
+  max-width: 1200px;
+  border: none;
+  border-top: 2px solid #e9ecef;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .school-profile-section {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+
+  .profile-info {
+    grid-template-columns: 1fr;
+  }
+
+  .stream-title {
+    font-size: 1.1em;
+    padding: 0.8rem;
+  }
+
+  .combinations-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .combination-card {
+    padding: 1rem;
+  }
+
+  .subject-combinations-container {
+    padding: 1.5rem;
+  }
+}
