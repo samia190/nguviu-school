@@ -47,7 +47,7 @@ router.get("/:id", async (req, res) => {
 // POST create homework (teachers & admins)
 router.post("/", requireAuth, upload.array("attachments", 10), async (req, res) => {
   try {
-    const { title, description, subject, class: classParam, dueDate, status } = req.body;
+    const { title, description, subject, class: classParam, contentType, dueDate, status } = req.body;
     const user = req.user;
 
     // Only teachers and admins can upload homework
@@ -91,6 +91,7 @@ router.post("/", requireAuth, upload.array("attachments", 10), async (req, res) 
       description,
       subject,
       class: classParam,
+      contentType: contentType || "assignment",
       teacher: {
         _id: user._id,
         name: user.name
@@ -123,12 +124,13 @@ router.put("/:id", requireAuth, upload.array("attachments", 10), async (req, res
       return res.status(403).json({ error: "Unauthorized to update this homework" });
     }
 
-    const { title, description, subject, class: classParam, dueDate, status } = req.body;
+    const { title, description, subject, class: classParam, contentType, dueDate, status } = req.body;
 
     if (title) homework.title = title;
     if (description) homework.description = description;
     if (subject) homework.subject = subject;
     if (classParam) homework.class = classParam;
+    if (contentType) homework.contentType = contentType;
     if (dueDate !== undefined) homework.dueDate = dueDate || null;
     if (status) homework.status = status;
 

@@ -201,6 +201,18 @@ export default function HomeworkManagement({ user }) {
                 </select>
               </div>
               <div>
+                <label>Content Type *</label>
+                <select
+                  name="contentType"
+                  value={form.contentType}
+                  onChange={handleFormChange}
+                  required
+                  style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
+                >
+                  {contentTypes.map(ct => <option key={ct.value} value={ct.value}>{ct.label}</option>)}
+                </select>
+              </div>
+              <div>
                 <label>Due Date</label>
                 <input
                   type="date"
@@ -276,6 +288,7 @@ export default function HomeworkManagement({ user }) {
             <thead>
               <tr style={{ background: "#f8f9fa", borderBottom: "2px solid #dee2e6" }}>
                 <th style={{ padding: "12px", textAlign: "left" }}>Title</th>
+                <th style={{ padding: "12px", textAlign: "left" }}>Type</th>
                 <th style={{ padding: "12px", textAlign: "left" }}>Subject</th>
                 <th style={{ padding: "12px", textAlign: "left" }}>Class</th>
                 <th style={{ padding: "12px", textAlign: "left" }}>Teacher</th>
@@ -288,6 +301,9 @@ export default function HomeworkManagement({ user }) {
               {homework.map(hw => (
                 <tr key={hw._id} style={{ borderBottom: "1px solid #dee2e6" }}>
                   <td style={{ padding: "12px" }}>{hw.title}</td>
+                  <td style={{ padding: "12px" }}>
+                    {contentTypes.find(ct => ct.value === hw.contentType)?.label || hw.contentType}
+                  </td>
                   <td style={{ padding: "12px" }}>{hw.subject}</td>
                   <td style={{ padding: "12px" }}>{hw.class}</td>
                   <td style={{ padding: "12px" }}>{hw.teacher?.name || "N/A"}</td>

@@ -17,12 +17,19 @@ export default function TeacherHomework({ user }) {
     description: "",
     subject: "",
     class: "Form 1",
+    contentType: "assignment",
     dueDate: "",
     status: "published"
   });
 
   const classes = ["Form 1", "Form 2", "Form 3", "Form 4"];
   const subjects = ["Mathematics", "English", "Science", "History", "Geography", "Kiswahili", "Arts", "Physical Education"];
+  const contentTypes = [
+    { value: "assignment", label: "📋 Assignment" },
+    { value: "exam", label: "📝 Exam" },
+    { value: "notes", label: "📖 Notes" },
+    { value: "classwork", label: "✏️ Classwork" }
+  ];
 
   useEffect(() => {
     if (user?._id) {
@@ -64,6 +71,7 @@ export default function TeacherHomework({ user }) {
       formData.append("description", form.description);
       formData.append("subject", form.subject);
       formData.append("class", form.class);
+      formData.append("contentType", form.contentType);
       formData.append("dueDate", form.dueDate);
       formData.append("status", form.status);
 
@@ -79,7 +87,7 @@ export default function TeacherHomework({ user }) {
         setSuccess("Homework uploaded successfully!");
       }
 
-      setForm({ title: "", description: "", subject: "", class: "Form 1", dueDate: "", status: "published" });
+      setForm({ title: "", description: "", subject: "", class: "Form 1", contentType: "assignment", dueDate: "", status: "published" });
       setAttachmentFiles([]);
       setShowForm(false);
       setEditingId(null);
@@ -98,6 +106,7 @@ export default function TeacherHomework({ user }) {
       description: item.description || "",
       subject: item.subject,
       class: item.class,
+      contentType: item.contentType || "assignment",
       dueDate: item.dueDate ? item.dueDate.split("T")[0] : "",
       status: item.status
     });
@@ -191,6 +200,18 @@ export default function TeacherHomework({ user }) {
                   style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
                 >
                   {classes.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label>Content Type *</label>
+                <select
+                  name="contentType"
+                  value={form.contentType}
+                  onChange={handleFormChange}
+                  required
+                  style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
+                >
+                  {contentTypes.map(ct => <option key={ct.value} value={ct.value}>{ct.label}</option>)}
                 </select>
               </div>
               <div>
