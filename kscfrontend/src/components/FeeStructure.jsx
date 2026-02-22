@@ -81,11 +81,7 @@ export default function FeeStructure({ user }) {
   const notes =
     content?.notes ||
     content?.data?.notes ||
-    "Please ensure you use the most recent approved fee structure when making payments.";
-  const paymentInfo =
-    content?.paymentInfo ||
-    content?.data?.paymentInfo ||
-    "Payment details (bank, paybill, account number) will be provided in the documents below or by the school office.";
+    "Please contact the school office for more information about fee payment procedures.";
 
   const attachments = content?.attachments || [];
 
@@ -111,11 +107,6 @@ export default function FeeStructure({ user }) {
       <section style={{ marginTop: "1rem", textAlign: "left" }}>
         <h2 style={{ textAlign: "left" }}>Important Notes</h2>
         <p style={{ whiteSpace: "pre-wrap", textAlign: "left" }}>{notes}</p>
-      </section>
-
-      <section style={{ marginTop: "1rem", textAlign: "left" }}>
-        <h2 style={{ textAlign: "left" }}>Payment Information</h2>
-        <p style={{ whiteSpace: "pre-wrap", textAlign: "left" }}>{paymentInfo}</p>
       </section>
 
       {/* Attachments managed via Admin -> Fee Structure */}

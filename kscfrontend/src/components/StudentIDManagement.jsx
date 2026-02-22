@@ -498,7 +498,7 @@ export default function StudentIDManagement({ user }) {
                 <div><strong>Assessment Number:</strong> {selectedStudent.assessmentNumber}</div>
               )}
               <div><strong>Class:</strong> {selectedStudent.class}{selectedStudent.stream ? ` - ${selectedStudent.stream}` : ''}</div>
-              <div><strong>Website:</strong> <span style={{ color: "#2563eb" }}>{selectedStudent.websiteUrl || "https://kangaru -kangaru girls.ac.ke"}</span></div>
+              <div><strong>Website:</strong> <span style={{ color: "#2563eb" }}>{selectedStudent.websiteUrl || "https://kangaru girls.ac.ke"}</span></div>
               {selectedStudent.photoUrl && (
                 <div><strong>Photo:</strong> ✓ Included</div>
               )}

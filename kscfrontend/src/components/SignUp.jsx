@@ -6,9 +6,37 @@ import OptimizedImage from "./OptimizedImage";
 
 export default function SignUp({ onAuth }) {
   const [status, setStatus] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordStrength, setPasswordStrength] = useState({
+    length: false,
+    uppercase: false,
+    number: false,
+    special: false,
+    isValid: false
+  });
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [loadedCount, setLoadedCount] = useState(0);
   const totalImages = 4;
+
+  // Validate password strength
+  const validatePassword = (pwd) => {
+    const requirements = {
+      length: pwd.length >= 8,
+      uppercase: /[A-Z]/.test(pwd),
+      number: /[0-9]/.test(pwd),
+      special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd),
+      isValid: false
+    };
+    requirements.isValid = requirements.length && requirements.uppercase && requirements.number && requirements.special;
+    return requirements;
+  };
+
+  // Handle password change
+  const handlePasswordChange = (e) => {
+    const pwd = e.target.value;
+    setPassword(pwd);
+    setPasswordStrength(validatePassword(pwd));
+  };
 
   // Track image loading
   const handleImageLoad = () => {
@@ -281,13 +309,40 @@ export default function SignUp({ onAuth }) {
             className="classic-input"
           />
 
-          <input
-            name="password"
-            type="password"
-            placeholder="Create password"
-            required
-            className="classic-input"
-          />
+          <div>
+            <input
+              name="password"
+              type="password"
+              placeholder="Create password"
+              required
+              className="classic-input"
+              value={password}
+              onChange={handlePasswordChange}
+            />
+            {password && (
+              <div style={{ marginTop: '12px', fontSize: '13px' }}>
+                <div style={{ marginBottom: '8px', fontWeight: '500', color: '#475569' }}>Password must contain:</div>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px'
+                }}>
+                  <div style={{ color: passwordStrength.length ? '#16a34a' : '#94a3b8', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>{passwordStrength.length ? '✓' : '○'}</span> At least 8 characters
+                  </div>
+                  <div style={{ color: passwordStrength.uppercase ? '#16a34a' : '#94a3b8', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>{passwordStrength.uppercase ? '✓' : '○'}</span> One uppercase letter (A-Z)
+                  </div>
+                  <div style={{ color: passwordStrength.number ? '#16a34a' : '#94a3b8', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>{passwordStrength.number ? '✓' : '○'}</span> One number (0-9)
+                  </div>
+                  <div style={{ color: passwordStrength.special ? '#16a34a' : '#94a3b8', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>{passwordStrength.special ? '✓' : '○'}</span> One special character (!@#$%^&*...)
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           <select
             name="role"
@@ -303,7 +358,15 @@ export default function SignUp({ onAuth }) {
             <option value="staff">Staff</option>
           </select>
 
-          <button className="classic-btn-signup" type="submit">
+          <button 
+            className="classic-btn-signup" 
+            type="submit"
+            disabled={!passwordStrength.isValid}
+            style={{
+              opacity: !passwordStrength.isValid ? 0.6 : 1,
+              cursor: !passwordStrength.isValid ? 'not-allowed' : 'pointer'
+            }}
+          >
             Create Account
           </button>
         </form>

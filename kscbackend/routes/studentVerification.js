@@ -33,7 +33,7 @@ router.post("/verify", async (req, res) => {
         stream: student.stream,
         assessmentNumber: student.assessmentNumber,
         photoUrl: student.photoUrl,
-        websiteUrl: student.websiteUrl || "https://kangaru -kangaru girls.ac.ke",
+        websiteUrl: student.websiteUrl || "https://kangaru girls.ac.ke",
         status: student.status,
         yearOfAdmission: student.yearOfAdmission,
         idCardIssueDate: student.idCardIssueDate,
@@ -69,7 +69,7 @@ router.post("/generate-token/:studentId", requireRole('admin'), async (req, res)
         class: student.class,
         assessmentNumber: student.assessmentNumber,
         photoUrl: student.photoUrl,
-        websiteUrl: student.websiteUrl || "https://kangaru -kangaru girls.ac.ke"
+        websiteUrl: student.websiteUrl || "https://kangaru girls.ac.ke"
       },
       expiresIn: "2 minutes"
     });

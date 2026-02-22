@@ -395,7 +395,7 @@ export default function StudentIDCard({ student, onClose }) {
                 lineHeight: '1.3'
               }}>
                 DIOCESE OF EMBU<br/>
-                kangaru -KANGARU GIRLS' SENIOR SCHOOL
+                kangaru GIRLS' SENIOR SCHOOL
               </div>
               <div style={{ 
                 fontSize: '12px', 

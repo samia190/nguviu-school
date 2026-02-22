@@ -18,11 +18,11 @@ export default function GalleryManagement() {
 
   const API_ORIGIN = useMemo(() => {
     try {
-      if (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_ORIGIN) {
-        return import.meta.env.VITE_API_ORIGIN;
+      if (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL;
       }
     } catch {}
-    return "http:///localhost:4000";
+    return "http://localhost:4000";
   }, []);
 
   function absUrl(u) {

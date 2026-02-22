@@ -21,9 +21,10 @@ export default function OptimizedImage({
   priority = false,
   onLoad,
   onError,
+  fetchPriority = "auto",
   ...props 
 }) {
-  const [ref, inView] = useInView({ rootMargin: "200px" });
+  const [ref, inView] = useInView({ rootMargin: priority ? "0px" : "200px" });
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
@@ -86,7 +87,8 @@ export default function OptimizedImage({
             width={width}
             height={height}
             loading={priority ? "eager" : "lazy"}
-            decoding="async"
+            fetchPriority={priority ? "high" : fetchPriority}
+            decoding={priority ? "sync" : "async"}
             onLoad={handleLoad}
             onError={handleError}
             style={{ 

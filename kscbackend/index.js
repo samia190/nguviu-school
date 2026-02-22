@@ -27,6 +27,13 @@ import resultsRoutes from "./routes/results.js";
 import performanceRoutes from "./routes/performance.js";
 import schoolMagazineRoutes from "./routes/schoolMagazine.js";
 import admissionsRoutes from "./routes/admissions.js";
+import staffRoutes from "./routes/staff.js";
+import heroContentRoutes from "./routes/heroContent.js";
+import homeNewsRoutes from "./routes/homeNews.js";
+import adminStudentsRoutes from "./routes/adminStudents.js";
+import eventsRoutes from "./routes/events.js";
+import studentLifeRoutes from "./routes/studentLife.js";
+import homeworkRoutes from "./routes/homework.js";
 
 // Initialize the Express app
 const app = express();
@@ -154,6 +161,13 @@ app.use("/api/results", resultsRoutes);
 app.use("/api/performance", performanceRoutes);
 app.use("/api/school-magazine", schoolMagazineRoutes);
 app.use("/api/admissions", admissionsRoutes);
+app.use("/api/staff", staffRoutes);
+app.use("/api/hero-content", heroContentRoutes);
+app.use("/api/home-news", homeNewsRoutes);
+app.use("/api/admin/students", adminStudentsRoutes);
+app.use("/api/events", eventsRoutes);
+app.use("/api/student-life", studentLifeRoutes);
+app.use("/api/homework", homeworkRoutes);
 
 // ==========================================
 // DATABASE CONNECTION

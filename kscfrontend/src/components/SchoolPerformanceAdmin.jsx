@@ -42,7 +42,7 @@ const SchoolPerformanceAdmin = ({ user }) => {
       if (filters.published) params.append("published", filters.published);
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/performance/admin/all?${params}`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/performance/admin/all?${params}`,
         {
           headers: {
             "Authorization": `Bearer ${token}`
@@ -86,8 +86,8 @@ const SchoolPerformanceAdmin = ({ user }) => {
     try {
       const token = localStorage.getItem("token");
       const url = editingPerformance
-        ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/performance/admin/${editingPerformance._id}`
-        : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/performance/admin/create`;
+        ? `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/performance/admin/${editingPerformance._id}`
+        : `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/performance/admin/create`;
 
       const method = editingPerformance ? "PUT" : "POST";
 
@@ -138,7 +138,7 @@ const SchoolPerformanceAdmin = ({ user }) => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/performance/admin/${performanceId}/publish`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/performance/admin/${performanceId}/publish`,
         {
           method: "PATCH",
           headers: {
@@ -166,7 +166,7 @@ const SchoolPerformanceAdmin = ({ user }) => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/performance/admin/${performanceId}`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/performance/admin/${performanceId}`,
         {
           method: "DELETE",
           headers: {

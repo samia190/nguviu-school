@@ -26,14 +26,26 @@ export default function Gallery() {
     async function load() {
       try {
         const data = await get('/api/content/gallery');
+        console.log('Gallery API response:', data);
+        
         // backend returns array of gallery items; flatten attachments for simple gallery
         if (Array.isArray(data) && data.length > 0) {
           const flat = [];
           data.forEach((section) => {
-            (section.attachments || []).forEach((att) => {
-              flat.push({ url: att.url || att.downloadUrl, originalName: att.title || att.originalName || section.title, description: att.description || section.body });
-            });
+            console.log('Processing gallery section:', section);
+            if (section && section.attachments && Array.isArray(section.attachments)) {
+              section.attachments.forEach((att) => {
+                if (att) {
+                  flat.push({ 
+                    url: att.url || att.downloadUrl, 
+                    originalName: att.title || att.originalName || section.title || "Gallery Item", 
+                    description: att.description || section.body || "" 
+                  });
+                }
+              });
+            }
           });
+          console.log('Flattened gallery items:', flat);
           if (flat.length > 0) {
             setItems(flat);
             setLoading(false);
@@ -41,147 +53,22 @@ export default function Gallery() {
           }
         }
 
-        // Fallback to static list if API empty
-        const mainGallery = [
-          { url: "/images/gallery/gallary.JPG", originalName: "School Gallery", description: "Main school gallery entrance" },
-          { url: "/images/gallery/hike.jpeg", originalName: "Hiking Trip", description: "Students on a hiking adventure" },
-          { url: "/images/gallery/IMG_0753.JPG", originalName: "School Activity", description: "Students engaged in school activities" },
-          { url: "/images/gallery/IMG_0755.JPG", originalName: "School Event", description: "Memorable school event" },
-          { url: "/images/gallery/IMG_0776.JPG", originalName: "School Life", description: "Daily life at KANGARU GIRLS" },
-          { url: "/images/gallery/IMG_0778.JPG", originalName: "Student Activities", description: "Students participating in activities" },
-          { url: "/images/gallery/IMG_0779.JPG", originalName: "Campus View", description: "Beautiful campus scenery" },
-          { url: "/images/gallery/IMG_0791.JPG", originalName: "School Grounds", description: "Our well-maintained school grounds" },
-          { url: "/images/gallery/IMG_0799.JPG", originalName: "School Day", description: "A typical school day" },
-          { url: "/images/gallery/IMG_0800.JPG", originalName: "Learning Environment", description: "Our conducive learning environment" },
-          { url: "/images/gallery/IMG_0801.JPG", originalName: "School Facilities", description: "Modern school facilities" },
-          { url: "/images/gallery/IMG_0802.JPG", originalName: "Student Interaction", description: "Students working together" },
-          { url: "/images/gallery/IMG_0803.JPG", originalName: "Campus Life", description: "Vibrant campus life" },
-          { url: "/images/gallery/IMG_0937.JPG", originalName: "School Programs", description: "Engaging school programs" },
-          { url: "/images/gallery/IMG_1006.JPG", originalName: "Academic Excellence", description: "Striving for academic excellence" },
-          { url: "/images/replace/IMG_0969.JPG", originalName: "Student Achievement", description: "Celebrating student achievements" },
-          { url: "/images/replace/IMG_0970.JPG", originalName: "School Community", description: "Our strong school community" },
-          { url: "/images/replace/IMG_0971.JPG", originalName: "Student Life", description: "Enriching student life experiences" },
-          { url: "/images/replace/IMG_0972.JPG", originalName: "School Activities", description: "Diverse school activities" },
-          { url: "/images/replace/IMG_0973.JPG", originalName: "Campus Events", description: "Regular campus events" },
-          { url: "/images/replace/IMG_0974.JPG", originalName: "School Spirit", description: "Showing our school spirit" },
-          { url: "/images/replace/IMG_0981.JPG", originalName: "Student Engagement", description: "Active student engagement" },
-          { url: "/images/replace/IMG_0982.JPG", originalName: "Learning Together", description: "Collaborative learning" },
-          { url: "/images/replace/IMG_0983.JPG", originalName: "School Culture", description: "Our unique school culture" },
-          { url: "/images/gallery/IMG_1853.JPG", originalName: "School Moments", description: "Capturing special moments" },
-          { url: "/images/gallery/IMG_1869.JPG", originalName: "Student Success", description: "Celebrating student success" },
-          { url: "/images/gallery/IMG_1875.JPG", originalName: "School Pride", description: "Taking pride in our school" },
-          { url: "/images/gallery/IMG_1876.JPG", originalName: "Campus Beauty", description: "Beautiful campus views" },
-          { url: "/images/gallery/IMG_1877.JPG", originalName: "School Unity", description: "Unity in our school family" },
-          { url: "/images/gallery/IMG_1878.JPG", originalName: "Student Excellence", description: "Excellence in all we do" },
-          { url: "/images/gallery/IMG_1879.JPG", originalName: "School Joy", description: "Joyful school environment" },
-          { url: "/images/gallery/IMG_1883.JPG", originalName: "Learning Spaces", description: "Modern learning spaces" },
-          { url: "/images/gallery/IMG_1886.JPG", originalName: "Student Growth", description: "Supporting student growth" },
-          { url: "/images/gallery/IMG_1887.JPG", originalName: "School Excellence", description: "Pursuit of excellence" },
-          { url: "/images/gallery/IMG_1906.JPG", originalName: "Campus Activities", description: "Varied campus activities" },
-          { url: "/images/gallery/IMG_1907.JPG", originalName: "School Development", description: "Continuous development" },
-          { url: "/images/gallery/IMG_1909.JPG", originalName: "Student Talent", description: "Nurturing student talents" },
-          { url: "/images/gallery/IMG_1910.JPG", originalName: "School Leadership", description: "Developing future leaders" },
-          { url: "/images/gallery/lab 2.jpeg", originalName: "Science Lab", description: "Our modern science laboratory" },
-          { url: "/images/gallery/lab team 1.jpeg", originalName: "Lab Team", description: "Science lab team in action" },
-          { url: "/images/gallery/std 2.jpg", originalName: "Student Group 2", description: "Students learning together" },
-          { url: "/images/gallery/std 3.jpg", originalName: "Student Group 3", description: "Group study session" },
-          { url: "/images/gallery/std 7.jpg", originalName: "Student Group 7", description: "Collaborative learning" },
-          { url: "/images/gallery/students 01.jpeg", originalName: "Student Body", description: "Our wonderful student body" },
-        ];
-        
-        const artsGallery = [
-          { url: "/images/gallery/arts/01.JPG", originalName: "Arts Performance", description: "Students performing arts" },
-          { url: "/images/gallery/arts/02.JPG", originalName: "Creative Arts", description: "Creative arts showcase" },
-          { url: "/images/gallery/arts/03.JPG", originalName: "Music & Drama", description: "Music and drama performance" },
-          { url: "/images/gallery/arts/04.JPG", originalName: "Artistic Expression", description: "Students expressing creativity" },
-          { url: "/images/gallery/arts/05.JPG", originalName: "Arts Talent", description: "Showcasing artistic talent" },
-          { url: "/images/gallery/arts/06.JPG", originalName: "Cultural Arts", description: "Cultural arts celebration" },
-          { url: "/images/gallery/arts/07.JPG", originalName: "Performance Arts", description: "Performance arts event" },
-          { url: "/images/gallery/arts/10.JPG", originalName: "Arts Festival", description: "Annual arts festival" },
-          { url: "/images/gallery/arts/11.JPG", originalName: "Drama Club", description: "Drama club performance" },
-          { url: "/images/gallery/arts/12.JPG", originalName: "Musical Show", description: "Musical performance" },
-          { url: "/images/gallery/arts/13.JPG", originalName: "Dance Performance", description: "Dance team showcase" },
-          { url: "/images/gallery/arts/14.JPG", originalName: "Arts Exhibition", description: "Arts exhibition display" },
-          { url: "/images/gallery/arts/15.JPG", originalName: "Creative Show", description: "Creative arts show" },
-          { url: "/images/gallery/arts/16.JPG", originalName: "Arts Gala", description: "Arts gala event" },
-          { url: "/images/gallery/arts/17.JPG", originalName: "Talent Show", description: "Student talent showcase" },
-          { url: "/images/gallery/arts/18.JPG", originalName: "Arts Program", description: "Arts program highlights" },
-          { url: "/images/gallery/arts/19.JPG", originalName: "Performance Night", description: "Evening performance" },
-          { url: "/images/gallery/arts/20.JPG", originalName: "Arts Award", description: "Arts awards ceremony" },
-          { url: "/images/gallery/arts/21.JPG", originalName: "Cultural Dance", description: "Traditional dance performance" },
-          { url: "/images/gallery/arts/22.JPG", originalName: "Arts Concert", description: "School arts concert" },
-        ];
-        
-        const eventsGallery = [
-          { url: "/images/gallery/events/IMG_1964.JPG", originalName: "School Event", description: "Major school event" },
-          { url: "/images/gallery/events/IMG_1965.JPG", originalName: "Event Day", description: "Special event day" },
-          { url: "/images/gallery/events/IMG_1966.JPG", originalName: "Celebration", description: "School celebration" },
-          { url: "/images/gallery/events/IMG_1968.JPG", originalName: "Awards Ceremony", description: "Awards ceremony event" },
-          { url: "/images/gallery/events/IMG_1969.JPG", originalName: "Sports Day", description: "Annual sports day" },
-          { url: "/images/gallery/events/IMG_1970.JPG", originalName: "Special Occasion", description: "Special school occasion" },
-          { url: "/images/gallery/events/IMG_1971.JPG", originalName: "School Festival", description: "School festival celebration" },
-          { url: "/images/gallery/events/IMG_1972.JPG", originalName: "Event Gathering", description: "School gathering event" },
-          { url: "/images/gallery/events/IMG_1973.JPG", originalName: "Annual Event", description: "Annual school event" },
-          { url: "/images/gallery/events/IMG_1974.JPG", originalName: "Event Program", description: "Event program activities" },
-          { url: "/images/gallery/events/IMG_1975.JPG", originalName: "Special Day", description: "Special day celebration" },
-          { url: "/images/gallery/events/IMG_1976.JPG", originalName: "Event Activity", description: "Event activities" },
-          { url: "/images/gallery/events/IMG_1977.JPG", originalName: "School Ceremony", description: "Official ceremony" },
-          { url: "/images/gallery/events/IMG_1978.JPG", originalName: "Event Highlight", description: "Event highlights" },
-          { url: "/images/gallery/events/IMG_1979.JPG", originalName: "Celebration Day", description: "Day of celebration" },
-          { url: "/images/gallery/events/IMG_1980.JPG", originalName: "Event Success", description: "Successful event" },
-          { url: "/images/gallery/events/IMG_1981.JPG", originalName: "School Function", description: "School function" },
-          { url: "/images/gallery/events/IMG_1982.JPG", originalName: "Event Moments", description: "Memorable event moments" },
-          { url: "/images/gallery/events/IMG_1983.JPG", originalName: "Grand Event", description: "Grand school event" },
-          { url: "/images/gallery/events/IMG_1984.JPG", originalName: "Event Joy", description: "Joyful event" },
-          { url: "/images/gallery/events/IMG_1985.JPG", originalName: "Event Pride", description: "Proud event moments" },
-          { url: "/images/gallery/events/IMG_1986.JPG", originalName: "Event Unity", description: "Unity at events" },
-          { url: "/images/gallery/events/IMG_1987.JPG", originalName: "Event Spirit", description: "School spirit event" },
-          { url: "/images/gallery/events/IMG_1988.JPG", originalName: "Event Excellence", description: "Excellence in events" },
-          { url: "/images/gallery/events/IMG_1989.JPG", originalName: "Event Achievement", description: "Event achievements" },
-          { url: "/images/gallery/events/IMG_1990.JPG", originalName: "Event Participation", description: "Active participation" },
-          { url: "/images/gallery/events/IMG_1991.JPG", originalName: "Event Community", description: "Community gathering" },
-          { url: "/images/gallery/events/IMG_1992.JPG", originalName: "Event Together", description: "Coming together" },
-          { url: "/images/gallery/events/IMG_1993.JPG", originalName: "Event Success Story", description: "Successful event" },
-          { url: "/images/gallery/events/IMG_1994.JPG", originalName: "Event Memory", description: "Creating memories" },
-          { url: "/images/gallery/events/IMG_1995.JPG", originalName: "Event Experience", description: "Great experiences" },
-          { url: "/images/gallery/events/IMG_1996.JPG", originalName: "Event Milestone", description: "Milestone event" },
-          { url: "/images/gallery/events/IMG_1997.JPG", originalName: "Event Celebration", description: "Celebration moments" },
-          { url: "/images/gallery/events/IMG_1998.JPG", originalName: "Event Honor", description: "Honoring achievements" },
-          { url: "/images/gallery/events/IMG_1999.JPG", originalName: "Event Recognition", description: "Recognition event" },
-          { url: "/images/gallery/events/IMG_2001.JPG", originalName: "Event Gathering", description: "Community gathering" },
-          { url: "/images/gallery/events/IMG_2002.JPG", originalName: "Event Fellowship", description: "Fellowship event" },
-          { url: "/images/gallery/events/IMG_2003.JPG", originalName: "Event Teamwork", description: "Teamwork showcase" },
-          { url: "/images/gallery/events/IMG_2004.JPG", originalName: "Event Bonding", description: "Bonding activities" },
-          { url: "/images/gallery/events/IMG_2005.JPG", originalName: "Event Fun", description: "Fun-filled event" },
-          { url: "/images/gallery/events/IMG_2006.JPG", originalName: "Event Energy", description: "Energetic event" },
-          { url: "/images/gallery/events/IMG_2007.JPG", originalName: "Event Enthusiasm", description: "Enthusiastic participation" },
-          { url: "/images/gallery/events/IMG_2008.JPG", originalName: "Event Passion", description: "Passionate performance" },
-          { url: "/images/gallery/events/IMG_2009.JPG", originalName: "Event Dedication", description: "Dedicated effort" },
-          { url: "/images/gallery/events/IMG_2010.JPG", originalName: "Event Commitment", description: "Commitment shown" },
-          { url: "/images/gallery/events/IMG_2011.JPG", originalName: "Event Achievement", description: "Achievement celebrated" },
-        ];
-        
-        const toursGallery = [
-          { url: "/images/gallery/tours/IMG_0969.JPG", originalName: "Educational Tour", description: "Educational field trip" },
-          { url: "/images/gallery/tours/IMG_0986.JPG", originalName: "Tour Experience", description: "Tour learning experience" },
-          { url: "/images/gallery/tours/IMG_1332.JPG", originalName: "Tour Adventure", description: "Adventure tour" },
-          { url: "/images/gallery/tours/std 6.jpg", originalName: "Tour Group", description: "Students on tour" },
-        ];
-        
-        const allImages = [...mainGallery, ...artsGallery, ...eventsGallery, ...toursGallery];
-        
+        // No data in database - show empty state
+        console.log('No gallery data available');
         setCategories({
-          all: allImages,
-          main: mainGallery,
-          arts: artsGallery,
-          events: eventsGallery,
-          tours: toursGallery
+          all: [],
+          main: [],
+          arts: [],
+          events: [],
+          tours: []
         });
-        setItems(allImages);
+        setItems([]);
+        setError('No images available yet. Please upload images through the admin dashboard.');
         setLoading(false);
       } catch (err) {
+        console.error('Gallery loading error:', err);
         setItems([]);
-        setError('Failed to load gallery');
+        setError(`Failed to load gallery: ${err.message || 'Unknown error'}`);
         setLoading(false);
       }
     }
@@ -193,7 +80,7 @@ export default function Gallery() {
     return (
       <section style={{ padding: 20 }}>
         <h2>Gallery</h2>
-        <p>Loading gallery…</p>
+        <p>Loading gallery images...</p>
       </section>
     );
   }
@@ -244,8 +131,7 @@ export default function Gallery() {
     <div className="gallery-page">
       <section style={{ padding: 20 }}>
       {/* ================= HERO BACKGROUND SECTION ================= */}
-      <OptimizedBackgroundImage
-        src="/images/gallery/gallary.JPG"
+      <div
         className="gallery-hero"
         style={{
           position: "relative",
@@ -255,6 +141,7 @@ export default function Gallery() {
           minHeight: 420,
           overflow: "hidden",
           marginBottom: 30,
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -294,7 +181,7 @@ export default function Gallery() {
             </p>
           </div>
         </div>
-      </OptimizedBackgroundImage>
+      </div>
 
       <h2>Gallery</h2>
       <p style={{ maxWidth: 720, color: "#4b5563", fontSize: 14 }}>

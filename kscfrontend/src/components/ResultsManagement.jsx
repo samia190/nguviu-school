@@ -1,5 +1,6 @@
 // components/ResultsManagement.jsx
 import React, { useState, useEffect } from "react";
+import { get } from "../utils/api";
 
 const ResultsManagement = ({ user }) => {
   const [results, setResults] = useState([]);
@@ -63,29 +64,20 @@ const ResultsManagement = ({ user }) => {
   const fetchResults = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
       const params = new URLSearchParams();
       if (filters.term) params.append("term", filters.term);
       if (filters.year) params.append("year", filters.year);
       if (filters.published) params.append("published", filters.published);
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/results/admin/all?${params}`,
-        {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        }
-      );
-
-      const data = await response.json();
-      if (response.ok) {
-        setResults(data.results || []);
+      const data = await get(`/api/results/admin/all?${params}`);
+      if (data && (data.results || Array.isArray(data))) {
+        setResults(data.results || data || []);
       } else {
-        setError(data.error || "Failed to fetch results");
+        setResults([]);
       }
     } catch (err) {
-      setError("Failed to fetch results");
+      setError(err.message || "Failed to fetch results");
+      setResults([]);
     } finally {
       setLoading(false);
     }
@@ -93,22 +85,16 @@ const ResultsManagement = ({ user }) => {
 
   const fetchStudents = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/student-verification/students`,
-        {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        }
-      );
-
-      const data = await response.json();
-      if (response.ok) {
-        setStudents(data.students || []);
+      // Fetch students added by admin in StudentAdminManagement
+      const data = await get("/api/admin/students/list/simple");
+      if (data && (data.students || Array.isArray(data))) {
+        setStudents(data.students || data || []);
+      } else {
+        setStudents([]);
       }
     } catch (err) {
       console.error("Failed to fetch students:", err);
+      setStudents([]);
     }
   };
 
@@ -116,10 +102,11 @@ const ResultsManagement = ({ user }) => {
     const admissionNumber = e.target.value;
     const student = students.find(s => s.admissionNumber === admissionNumber);
     if (student) {
+      const studentFullName = student.fullName || `${student.firstName} ${student.lastName}`.trim();
       setFormData({
         ...formData,
         admissionNumber: student.admissionNumber,
-        studentName: student.fullName || `${student.firstName} ${student.lastName}`,
+        studentName: studentFullName,
         class: student.class || "",
         stream: student.stream || "",
         assessmentNumber: student.assessmentNumber || ""
@@ -216,8 +203,8 @@ const ResultsManagement = ({ user }) => {
     try {
       const token = localStorage.getItem("token");
       const url = editingResult
-        ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/results/admin/${editingResult._id}`
-        : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/results/admin/create`;
+        ? `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/results/admin/${editingResult._id}`
+        : `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/results/admin/create`;
 
       const method = editingResult ? "PUT" : "POST";
 
@@ -293,7 +280,7 @@ const ResultsManagement = ({ user }) => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/results/admin/upload-pdf`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/results/admin/upload-pdf`,
         {
           method: "POST",
           headers: {
@@ -324,7 +311,7 @@ const ResultsManagement = ({ user }) => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/results/admin/${resultId}/publish`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/results/admin/${resultId}/publish`,
         {
           method: "PATCH",
           headers: {
@@ -352,7 +339,7 @@ const ResultsManagement = ({ user }) => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/results/admin/${resultId}`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/results/admin/${resultId}`,
         {
           method: "DELETE",
           headers: {

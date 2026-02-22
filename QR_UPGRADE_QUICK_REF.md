@@ -5,7 +5,7 @@
 ### QR Codes Now Include:
 - ✅ **Assessment Number** (CBC students)
 - ✅ **Class & Stream** 
-- ✅ **School Website** (https://kangaru -kangaru girls.ac.ke)
+- ✅ **School Website** (https://kangaru girls.ac.ke)
 - ✅ **Student Photo** (if available)
 
 ## 🎯 Quick Actions
@@ -45,7 +45,7 @@ Photo URL: https://example.com/student-photo.jpg
 
 ### Change Website URL (Optional)
 ```javascript
-// Default: https://kangaru -kangaru girls.ac.ke
+// Default: https://kangaru girls.ac.ke
 // Can customize per student if needed
 ```
 

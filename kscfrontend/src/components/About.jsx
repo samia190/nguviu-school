@@ -6,16 +6,57 @@ import EditableSubheading from "../components/EditableSubheading";
 import { safePath } from "../utils/paths";
 import LazyImage from "./LazyImage";
 import OptimizedImage from "./OptimizedImage";
+import { useBatchImagePreload } from "../hooks/useImagePreload";
 
 export default function About({ user }) {
   const [content, setContent] = useState({});
+  const [staff, setStaff] = useState([]);
   const [error, setError] = useState("");
+  const [loadingStaff, setLoadingStaff] = useState(true);
+  const [staffImages, setStaffImages] = useState([]);
+  const [heroContent, setHeroContent] = useState(null);
 
   useEffect(() => {
-    get("/api/content/about")
-      .then((data) => setContent(data || {}))
+    Promise.all([
+      get("/api/content/about").catch(() => ({})),
+      get("/api/hero-content?page=about&type=image").catch(() => null)
+    ])
+      .then(([aboutData, heroData]) => {
+        setContent(aboutData || {});
+        // Get first active hero image for the about page
+        if (heroData && Array.isArray(heroData) && heroData.length > 0) {
+          const activeHero = heroData.find(h => h.active) || heroData[0];
+          setHeroContent(activeHero);
+        }
+      })
       .catch(() => setError("Failed to load about page content."));
   }, []);
+
+  useEffect(() => {
+    // Fetch both principal and deputy principal staff
+    Promise.all([
+      get("/api/staff?type=principal").catch(() => []),
+      get("/api/staff?type=deputy_principal").catch(() => [])
+    ])
+      .then(([principals, deputies]) => {
+        const principalList = Array.isArray(principals) ? principals : (principals.staff || []);
+        const deputyList = Array.isArray(deputies) ? deputies : (deputies.staff || []);
+        const allStaff = [...principalList, ...deputyList];
+        setStaff(allStaff);
+        
+        // Prepare staff images for preloading
+        const images = allStaff
+          .map(person => ({
+            src: person.photoUrl || (person.type === 'principal' ? '/images/Principal.png' : '/images/DSC_5372.jpg')
+          }));
+        setStaffImages(images);
+      })
+      .catch(() => setStaff([]))
+      .finally(() => setLoadingStaff(false));
+  }, []);
+
+  // Preload staff photos
+  useBatchImagePreload(staffImages);
 
   function updateSection(section, value) {
     patch(`/api/content/about/${section}`, { value })
@@ -60,9 +101,7 @@ export default function About({ user }) {
     maxHeight: 1000,
     overflow: "hidden",
     height: window.innerWidth <= 480 ? 300 : 500,
-          backgroundImage: `url(${encodeURI(
-            resolvePath(content.heroBackgroundUrl || "images/background images/hero.JPG")
-          )})`,
+          backgroundImage: heroContent?.url ? `url(${encodeURI(heroContent.url)})` : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat"
@@ -244,6 +283,7 @@ export default function About({ user }) {
       </div>
 
       {/* ================= PRINCIPAL AND DEPUTY SECTION ================= */}
+      {!loadingStaff && (
       <div
         className="about-leadership"
         style={{
@@ -252,66 +292,13 @@ export default function About({ user }) {
           borderTop: "1px solid #eee",
         }}
       >
-        {/* PRINCIPAL SECTION - CENTERED AT TOP */}
-        <div
-          className="about-leader-card about-principal"
-          style={{
-            textAlign: "center",
-            margin: "0 auto 30px auto",
-            maxWidth: 500,
-          }}
-        >
+        {staff.filter(s => s.type === "principal").map(principal => (
           <div
+            key={principal._id}
+            className="about-leader-card about-principal"
             style={{
-              width: 180,
-              height: 180,
-              borderRadius: "50%",
-              overflow: "hidden",
-              marginBottom: 16,
-              margin: "0 auto 16px auto",
-              border: "3px solid #ddd",
-            }}
-          >
-            <OptimizedImage
-              src={content.principalImageUrl || "/images/background images/principle.jpeg"}
-              alt="Principal"
-              loading="lazy"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover"
-              }}
-            />
-          </div>
-
-          <h3> Principal's Remarks</h3>
-          <p style={{ fontWeight: "bold" }}>principal name</p>
-
-          <EditableText
-            value={
-              content.principalMessage ||
-              "At KANGARU GIRLS SCHOOL, we believe that every girl has a unique potential. Our commitment is to provide a supportive environment where she can discover her strengths, grow in character, and pursue academic excellence with confidence."
-            }
-            onSave={(val) => updateSection("principalMessage", val)}
-            isAdmin={user?.role === "admin"}
-          />
-        </div>
-
-        {/* DEPUTY PRINCIPALS - TWO COLUMNS BELOW */}
-        <div
-          className="about-deputies"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: "20px",
-          }}
-        >
-          {/* DEPUTY PRINCIPAL 1 - LEFT */}
-          <div
-            className="about-leader-card"
-            style={{
-              flex: 1,
               textAlign: "center",
+              margin: "0 auto 30px auto",
               maxWidth: 500,
             }}
           >
@@ -327,9 +314,10 @@ export default function About({ user }) {
               }}
             >
               <OptimizedImage
-                src={content.deputyImageUrl || "/images/background images/deputy.jpeg"}
-                alt="Deputy Principal"
-                loading="lazy"
+                src={principal.photoUrl || "/images/Principal.png"}
+                alt={principal.fullName}
+                priority={true}
+                fetchPriority="high"
                 style={{
                   width: "100%",
                   height: "100%",
@@ -338,62 +326,66 @@ export default function About({ user }) {
               />
             </div>
 
-            <h3>Deputy Principal (Administration)</h3>
-            <p style={{ fontWeight: "bold" }}>DEPUTY NAME</p>
-            <EditableText
-              value={
-                content.deputyMessage ||
-                "As the Deputy Principal, I am committed to ensuring that each student receives the guidance and support necessary for their personal and academic growth."
-              }
-              onSave={(val) => updateSection("deputyMessage", val)}
-              isAdmin={user?.role === "admin"}
-            />
+            <h3>Principal's Remarks</h3>
+            <p style={{ fontWeight: "bold" }}>{principal.fullName}</p>
+            <p style={{ color: "#34495e", fontSize: "0.95rem", marginBottom: "15px" }}>{principal.title}</p>
+            <p style={{ color: "#34495e", lineHeight: "1.6" }}>{principal.remarks || "Welcome to Kangaru Girls School"}</p>
           </div>
+        ))}
 
-          {/* DEPUTY PRINCIPAL 2 - RIGHT */}
-          <div
-            className="about-leader-card"
-            style={{
-              flex: 1,
-              textAlign: "center",
-              maxWidth: 500,
-            }}
-          >
+        {/* DEPUTY PRINCIPALS - TWO COLUMNS BELOW */}
+        <div
+          className="about-deputies"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: "20px",
+            flexWrap: "wrap"
+          }}
+        >
+          {staff.filter(s => s.type === "deputy_principal").map((deputy, idx) => (
             <div
+              key={deputy._id}
+              className="about-leader-card"
               style={{
-                width: 180,
-                height: 180,
-                borderRadius: "50%",
-                overflow: "hidden",
-                marginBottom: 16,
-                margin: "0 auto 16px auto",
-                border: "3px solid #ddd",
+                flex: 1,
+                textAlign: "center",
+                maxWidth: 500,
+                minWidth: window.innerWidth <= 768 ? "100%" : "48%"
               }}
             >
-              <LazyImage
-                src={safePath(content.deputy2ImageUrl || "/images/background images/miss.png")}
-                alt="Deputy Principal 2"
+              <div
                 style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover"
+                  width: 180,
+                  height: 180,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  marginBottom: 16,
+                  margin: "0 auto 16px auto",
+                  border: "3px solid #ddd",
                 }}
-              />
-            </div>
+              >
+                <OptimizedImage
+                  src={deputy.photoUrl || "/images/DSC_5372.jpg"}
+                  alt={deputy.fullName}
+                  priority={idx === 0}
+                  fetchPriority={idx === 0 ? "high" : "auto"}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover"
+                  }}
+                />
+              </div>
 
-            <h3>Deputy Principal (Academics)</h3>
-            <p style={{ fontWeight: "bold" }}>DEPUTY NAME</p>
-            <EditableText
-              value={
-                content.deputy2Message ||
-                "Our academic programs are designed to challenge and inspire students to reach their full potential and excel in all areas of learning."
-              }
-              onSave={(val) => updateSection("deputy2Message", val)}
-              isAdmin={user?.role === "admin"}
-            />
-          </div>
+              <h3>{deputy.title}</h3>
+              <p style={{ fontWeight: "bold" }}>{deputy.fullName}</p>
+              <p style={{ color: "#34495e", lineHeight: "1.6" }}>{deputy.remarks || "Dedicated to student success"}</p>
+            </div>
+          ))}
         </div>
       </div>
+      )}
 
       {/* ERROR */}
       {error && <p style={{ color: "red" }}>{error}</p>}

@@ -6,6 +6,7 @@ import About from "./components/About";
 import Contact from "./components/Contact";
 import Admissions from "./components/Admissions";
 import Student from "./components/Student";
+import StudentLife from "./components/StudentLife";
 import Newsletter from "./components/Newsletter";
 import Gallery from "./components/Gallery";
 import Events from "./components/Events";
@@ -20,13 +21,12 @@ import Curriculum from "./components/Curriculum";
 import Performance from "./components/Performance";
 import Policies from "./components/Policies";
 import Parents from "./components/Parents";
-import Staff from "./components/Staff";
 import Legal from "./components/Legal";
 import SearchResults from "./components/SearchResults";
 import FeeStructure from "./components/FeeStructure";
 import HomeworkPortal from "./components/HomeworkPortal"; // ✅ keep this one
+import TeacherHomework from "./components/TeacherHomework"; // ✅ teacher homework management
 import StudentVerification from "./components/StudentVerification";
-import StudentIDManagement from "./components/StudentIDManagement";
 import StudentResults from "./components/StudentResults";
 import ResultsManagement from "./components/ResultsManagement";
 import SchoolPerformance from "./components/SchoolPerformance";
@@ -39,9 +39,6 @@ import CurriculumSyllabus from "./components/subpages/CurriculumSyllabus.jsx";
 import CurriculumExtracurricular from "./components/subpages/CurriculumExtracurricular.jsx";
 import CurriculumAssessment from "./components/subpages/CurriculumAssessment.jsx";
 
-import StaffLeadership from "./components/subpages/StaffLeadership.jsx";
-import StaffTeaching from "./components/subpages/StaffTeaching.jsx";
-import StaffSupport from "./components/subpages/StaffSupport.jsx";
 import CurriculumDynamicSection from "./components/subpages/CurriculumDynamicSection.jsx";
 
 
@@ -68,14 +65,18 @@ function MenuButton({ route, setRoute, setLoading, user }) {
     // admin quick link visible only when logged in as admin
     ...(user && user.role === "admin" ? [
       { key: "admin", label: "Admin", icon: "👤" },
-      { key: "student-id-management", label: "Student ID Cards", icon: "🪪" },
       { key: "results-management", label: "Results Management", icon: "📊" },
       { key: "performance-management", label: "School Performance", icon: "🏆" }
+    ] : []),
+    // teacher quick link visible only when logged in as teacher
+    ...(user && user.role === "teacher" ? [
+      { key: "teacher/homework", label: "My Homework", icon: "📝" }
     ] : []),
     { key: "home", label: "Home", icon: "🏠" },
     { key: "about", label: "About", icon: "ℹ️" },
     { key: "admissions", label: "Admissions", icon: "📝" },
     { key: "events", label: "Events", icon: "📅" },
+    { key: "student-life", label: "Student Life", icon: "🎓" },
     { key: "feestructure", label: "Fee Structure", icon: "💰" },
     { key: "curriculum", label: "Curriculum", icon: "📖" },
     { key: "curriculum/careers", label: "Curriculum Careers", icon: "💼" },
@@ -83,7 +84,6 @@ function MenuButton({ route, setRoute, setLoading, user }) {
     { key: "policies", label: "Policies", icon: "📋" },
     { key: "parents", label: "Parents", icon: "👨‍👩‍👧" },
     { key: "student", label: "Student", icon: "🎓" },
-    { key: "staff", label: "Staff", icon: "👥" },
     { key: "gallery", label: "Gallery", icon: "🖼️" },
     { key: "legal", label: "Legal", icon: "⚖️" },
     { key: "newsletter", label: "Newsletter", icon: "📰" },
@@ -451,18 +451,6 @@ export default function App() {
             case "feestructure":
               return <FeeStructure user={user} />;
 
-            case "staff":
-              switch (subRoute) {
-                case "leadership":
-                  return <StaffLeadership user={user} />;
-                case "teaching":
-                  return <StaffTeaching user={user} />;
-                case "support":
-                  return <StaffSupport user={user} />;
-                default:
-                  return <Staff user={user} />;
-              }
-
             case "gallery":
               return <Gallery user={user} />;
 
@@ -483,8 +471,20 @@ export default function App() {
               // fallback if someone navigates to just "portal"
               return <Home user={user} setRoute={setRoute} />;
 
+            case "teacher":
+              // ✅ Teacher routes
+              if (user?.role === "teacher") {
+                if (subRoute === "homework") {
+                  return <TeacherHomework user={user} />;
+                }
+              }
+              return <div>Access denied — teacher only</div>;
+
             case "events":
               return <Events user={user} />;
+
+            case "student-life":
+              return <StudentLife user={user} />;
 
             case "newsletter":
               return <Newsletter user={user} />;
@@ -507,12 +507,6 @@ export default function App() {
             case "verify-student":
               // Hidden route - only accessible via QR code scan
               return <StudentVerification />;
-
-            case "student-id-management":
-              // Admin-only route for managing student IDs
-              if (user?.role === "admin")
-                return <StudentIDManagement user={user} />;
-              return <div>Access denied — admin only</div>;
 
             case "student-results":
               // Student-only route for viewing and downloading results

@@ -1,2 +1,0 @@
-# Backend API URL - Points to backend service on separate Render domain
-VITE_API_URL=https://kangarugirlsschool.onrender.com

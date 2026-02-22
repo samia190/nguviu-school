@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { get } from "../utils/api";
-import EditableFileList from "./EditableFileList";
+import OptimizedImage from "./OptimizedImage";
 import Loader from "./Loader";
 
 
@@ -13,114 +13,80 @@ const eventsWrapperStyle = {
 };
 
 const eventCardBaseStyle = {
-  flex: "1 1 260px",
-  maxWidth: "360px",
+  flex: "1 1 280px",
+  maxWidth: "380px",
   borderRadius: "8px",
-  padding: "0.75rem 1rem",
-  boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+  padding: "1rem",
+  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
   boxSizing: "border-box",
-};
-
-const backCardStyle = {
-  borderRadius: "8px",
-  padding: "0.5rem 0.75rem",
-  backgroundColor: "#f3f4ff",
-  boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-  marginBottom: "0.75rem",
-  fontSize: "0.9rem",
+  backgroundColor: "#fff",
+  border: "1px solid #e5e7eb",
+  display: "flex",
+  flexDirection: "column",
 };
 
 export default function Events() {
-  const [content, setContent] = useState(null);
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [expanded, setExpanded] = useState({}); // for "Read more" per event
 
   useEffect(() => {
-    async function fetchContent() {
+    async function fetchEvents() {
       try {
         setLoading(true);
         setError("");
-        const data = await get("/api/content/events");
-        setContent(data || {});
-        setLoading(false);
+        // Fetch from new /api/events endpoint
+        const data = await get("/api/events?active=true");
+        const eventList = Array.isArray(data) ? data : (data.events || []);
+        setEvents(eventList);
       } catch (err) {
-        console.error(err);
+        console.error("Events fetch error:", err);
         setError("Failed to load events.");
+      } finally {
         setLoading(false);
       }
     }
 
-    fetchContent();
+    fetchEvents();
   }, []);
-
-  function toggleReadMore(id) {
-    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
-  }
 
   if (loading) {
     return (
       <main className="page events-page">
-        <h1>Events</h1>
+        <h1>School Events</h1>
         <Loader message="Loading events…" />
       </main>
     );
   }
 
-  const introTitle = content?.title || "School Events";
-  const introBody =
-    content?.body ||
-    content?.intro ||
-    "Here you will find upcoming and past events, activities, and key dates for our school.";
-
-  const events = (content?.data && content.data.events) || [];
-  const attachments = content?.attachments || [];
+  if (error) {
+    return (
+      <main className="page events-page" style={{ padding: "1rem 8px" }}>
+        <h1>School Events</h1>
+        <p style={{ color: "red" }}>{error}</p>
+      </main>
+    );
+  }
 
   return (
     <main className="page events-page" style={{ padding: "1rem 8px", textAlign: "left" }}>
       <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ marginBottom: "0.5rem", textAlign: "left" }}>{introTitle}</h1>
-        <p style={{ margin: 0, textAlign: "left" }}>{introBody}</p>
-      </div>
-
-      {/* Back to Newsletter link */}
-      <div style={backCardStyle}>
-        <span>Want to see general news and updates? </span>
-        <a
-          href="#newsletter"
-          onClick={(e) => {
-            e.preventDefault();
-            if (window.setRoute) {
-              window.setRoute("newsletter");
-            }
-          }}
-          style={{
-            fontWeight: "bold",
-            textDecoration: "underline",
-            cursor: "pointer",
-          }}
-        >
-          Go back to Newsletter &raquo;
-        </a>
+        <h1 style={{ marginBottom: "0.5rem", textAlign: "left" }}>School Events</h1>
+        <p style={{ margin: 0, textAlign: "left", color: "#666" }}>
+          Discover our upcoming and recent events at Kangaru Girls Senior School
+        </p>
       </div>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {/* EVENTS CARDS */}
-      {events.length > 0 && (
+      {events.length > 0 ? (
         <section style={{ marginTop: "1.5rem" }}>
           <h2>Upcoming & Recent Events</h2>
           <div style={eventsWrapperStyle}>
-            {events.map((ev, index) => {
-              const id = ev.id || ev._id || String(index);
-              const bgColor = ev.color || "#f3f4f6";
-              const isOpen = !!expanded[id];
-              const fullText = ev.description || ev.body || "";
-              const shortText =
-                fullText.length > 280 ? fullText.slice(0, 280) + "…" : fullText;
-
-              const dateLabel = ev.date
-                ? new Date(ev.date).toLocaleDateString(undefined, {
+            {events.map((event) => {
+              const dateLabel = event.date
+                ? new Date(event.date).toLocaleDateString(undefined, {
                     year: "numeric",
                     month: "short",
                     day: "numeric",
@@ -129,72 +95,96 @@ export default function Events() {
 
               return (
                 <article
-                  key={id}
-                  style={{ ...eventCardBaseStyle, backgroundColor: bgColor }}
+                  key={event._id}
+                  style={eventCardBaseStyle}
                 >
-                  <h3 style={{ marginTop: 0 }}>{ev.title || "Event"}</h3>
-
-                  {dateLabel && (
-                    <p style={{ fontSize: "0.85rem", margin: 0 }}>
-                      <strong>Date:</strong> {dateLabel}
-                    </p>
-                  )}
-
-                  {ev.location && (
-                    <p style={{ fontSize: "0.85rem", margin: "0 0 0.25rem 0" }}>
-                      <strong>Location:</strong> {ev.location}
-                    </p>
-                  )}
-
-                  {fullText && (
-                    <p style={{ whiteSpace: "pre-wrap" }}>
-                      {isOpen ? fullText : shortText}
-                    </p>
-                  )}
-
-                  {fullText.length > 280 && (
-                    <button
-                      type="button"
-                      onClick={() => toggleReadMore(id)}
+                  {/* Event Image */}
+                  {event.imageUrl && (
+                    <div
                       style={{
-                        border: "none",
-                        background: "none",
-                        padding: 0,
-                        color: "#2563eb",
-                        cursor: "pointer",
-                        fontSize: "0.9rem",
+                        width: "100%",
+                        height: "200px",
+                        borderRadius: "6px",
+                        overflow: "hidden",
+                        marginBottom: "1rem",
+                        backgroundColor: "#f0f0f0",
+                        flexShrink: 0,
                       }}
                     >
-                      {isOpen ? "Show less" : "Read more"}
-                    </button>
+                      <OptimizedImage
+                        src={event.imageUrl}
+                        alt={event.title}
+                        priority={false}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    </div>
                   )}
 
-                  {ev.linkUrl && (
-                    <p style={{ marginTop: "0.5rem" }}>
-                      <a
-                        href={ev.linkUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{ textDecoration: "underline" }}
-                      >
-                        More details &raquo;
-                      </a>
+                  {/* Event Title */}
+                  <h3 style={{ marginTop: 0, marginBottom: "0.5rem" }}>
+                    {event.title}
+                  </h3>
+
+                  {/* Date */}
+                  {dateLabel && (
+                    <p style={{ fontSize: "0.9rem", margin: "0 0 0.5rem 0", color: "#666" }}>
+                      <strong>📅 Date:</strong> {dateLabel}
                     </p>
+                  )}
+
+                  {/* Location */}
+                  {event.location && (
+                    <p style={{ fontSize: "0.9rem", margin: "0 0 0.5rem 0", color: "#666" }}>
+                      <strong>📍 Location:</strong> {event.location}
+                    </p>
+                  )}
+
+                  {/* Description */}
+                  {event.description && (
+                    <p
+                      style={{
+                        fontSize: "0.95rem",
+                        margin: "0.5rem 0",
+                        lineHeight: "1.5",
+                        color: "#333",
+                        flex: 1,
+                      }}
+                    >
+                      {event.description}
+                    </p>
+                  )}
+
+                  {/* Featured Badge */}
+                  {event.featured && (
+                    <div
+                      style={{
+                        display: "inline-block",
+                        marginTop: "0.75rem",
+                        padding: "0.25rem 0.75rem",
+                        backgroundColor: "#fef3c7",
+                        color: "#b45309",
+                        borderRadius: "4px",
+                        fontSize: "0.8rem",
+                        fontWeight: "600",
+                      }}
+                    >
+                      ⭐ Featured Event
+                    </div>
                   )}
                 </article>
               );
             })}
           </div>
         </section>
-      )}
-
-      {/* ATTACHMENTS / MEDIA (IMAGES, VIDEOS, DOCS) */}
-      {attachments.length > 0 && (
-        <section style={{ marginTop: "1.5rem" }}>
-          <h2>Event Media & Downloads</h2>
-          {/* Public view: no admin editing here */}
-          <EditableFileList files={attachments} isAdmin={false} />
-        </section>
+      ) : (
+        <div style={{ padding: "2rem", textAlign: "center", background: "#f5f5f5", borderRadius: "8px" }}>
+          <p style={{ color: "#999" }}>No events currently available. Check back soon!</p>
+        </div>
       )}
     </main>
   );

@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import { post } from "../utils/api";
 import { 
   PerformanceDashboard, 
   TrendBadge, 
@@ -43,26 +44,16 @@ const StudentResults = ({ user }) => {
     setError("");
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/results/verify-and-fetch`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
+      const data = await post("/api/results/verify-and-fetch", formData);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Verification failed");
+      if (data && data.student) {
+        setStudentData(data.student);
+        setResults(data.results || []);
+        setLatestResult(data.latestResult || null);
+        setStep("results");
+      } else {
+        throw new Error("Invalid response from server");
       }
-
-      setStudentData(data.student);
-      setResults(data.results);
-      setLatestResult(data.latestResult);
-      setStep("results");
 
     } catch (err) {
       setError(err.message || "Failed to verify student details");
@@ -123,12 +114,13 @@ const StudentResults = ({ user }) => {
       ? ['#', 'Subject', 'Marks', 'Grade', 'Competency Level', 'Remarks']
       : ['#', 'Subject', 'Marks', 'Grade', 'Remarks'];
 
-    const tableData = result.subjects.map((subject, index) => {
+    const tableData = (result.subjects || []).map((subject, index) => {
+      if (!subject) return [];
       const baseRow = [
         index + 1,
-        subject.subjectName,
-        subject.marks,
-        subject.grade
+        subject.subjectName || "N/A",
+        subject.marks || "N/A",
+        subject.grade || "N/A"
       ];
       
       if (result.curriculum === "CBC") {
@@ -137,7 +129,7 @@ const StudentResults = ({ user }) => {
       
       baseRow.push(subject.remarks || "");
       return baseRow;
-    });
+    }).filter(row => row.length > 0);
 
     doc.autoTable({
       startY: yPos,
@@ -926,7 +918,7 @@ const StudentResults = ({ user }) => {
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
               {latestResult.isUploadedPdf && latestResult.uploadedPdfUrl && (
                 <a
-                  href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/${latestResult.uploadedPdfUrl}`}
+                  href={`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/${latestResult.uploadedPdfUrl}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -1119,7 +1111,7 @@ const StudentResults = ({ user }) => {
                 <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                   {result.isUploadedPdf && result.uploadedPdfUrl && (
                     <a
-                      href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/${result.uploadedPdfUrl}`}
+                      href={`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/${result.uploadedPdfUrl}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{

@@ -7,6 +7,7 @@ import EditableText from "../components/EditableText";
 import EditableFileList from "../components/EditableFileList";
 import { safePath } from "../utils/paths";
 import OptimizedVideo from "../components/OptimizedVideo";
+import HeroCarousel from "../components/HeroCarousel";
 import StudentAdmissionsGuide from "./subpages/StudentAdmissionsGuide.jsx";
 import StudentFees from "./subpages/StudentFees.jsx";
 import StudentExams from "./subpages/StudentExams.jsx";
@@ -33,11 +34,36 @@ export default function Student({ user, subRoute }) {
 
   const [content, setContent] = useState({});
   const [error, setError] = useState("");
+  const [heroContent, setHeroContent] = useState(null);
 
-  // Load page content
+  // Load page content and hero content
   useEffect(() => {
-    get("/api/content/students")
-      .then((data) => setContent(data || {}))
+    Promise.all([
+      get("/api/content/students").catch(() => ({})),
+      get("/api/hero-content?page=student").catch(() => null)
+    ])
+      .then(([studentData, heroData]) => {
+        setContent(studentData || {});
+        // Separate heroes by type
+        if (heroData && Array.isArray(heroData)) {
+          const activeHeros = heroData.filter(h => h.active !== false);
+          if (activeHeros.length > 0) {
+            // Check for video type first, then slide, then image
+            const videoHero = activeHeros.find(h => h.type === "video");
+            const slideHeros = activeHeros.filter(h => h.type === "slide");
+            const imageHero = activeHeros.find(h => h.type === "image");
+            
+            // Use video if exists, slides if multiple, image as fallback
+            if (videoHero) {
+              setHeroContent({ type: "video", data: videoHero });
+            } else if (slideHeros.length > 0) {
+              setHeroContent({ type: "slide", data: slideHeros });
+            } else if (imageHero) {
+              setHeroContent({ type: "image", data: imageHero });
+            }
+          }
+        }
+      })
       .catch(() => setError("Failed to load student resources."));
   }, []);
 
@@ -55,139 +81,10 @@ export default function Student({ user, subRoute }) {
 
   const isAdmin = user?.role === "admin";
 
-  // Default gallery groups (for first load / non-configured state)
-  const defaultAcademicGallery = [
-    {
-      name: "",
-      url: "/images/students/IMG_0778.JPG",
-    },
-    {
-      name: "",
-      url:"/images/students/IMG_1030.JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/IMG_1043.JPG",
-       
-    },
-    {
-      name: "",
-      url: "/images/students/IMG_1056.JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/IMG_1067.JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/IMG_1086.JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/IMG_1329.JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/IMG_1447.JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/student life 1.JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/life (2).JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/life 5.JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/life.JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/sc (3).JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/sc (2).JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/sc.JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/std 7.JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/std 4.JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/std 2.JPG",
-    },
-    {
-      name: "",
-      url: "/images/students/std 0.JPG",
-    }
-    
-  ];
+  // Default gallery groups (for first load / non-configured state - now empty - gallery images managed via admin)
+  const defaultAcademicGallery = [];
 
-  const defaultCocurricularGallery = [
-    { name: "", url: "/images/students/IMG_1257.JPG" },
-    { name: "", url: "/images/students/IMG_1221.JPG" },
-    { name: "", url: "/images/students/IMG_1194.JPG" },
-    { name: "", url: "/images/students/IMG_1329.JPG" },
-    { name: "", url: "/images/students/IMG_1332.JPG" },
-    { name: "", url: "/images/students/IMG_1413.JPG" },
-    { name: "", url: "/images/students/IMG_1415.JPG" },
-    { name: "", url: "/images/students/IMG_1424.JPG" },
-    { name: "", url: "/images/students/IMG_1443.JPG" },
-    { name: "", url: "/images/students/IMG_1444.JPG" },
-    { name: "", url: "/images/students/IMG_1447.JPG" },
-    { name: "", url: "/images/students/IMG_1449.JPG" },
-    { name: "", url: "/images/students/IMG_1458.JPG" },
-    { name: "", url: "/images/students/IMG_1459.JPG" },
-    { name: "", url: "/images/students/IMG_1475.JPG" },
-    { name: "", url: "/images/students/IMG_1528.JPG" },
-    { name: "", url: "/images/students/IMG_1641.JPG" },
-    { name: "", url: "/images/students/IMG_1644.JPG" },
-    { name: "", url: "/images/students/IMG_1649.JPG" },
-    { name: "", url: "/images/students/IMG_1650.JPG" },
-    { name: "", url: "/images/students/IMG_1651.JPG" },
-    { name: "", url: "/images/students/IMG_1653.JPG" },
-    { name: "", url: "/images/students/IMG_0778.JPG" },
-    { name: "", url: "/images/students/IMG_0779.JPG" },
-    { name: "", url: "/images/students/IMG_1030.JPG" },
-    { name: "", url: "/images/students/IMG_1043.JPG" },
-    { name: "", url: "/images/students/IMG_1047.JPG" },
-    { name: "", url: "/images/students/IMG_1056.JPG" },
-    { name: "", url: "/images/students/IMG_1067.JPG" },
-    { name: "", url: "/images/students/IMG_1086.JPG" },
-    { name: "", url: "/images/students/IMG_1194.JPG" },
-    { name: "", url: "/images/students/IMG_1221.JPG" },
-    { name: "", url: "/images/students/IMG_1257.JPG" },
-    { name: "", url: "/images/students/IMG_1329.JPG" },
-    { name: "", url: "/images/students/IMG_1332.JPG" },
-    { name: "", url: "/images/students/IMG_1413.JPG" },
-    { name: "", url: "/images/students/IMG_1415.JPG" },
-    { name: "", url: "/images/students/IMG_1424.JPG" },
-    { name: "", url: "/images/students/life.JPG" },
-    { name: "", url: "/images/students/life (2).JPG" },
-    { name: "", url: "/images/students/life 5.JPG" },
-    { name: "", url: "/images/students/sc.JPG" },
-    { name: "", url: "/images/students/sc (2).JPG" },
-    { name: "", url: "/images/students/sc (3).JPG" },
-    { name: "", url: "/images/students/std 0.JPG" },
-    { name: "", url: "/images/students/std 2.JPG" },
-    { name: "", url: "/images/students/std 4.JPG" },
-    { name: "", url: "/images/students/IMG_1745.JPG" },
-    { name: "", url: "/images/students/IMG_1741.JPG" },
-  ];
+  const defaultCocurricularGallery = [];
 
   const academicGalleryFiles =
     content.academicGalleryFiles ||defaultAcademicGallery
@@ -255,82 +152,145 @@ export default function Student({ user, subRoute }) {
 
   return (
     <div className="student-page">
-      {/* ================= HERO VIDEO SECTION ================= */}
-      {/* ================= HERO VIDEO SECTION ================= */}
-<div
-  className="student-hero"
-  style={{
-    position: "relative",
-    width: "100vw",
-    marginLeft: "50%",
-    transform: "translateX(-50%)",
-    maxHeight: 420,
-    overflow: "hidden",
-  }}
->
-  <OptimizedVideo
-    src={content.heroVideoUrl || "/images/students/life 1.mp4"}
-    autoPlay
-    loop
-    muted
-    priority={true}
-    style={{
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-    }}
-  />
+      {/* ================= HERO SECTION ================= */}
+      {heroContent?.type === "slide" && heroContent.data?.length > 0 ? (
+        <HeroCarousel slides={heroContent.data} height={420} />
+      ) : heroContent?.type === "video" && heroContent.data?.url ? (
+        <div
+          className="student-hero"
+          style={{
+            position: "relative",
+            width: "100vw",
+            marginLeft: "50%",
+            transform: "translateX(-50%)",
+            maxHeight: 420,
+            overflow: "hidden",
+          }}
+        >
+          <OptimizedVideo
+            src={heroContent.data.url}
+            thumbnail={heroContent.data.thumbnail}
+            autoPlay
+            loop
+            muted
+            priority={true}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
 
-  {/* Dark overlay */}
-  <div
-    style={{
-      position: "absolute",
-      inset: 0,
-      background:
-        "linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.65))",
-    }}
-  />
+          {/* Dark overlay */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.65))",
+            }}
+          />
 
-  {/* Text container */}
-  <div
-    style={{
-      position: "absolute",
-      inset: 0,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "20px",
-    }}
-  >
-    <div
-      style={{
-        maxWidth: 720,
-        width: "100%",
-        padding: "16px 20px",
-        borderRadius: 10,
-        backgroundColor: "rgba(0, 0, 0, 0.45)",
-        color: "#ffffff",
-        textAlign: "center",
-      }}
-    >
-      <EditableHeading
-        value={content.heroTitle || "Welcome to the Student Portal"}
-        onSave={(val) => updateSection("heroTitle", val)}
-        isAdmin={isAdmin}
-        level={2}
-      />
+          {/* Text container */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "20px",
+            }}
+          >
+            <div
+              style={{
+                maxWidth: 720,
+                width: "100%",
+                padding: "16px 20px",
+                borderRadius: 10,
+                backgroundColor: "rgba(0, 0, 0, 0.45)",
+                color: "#ffffff",
+                textAlign: "center",
+              }}
+            >
+              <EditableHeading
+                value={content.heroTitle || heroContent.data.title || "Welcome to the Student Portal"}
+                onSave={(val) => updateSection("heroTitle", val)}
+                isAdmin={isAdmin}
+                level={2}
+              />
 
-      <EditableText
-        value={
-          content.heroSubtitle ||
-          "Access your resources, schedules, activities, and support — all in one place."
-        }
-        onSave={(val) => updateSection("heroSubtitle", val)}
-        isAdmin={isAdmin}
-      />
-    </div>
-  </div>
-</div>
+              <EditableText
+                value={content.heroSubtext || heroContent.data.description || "Discover our academic and co-curricular programs"}
+                onSave={(val) => updateSection("heroSubtext", val)}
+                isAdmin={isAdmin}
+                style={{ color: "#ffffff", fontSize: 16 }}
+              />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div
+          className="student-hero"
+          style={{
+            position: "relative",
+            width: "100vw",
+            marginLeft: "50%",
+            transform: "translateX(-50%)",
+            maxHeight: 420,
+            overflow: "hidden",
+            background: "linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)",
+          }}
+        >
+          {/* Dark overlay */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.65))",
+            }}
+          />
+
+          {/* Text container */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "20px",
+            }}
+          >
+            <div
+              style={{
+                maxWidth: 720,
+                width: "100%",
+                padding: "16px 20px",
+                borderRadius: 10,
+                backgroundColor: "rgba(0, 0, 0, 0.45)",
+                color: "#ffffff",
+                textAlign: "center",
+              }}
+            >
+              <EditableHeading
+                value={content.heroTitle || "Welcome to the Student Portal"}
+                onSave={(val) => updateSection("heroTitle", val)}
+                isAdmin={isAdmin}
+                level={2}
+              />
+
+              <EditableText
+                value={content.heroSubtext || "Discover our academic and co-curricular programs"}
+                onSave={(val) => updateSection("heroSubtext", val)}
+                isAdmin={isAdmin}
+                style={{ color: "#ffffff", fontSize: 16 }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <h1>Student Portal</h1>
 

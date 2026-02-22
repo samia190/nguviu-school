@@ -38,7 +38,7 @@ const StudentSchema = new mongoose.Schema(
     photoUrl: { type: String },
     
     // School Website
-    websiteUrl: { type: String, default: "https://kangaru -kangaru girls.ac.ke" },
+    websiteUrl: { type: String, default: "https://kangaru girls.ac.ke" },
     
     // ID Card Security
     idCardSecret: { type: String, required: true }, // Unique secret for this student
@@ -89,7 +89,7 @@ StudentSchema.methods.generateVerificationToken = function() {
     class: this.class,
     stream: this.stream,
     photoUrl: this.photoUrl,
-    websiteUrl: this.websiteUrl || "https://kangaru -kangaru girls.ac.ke",
+    websiteUrl: this.websiteUrl || "https://kangaru girls.ac.ke",
     version: this.idCardVersion,
     timestamp,
     nonce

@@ -10,7 +10,7 @@ The QR codes now include the following information:
 
 1. ✅ **Assessment Number** (for CBC students)
 2. ✅ **Class and Stream**
-3. ✅ **School Website Link** (https://kangaru -kangaru girls.ac.ke)
+3. ✅ **School Website Link** (https://kangaru girls.ac.ke)
 4. ✅ **Student Photo URL** (if available)
 5. ✅ **Admission Number** (existing)
 6. ✅ **Full Student Details** (existing)
@@ -27,7 +27,7 @@ The QR codes now include the following information:
 ### Backend Changes
 
 #### 1. Student Model ([Student.js](kangaru girls-backend/models/Student.js))
-- Added `websiteUrl` field (default: "https://kangaru -kangaru girls.ac.ke")
+- Added `websiteUrl` field (default: "https://kangaru girls.ac.ke")
 - Updated `generateVerificationToken()` to include:
   - Assessment number
   - Class and stream
@@ -102,7 +102,7 @@ Assessment Number: 12345678 (for CBC students)
 Class: Form 3 - East
 Year of Admission: 2024
 Status: Active
-School Website: https://kangaru -kangaru girls.ac.ke
+School Website: https://kangaru girls.ac.ke
 ━━━━━━━━━━━━━━━━━━
 Verified At: [timestamp]
 Card Issued: [date]
@@ -149,7 +149,7 @@ Valid Until: [date]
   "class": "Form 3",
   "stream": "East",
   "photoUrl": "https://example.com/photo.jpg",
-  "websiteUrl": "https://kangaru -kangaru girls.ac.ke",
+  "websiteUrl": "https://kangaru girls.ac.ke",
   "version": 1,
   "timestamp": 1234567890,
   "nonce": "random_string",
@@ -168,7 +168,7 @@ Valid Until: [date]
     "class": "Form 3",
     "stream": "East",
     "photoUrl": "https://example.com/photo.jpg",
-    "websiteUrl": "https://kangaru -kangaru girls.ac.ke",
+    "websiteUrl": "https://kangaru girls.ac.ke",
     "status": "Active",
     "yearOfAdmission": 2024,
     "idCardIssueDate": "2025-01-01",

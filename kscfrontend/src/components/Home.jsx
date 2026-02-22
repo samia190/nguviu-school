@@ -2,20 +2,71 @@ import { useEffect, useState } from "react";
 import { get, patch } from "../utils/api";
 import EditableHeading from "../components/EditableHeading";
 import EditableText from "../components/EditableText";
+import NewsWidget from "./NewsWidget";
+import HeroCarousel from "./HeroCarousel";
+import OptimizedImage from "./OptimizedImage";
+import OptimizedVideo from "./OptimizedVideo";
+import { useBatchImagePreload } from "../hooks/useImagePreload";
 
 export default function Home({ user, setRoute }) {
   const [content, setContent] = useState({});
   const [error, setError] = useState("");
   const [summaries, setSummaries] = useState({});
+  const [newsImages, setNewsImages] = useState([]);
+  const [heroContent, setHeroContent] = useState(null);
 
   useEffect(() => {
-    get("/api/content/home")
-      .then((data) => setContent(data || {}))
+    Promise.all([
+      get("/api/content/home"),
+      get("/api/hero-content?page=home")
+    ])
+      .then(([homeData, heroData]) => {
+        setContent(homeData || {});
+        // Get active hero slides/images for home page
+        if (heroData && Array.isArray(heroData)) {
+          const activeHeros = heroData.filter(h => h.active !== false);
+          if (activeHeros.length > 0) {
+            // Check for video first, then slides, then image
+            const videoHero = activeHeros.find(h => h.type === "video");
+            const slideHeros = activeHeros.filter(h => h.type === "slide");
+            const imageHero = activeHeros.find(h => h.type === "image");
+            
+            if (videoHero) {
+              setHeroContent({ type: "video", data: videoHero });
+            } else if (slideHeros.length > 0) {
+              setHeroContent({ type: "slide", data: slideHeros });
+            } else if (imageHero) {
+              setHeroContent({ type: "image", data: imageHero });
+            }
+          }
+        }
+      })
       .catch(() => setError("Failed to load home page content."));
 
     // fetch summaries for quick sections
     fetchSummaries();
+    
+    // Fetch and preload news images
+    fetchNewsImages();
   }, []);
+
+  async function fetchNewsImages() {
+    try {
+      const data = await get("/api/home-news?active=true");
+      const newsList = Array.isArray(data) ? data : (data.news || []);
+      const images = newsList
+        .slice(0, 3)
+        .filter(item => item.imageUrl)
+        .map(item => ({ src: item.imageUrl }));
+      setNewsImages(images);
+    } catch (err) {
+      // Silently ignore errors
+      console.error("Error fetching news images:", err);
+    }
+  }
+
+  // Preload news images on component mount
+  useBatchImagePreload(newsImages);
 
   async function fetchSummaries() {
     try {
@@ -29,7 +80,8 @@ export default function Home({ user, setRoute }) {
       });
       setSummaries(map);
     } catch (err) {
-      // ignore errors fetching small summaries
+      // Silently ignore errors fetching summaries - use empty summaries
+      setSummaries({});
     }
   }
 
@@ -246,11 +298,112 @@ export default function Home({ user, setRoute }) {
     <section style={{ padding: 0, position: "relative", overflow: "hidden" }}>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {/* Hero Section - Removed video/image slider */}
-      <div style={{ padding: "40px 20px", textAlign: "center", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", color: "white" }}>
-        <h2 style={{ margin: "0 0 10px 0", fontSize: "28px" }}>WELCOME TO KANGARU GIRLS' SENIOR SCHOOL!</h2>
-        <p>Explore our programs and discover excellence in education</p>
-      </div>
+      {/* Hero Section - Managed from Admin Dashboard */}
+      {heroContent ? (
+        // Render hero carousel for slides or single hero for image/video
+        heroContent.type === "slide" ? (
+          <div style={{ width: "100%"}}>
+            <HeroCarousel heroData={heroContent.data} />
+          </div>
+        ) : heroContent.type === "video" ? (
+          <div
+            style={{
+              position: "relative",
+              width: "100vw",
+              marginLeft: "50%",
+              transform: "translateX(-50%)",
+              maxHeight: 500,
+              overflow: "hidden",
+            }}
+          >
+            <OptimizedVideo
+              src={heroContent.data.url}
+              autoPlay
+              loop
+              muted
+              priority={true}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6))",
+              }}
+            />
+          </div>
+        ) : (
+          // Image hero
+          <div
+            style={{
+              position: "relative",
+              width: "100vw",
+              marginLeft: "50%",
+              transform: "translateX(-50%)",
+              maxHeight: 500,
+              overflow: "hidden",
+            }}
+          >
+            <OptimizedImage
+              src={heroContent.data.url}
+              alt={heroContent.data.title || "Hero Image"} 
+              priority={true}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6))",
+              }}
+            />
+            {heroContent.data.title && (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "20px",
+                }}
+              >
+                <div
+                  style={{
+                    maxWidth: 720,
+                    width: "100%",
+                    padding: "16px 20px",
+                    borderRadius: 10,
+                    backgroundColor: "rgba(0, 0, 0, 0.45)",
+                    color: "#ffffff",
+                    textAlign: "center",
+                  }}
+                >
+                  <h2 style={{ fontSize: "2rem", margin: 0 }}>{heroContent.data.title}</h2>
+                  {heroContent.data.description && (
+                    <p style={{ fontSize: "1.1rem", marginTop: "10px" }}>{heroContent.data.description}</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      ) : (
+        // Fallback gradient hero if no database content
+        <div style={{ padding: "40px 20px", textAlign: "center", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", color: "white" }}>
+          <h2 style={{ margin: "0 0 10px 0", fontSize: "28px" }}>WELCOME TO KANGARU GIRLS' SENIOR SCHOOL!</h2>
+          <p>Explore our programs and discover excellence in education</p>
+        </div>
+      )}
 
       <EditableHeading
         value={content.title || "WELCOME TO KANGARU GIRLS' SCHOOL"}
@@ -268,9 +421,26 @@ export default function Home({ user, setRoute }) {
         isAdmin={user?.role === "admin"}
       />
 
-      {/* Main Sections */}
-      <h2 style={{ marginTop: 30 }}>Quick Links</h2>
-      <SectionGrid sections={sections} />
+      {/* HORIZONTAL SPLIT: Main Content + News Widget Sidebar */}
+      <div style={{
+        display: "flex",
+        gap: "30px",
+        flexWrap: "wrap",
+        alignItems: "flex-start",
+        margin: "30px auto",
+        maxWidth: "1400px"
+      }}>
+        {/* LEFT SIDE: Quick Links (70%) */}
+        <div style={{ flex: "1 1 65%", minWidth: "300px" }}>
+          <h2 style={{ marginTop: 0 }}>Quick Links</h2>
+          <SectionGrid sections={sections} />
+        </div>
+
+        {/* RIGHT SIDE: News Widget Sidebar (30%) */}
+        <div style={{ flex: "1 1 30%", minWidth: "280px" }}>
+          <NewsWidget />
+        </div>
+      </div>
     </section>
   );
 };

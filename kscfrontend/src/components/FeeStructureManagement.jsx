@@ -18,7 +18,6 @@ export default function FeeStructureManagement() {
     title: "",
     body: "",
     notes: "",
-    paymentInfo: "",
   });
 
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -46,15 +45,11 @@ export default function FeeStructureManagement() {
         body:
           safe.body ||
           safe.intro ||
-          "Here you will find the current official fee structures and related payment information.",
+          "Here you will find the current official fee structures for our school.",
         notes:
           safe.notes ||
           (safe.data && safe.data.notes) ||
-          "Please ensure you use the most recent approved fee structure when making payments.",
-        paymentInfo:
-          safe.paymentInfo ||
-          (safe.data && safe.data.paymentInfo) ||
-          "Payment details (bank, paybill, account number) will be provided in the documents below or by the school office.",
+          "Please contact the school office for more information about fee payment procedures.",
       });
 
       setLoading(false);
@@ -86,7 +81,6 @@ export default function FeeStructureManagement() {
           title: textForm.title,
           body: textForm.body,
           notes: textForm.notes,
-          paymentInfo: textForm.paymentInfo,
         });
         setContent(updated);
         setSuccess("Fee structure text saved.");
@@ -97,7 +91,6 @@ export default function FeeStructureManagement() {
         fd.append("title", textForm.title);
         fd.append("body", textForm.body);
         fd.append("notes", textForm.notes);
-        fd.append("paymentInfo", textForm.paymentInfo);
 
         const data = await upload("/api/admin/content", fd);
         const created = data.content || data;
@@ -259,19 +252,6 @@ export default function FeeStructureManagement() {
           <textarea
             name="notes"
             value={textForm.notes}
-            onChange={handleTextChange}
-            rows={3}
-            style={{ width: "100%", padding: 6 }}
-          />
-        </div>
-
-        <div style={{ marginBottom: "0.5rem" }}>
-          <label style={{ display: "block", fontWeight: "bold" }}>
-            Payment information
-          </label>
-          <textarea
-            name="paymentInfo"
-            value={textForm.paymentInfo}
             onChange={handleTextChange}
             rows={3}
             style={{ width: "100%", padding: 6 }}

@@ -9,7 +9,7 @@ if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 function makeDownloadUrl(relPath) {
   if (!relPath) return relPath;
   if (String(relPath).startsWith('http')) return relPath;
-  const origin = process.env.PUBLIC_ORIGIN || `http://localhost:4001`;
+  const origin = process.env.PUBLIC_ORIGIN || `http://localhost:4000`;
   const p = String(relPath).startsWith('/') ? relPath : `/${relPath}`;
   return `${origin}${p}`;
 }

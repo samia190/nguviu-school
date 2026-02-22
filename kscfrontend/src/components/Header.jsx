@@ -40,11 +40,6 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
       { key: "student/clubs", label: "Clubs" },
       { key: "student/support-services", label: "Support Services" },
     ],
-    staff: [
-      { key: "staff/leadership", label: "Leadership" },
-      { key: "staff/teaching", label: "Teaching" },
-      { key: "staff/support", label: "Support" },
-    ],
   };
 
   return (
@@ -231,43 +226,6 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
         >
           FeeStructure
         </button>
-
-        {/* Staff parent + submenu */}
-        <div
-          onMouseEnter={() => setOpenSubmenu("staff")}
-          onMouseLeave={() => setOpenSubmenu(null)}
-          style={{ position: "relative" }}
-        >
-          <button onClick={() => go("staff")} style={navButtonStyle(route && route.split("/")[0] === "staff") }>
-            Staff
-          </button>
-          {openSubmenu === "staff" && (
-            <div
-              style={{
-                position: "absolute",
-                top: 36,
-                left: 0,
-                background: "#fff",
-                color: "#111",
-                padding: 8,
-                borderRadius: 6,
-                boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
-                zIndex: 600,
-              }}
-            >
-              {subLinks.staff.map((s) => (
-                <div key={s.key} style={{ marginBottom: 6 }}>
-                  <button
-                    onClick={() => go(s.key)}
-                    style={{ padding: "6px 8px", border: "none", background: "transparent", cursor: "pointer" }}
-                  >
-                    {s.label}
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
 
         {/* Apply Now Button - Highlighted */}
         <button 

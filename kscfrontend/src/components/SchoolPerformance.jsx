@@ -1,11 +1,13 @@
 // components/SchoolPerformance.jsx - Public display component
 import React, { useState, useEffect } from "react";
+import { get } from "../utils/api";
 
 const SchoolPerformance = () => {
   const [performances, setPerformances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedYear, setSelectedYear] = useState("All");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchPerformances();
@@ -13,34 +15,37 @@ const SchoolPerformance = () => {
 
   const fetchPerformances = async () => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/performance/public`
-      );
-      const data = await response.json();
-      if (data.success) {
-        setPerformances(data.performances);
+      const data = await get("/api/performance/public");
+      if (data && data.success) {
+        setPerformances(data.performances || []);
+      } else if (Array.isArray(data)) {
+        setPerformances(data);
       }
     } catch (error) {
       console.error("Error fetching performance data:", error);
+      setError("Failed to load performance data");
+      setPerformances([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredPerformances = performances.filter(p => {
+  const filteredPerformances = (performances || []).filter(p => {
+    if (!p) return false;
     const categoryMatch = selectedCategory === "All" || p.category === selectedCategory;
-    const yearMatch = selectedYear === "All" || p.year.toString() === selectedYear;
+    const yearMatch = selectedYear === "All" || p.year?.toString() === selectedYear;
     return categoryMatch && yearMatch;
   });
 
-  const categories = ["All", ...new Set(performances.map(p => p.category))];
-  const years = ["All", ...new Set(performances.map(p => p.year.toString()))].sort((a, b) => {
+  const categories = ["All", ...new Set((performances || []).filter(p => p?.category).map(p => p.category))];
+  const years = ["All", ...new Set((performances || []).filter(p => p?.year).map(p => p.year.toString()))].sort((a, b) => {
     if (a === "All") return -1;
     if (b === "All") return 1;
     return b - a;
   });
 
   const groupedPerformances = filteredPerformances.reduce((acc, perf) => {
+    if (!perf) return acc;
     const category = perf.category;
     if (!acc[category]) {
       acc[category] = [];

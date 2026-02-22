@@ -11,6 +11,8 @@ import NewslettersManagement from "./NewslettersManagement";
 import EventsManagement from "./EventsManagement";
 import GalleryManagement from "./GalleryManagement";
 import LegalManagement from "./LegalManagement";
+import EventsDataManagement from "./admin/EventsManagement";
+import StudentLifeDataManagement from "./admin/StudentLifeManagement";
 
 // Import new content page management components
 import AboutManagement from "./AboutManagement";
@@ -21,8 +23,12 @@ import PoliciesManagement from "./PoliciesManagement";
 import ParentsManagement from "./ParentsManagement";
 import StudentsManagement from "./StudentsManagement";
 import StaffManagement from "./StaffManagement";
+import HeroManagement from "./HeroManagement";
+import HomeNewsManagement from "./HomeNewsManagement";
+import StudentAdminManagement from "./StudentAdminManagement";
 import RoleManagement from "./RoleManagement";
 import MagazineManagement from "./MagazineManagement";
+import HomeworkManagement from "./admin/HomeworkManagement";
 
 // Universal subpage management component
 import SubpageManagement from "./SubpageManagement";
@@ -130,6 +136,8 @@ export default function AdminDashboard({ user }) {
     { key: "newsletters", label: "Newsletters", icon: "📰", color: "#06b6d4" },
     { key: "magazine", label: "Magazine", icon: "📖", color: "#6366f1" },
     { key: "events", label: "Events", icon: "📅", color: "#ef4444" },
+    { key: "eventsData", label: "Event Catalog", icon: "📋", color: "#dc2626" },
+    { key: "studentLife", label: "Student Life", icon: "🎓", color: "#059669" },
     { key: "gallery", label: "Gallery", icon: "🖼️", color: "#14b8a6" },
     { key: "legal", label: "Legal", icon: "⚖️", color: "#64748b" },
     { key: "about", label: "About", icon: "ℹ️", color: "#0ea5e9" },
@@ -138,8 +146,12 @@ export default function AdminDashboard({ user }) {
     { key: "performance", label: "Performance", icon: "📊", color: "#f97316" },
     { key: "policies", label: "Policies", icon: "📋", color: "#84cc16" },
     { key: "parents", label: "Parents", icon: "👨‍👩‍👧", color: "#e11d48" },
-    { key: "students", label: "Students", icon: "🎓", color: "#0891b2" },
     { key: "staff", label: "Staff", icon: "👔", color: "#7c3aed" },
+    { key: "heroContent", label: "Hero Content", icon: "🎬", color: "#f43f5e" },
+    { key: "homeNews", label: "Home News", icon: "📣", color: "#06b6d4" },
+    { key: "homework", label: "Homework & Notes", icon: "📚", color: "#FF6B6B" },
+    { key: "students", label: "Students", icon: "🎓", color: "#0891b2" },
+    { key: "studentAdmin", label: "Student Admin", icon: "🛠️", color: "#8b5cf6" },
     { key: "pagebackground", label: "Backgrounds", icon: "🎨", color: "#db2777" },
   ];
 
@@ -303,6 +315,10 @@ export default function AdminDashboard({ user }) {
 
         {activeSection === "events" && <EventsManagement />}
 
+        {activeSection === "eventsData" && <EventsDataManagement user={user} />}
+
+        {activeSection === "studentLife" && <StudentLifeDataManagement user={user} />}
+
         {activeSection === "gallery" && <GalleryManagement />}
 
         {activeSection === "legal" && <LegalManagement />}
@@ -322,6 +338,15 @@ export default function AdminDashboard({ user }) {
         {activeSection === "students" && <StudentsManagement />}
 
         {activeSection === "staff" && <StaffManagement />}
+
+        {activeSection === "heroContent" && <HeroManagement />}
+
+        {activeSection === "homeNews" && <HomeNewsManagement />}
+
+        {activeSection === "homework" && <HomeworkManagement user={user} />}
+
+        {activeSection === "studentAdmin" && <StudentAdminManagement />}
+
         {activeSection === "pagebackground" && <PageBackgroundManagement />}
       </main>
     </section>

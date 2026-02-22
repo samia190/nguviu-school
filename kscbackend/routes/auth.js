@@ -6,18 +6,46 @@ import crypto from "crypto";
 import dotenv from "dotenv";
 import User from "../models/User.js";
 import { sendEmail } from "../utils/email.js";
+import { authLimiter } from "../middleware/rateLimiter.js";
 
 dotenv.config();
 
 const router = express.Router();
 
-// Register
-router.post("/register", async (req, res) => {
+// Password strength validation helper
+const validatePasswordStrength = (password) => {
+  const requirements = {
+    length: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+  };
+  
+  const isValid = requirements.length && requirements.uppercase && requirements.number && requirements.special;
+  
+  if (!isValid) {
+    const errors = [];
+    if (!requirements.length) errors.push("at least 8 characters");
+    if (!requirements.uppercase) errors.push("one uppercase letter");
+    if (!requirements.number) errors.push("one number");
+    if (!requirements.special) errors.push("one special character");
+    return { isValid: false, message: `Password must contain: ${errors.join(", ")}` };
+  }
+  
+  return { isValid: true, message: "Password is valid" };
+};
+router.post("/register", authLimiter, async (req, res) => {
   try {
     const { name, email, password, role = "user" } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password required" });
+    }
+
+    // Validate password strength
+    const passwordValidation = validatePasswordStrength(password);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({ error: passwordValidation.message });
     }
 
     if (!process.env.JWT_SECRET) {
@@ -49,7 +77,7 @@ const user = new User({ name, email, passwordHash: hash, role });
 });
 
 // Login
-router.post("/login", async (req, res) => {
+router.post("/login", authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
