@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { get, patch } from "../utils/api";
+import { cachedGet } from "../utils/apiCache";
 import EditableHeading from "../components/EditableHeading";
 import EditableText from "../components/EditableText";
 import NewsWidget from "./NewsWidget";
@@ -25,58 +26,41 @@ export default function Home({ user, setRoute }) {
   const [error, setError] = useState("");
   const [summaries, setSummaries] = useState({});
   const [newsImages, setNewsImages] = useState([]);
-  const [heroContent, setHeroContent] = useState(null);
+  // Show default slides INSTANTLY — no waiting for API
+  const [heroContent, setHeroContent] = useState({ type: "slide", data: defaultHeroSlides });
 
   useEffect(() => {
+    // Fire all API calls in parallel using cache
     Promise.all([
-      get("/api/content/home"),
-      get("/api/hero-content?page=home")
-    ])
-      .then(([homeData, heroData]) => {
-        setContent(homeData || {});
-        let heroSet = false;
-        // Get active hero slides/images for home page
+      cachedGet("/api/content/home", get).catch(() => null),
+      cachedGet("/api/hero-content?page=home", get).catch(() => null),
+      fetchSummaries(),
+      fetchNewsImages(),
+    ]).then(([homeData, heroData]) => {
+        if (homeData) setContent(homeData);
+        // Only override defaults if API returns real data
         if (heroData && Array.isArray(heroData)) {
           const activeHeros = heroData.filter(h => h.active !== false);
           if (activeHeros.length > 0) {
-            // Check for video first, then slides, then image
             const videoHero = activeHeros.find(h => h.type === "video");
             const slideHeros = activeHeros.filter(h => h.type === "slide");
             const imageHero = activeHeros.find(h => h.type === "image");
             
             if (videoHero) {
               setHeroContent({ type: "video", data: videoHero });
-              heroSet = true;
             } else if (slideHeros.length > 0) {
               setHeroContent({ type: "slide", data: slideHeros });
-              heroSet = true;
             } else if (imageHero) {
               setHeroContent({ type: "image", data: imageHero });
-              heroSet = true;
             }
           }
         }
-        // Fallback: use default hero slides from public/images/
-        if (!heroSet) {
-          setHeroContent({ type: "slide", data: defaultHeroSlides });
-        }
-      })
-      .catch(() => {
-        setError("Failed to load home page content.");
-        // Show default hero slides even on error
-        setHeroContent({ type: "slide", data: defaultHeroSlides });
       });
-
-    // fetch summaries for quick sections
-    fetchSummaries();
-    
-    // Fetch and preload news images
-    fetchNewsImages();
   }, []);
 
   async function fetchNewsImages() {
     try {
-      const data = await get("/api/home-news?active=true");
+      const data = await cachedGet("/api/home-news?active=true", get);
       const newsList = Array.isArray(data) ? data : (data.news || []);
       const images = newsList
         .slice(0, 3)
@@ -85,7 +69,6 @@ export default function Home({ user, setRoute }) {
       setNewsImages(images);
     } catch (err) {
       // Silently ignore errors
-      console.error("Error fetching news images:", err);
     }
   }
 
@@ -96,7 +79,7 @@ export default function Home({ user, setRoute }) {
     try {
       const keys = ["about", "admissions", "curriculum", "staff", "gallery", "contact"];
       const results = await Promise.all(
-        keys.map((k) => get(`/api/content/summary/${k}`).catch(() => null))
+        keys.map((k) => cachedGet(`/api/content/summary/${k}`, get).catch(() => null))
       );
       const map = {};
       keys.forEach((k, i) => {
@@ -104,7 +87,6 @@ export default function Home({ user, setRoute }) {
       });
       setSummaries(map);
     } catch (err) {
-      // Silently ignore errors fetching summaries - use empty summaries
       setSummaries({});
     }
   }

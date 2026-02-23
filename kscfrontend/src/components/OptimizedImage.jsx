@@ -56,19 +56,6 @@ export default function OptimizedImage({
   const webpSrc = getWebPSrc(src);
   const shouldLoad = priority || inView;
 
-  // Placeholder while loading
-  const placeholder = (
-    <div 
-      style={{ 
-        width: '100%', 
-        height: height || '100%', 
-        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-        backgroundSize: '200% 100%',
-        animation: 'shimmer 1.5s infinite',
-      }} 
-    />
-  );
-
   return (
     <div ref={ref} className={className} style={{ display: "block", position: "relative", ...style }}>
       {shouldLoad ? (
@@ -95,23 +82,15 @@ export default function OptimizedImage({
               width: "100%", 
               height: "100%", 
               display: "block",
-              opacity: isLoaded ? 1 : 0,
-              transition: 'opacity 0.3s ease-in-out',
+              opacity: priority ? 1 : (isLoaded ? 1 : 0),
+              transition: priority ? 'none' : 'opacity 0.2s ease-in',
             }} 
             {...props} 
           />
         </picture>
       ) : (
-        placeholder
+        <div style={{ width: '100%', height: height || '200px', background: '#f0f0f0' }} />
       )}
-      
-      {/* Shimmer animation keyframes */}
-      <style>{`
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-      `}</style>
     </div>
   );
 }

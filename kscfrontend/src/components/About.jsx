@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { get, patch } from "../utils/api";
+import { cachedGet } from "../utils/apiCache";
 import EditableText from "../components/EditableText";
 import EditableHeading from "../components/EditableHeading";
 import EditableSubheading from "../components/EditableSubheading";
@@ -18,8 +19,8 @@ export default function About({ user }) {
 
   useEffect(() => {
     Promise.all([
-      get("/api/content/about").catch(() => ({})),
-      get("/api/hero-content?page=about&type=image").catch(() => null)
+      cachedGet("/api/content/about", get).catch(() => ({})),
+      cachedGet("/api/hero-content?page=about&type=image", get).catch(() => null)
     ])
       .then(([aboutData, heroData]) => {
         setContent(aboutData || {});
@@ -41,8 +42,8 @@ export default function About({ user }) {
   useEffect(() => {
     // Fetch both principal and deputy principal staff
     Promise.all([
-      get("/api/staff?type=principal").catch(() => []),
-      get("/api/staff?type=deputy_principal").catch(() => [])
+      cachedGet("/api/staff?type=principal", get).catch(() => []),
+      cachedGet("/api/staff?type=deputy_principal", get).catch(() => [])
     ])
       .then(([principals, deputies]) => {
         const principalList = Array.isArray(principals) ? principals : (principals.staff || []);

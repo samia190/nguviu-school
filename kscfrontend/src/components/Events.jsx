@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { get } from "../utils/api";
+import { cachedGet } from "../utils/apiCache";
 import OptimizedImage from "./OptimizedImage";
 import Loader from "./Loader";
 
@@ -49,7 +50,7 @@ export default function Events() {
         setLoading(true);
         setError("");
         // Fetch from new /api/events endpoint
-        const data = await get("/api/events?active=true");
+        const data = await cachedGet("/api/events?active=true", get);
         let eventList = Array.isArray(data) ? data : (data.events || []);
         
         // Fallback: use default events if API returns empty

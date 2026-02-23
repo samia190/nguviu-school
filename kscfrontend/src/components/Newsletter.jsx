@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { get } from "../utils/api";
+import { cachedGet } from "../utils/apiCache";
 import EditableFileList from "./EditableFileList";
 import Loader from "./Loader";
 import SchoolMagazineViewer from "./SchoolMagazineViewer";
@@ -48,7 +49,7 @@ export default function Newsletter() {
       try {
         setLoading(true);
         setError("");
-        const data = await get("/api/content/newsletter");
+        const data = await cachedGet("/api/content/newsletter", get);
         setContent(data || {});
         setLoading(false);
       } catch (err) {

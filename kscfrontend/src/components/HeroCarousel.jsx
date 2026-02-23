@@ -15,18 +15,20 @@ export default function HeroCarousel({
   const [isAutoplay, setIsAutoplay] = useState(true);
 
   // Filter for active slides
-  const activeSildes = slides.filter(s => s.active !== false);
-  if (activeSildes.length === 0) return null;
+  const activeSlides = slides.filter(s => s.active !== false);
 
+  // Autoplay timer — must be before any early return (rules of hooks)
   useEffect(() => {
-    if (!isAutoplay || activeSildes.length <= 1) return;
+    if (!isAutoplay || activeSlides.length <= 1) return;
 
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % activeSildes.length);
+      setCurrentIndex((prev) => (prev + 1) % activeSlides.length);
     }, autoplayInterval);
 
     return () => clearInterval(timer);
-  }, [isAutoplay, activeSildes.length, autoplayInterval]);
+  }, [isAutoplay, activeSlides.length, autoplayInterval]);
+
+  if (activeSlides.length === 0) return null;
 
   const goToSlide = (index) => {
     setCurrentIndex(index);
@@ -37,18 +39,16 @@ export default function HeroCarousel({
   };
 
   const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + activeSildes.length) % activeSildes.length);
+    setCurrentIndex((prev) => (prev - 1 + activeSlides.length) % activeSlides.length);
     setIsAutoplay(false);
   };
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % activeSildes.length);
+    setCurrentIndex((prev) => (prev + 1) % activeSlides.length);
     setIsAutoplay(false);
   };
 
-  if (activeSildes.length === 0) return null;
-
-  const currentSlide = activeSildes[currentIndex];
+  const currentSlide = activeSlides[currentIndex];
 
   return (
     <div
@@ -66,7 +66,7 @@ export default function HeroCarousel({
       onMouseLeave={() => setIsAutoplay(true)}
     >
       {/* Slides */}
-      {activeSildes.map((slide, idx) => (
+      {activeSlides.map((slide, idx) => (
         <div
           key={slide._id || idx}
           style={{
@@ -80,7 +80,8 @@ export default function HeroCarousel({
           <OptimizedImage
             src={slide.url}
             alt={slide.title || "Hero slide"}
-            fetchPriority="high"
+            priority={idx === 0}
+            fetchPriority={idx === 0 ? "high" : "low"}
             style={{
               width: "100%",
               height: "100%",
@@ -137,7 +138,7 @@ export default function HeroCarousel({
       )}
 
       {/* Navigation controls - only show if more than one slide */}
-      {activeSildes.length > 1 && (
+      {activeSlides.length > 1 && (
         <>
           {/* Previous button */}
           <button
@@ -209,7 +210,7 @@ export default function HeroCarousel({
               gap: "10px",
             }}
           >
-            {activeSildes.map((_, idx) => (
+            {activeSlides.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => goToSlide(idx)}

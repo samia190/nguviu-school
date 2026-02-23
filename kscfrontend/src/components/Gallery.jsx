@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { safePath } from "../utils/paths";
 import { get } from "../utils/api";
+import { cachedGet } from "../utils/apiCache";
 import LazyImage from "./LazyImage";
 import OptimizedImage, { OptimizedBackgroundImage } from "./OptimizedImage";
 
@@ -135,7 +136,7 @@ export default function Gallery() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await get('/api/content/gallery');
+        const data = await cachedGet('/api/content/gallery', get);
         console.log('Gallery API response:', data);
         
         // backend returns array of gallery items; flatten attachments for simple gallery

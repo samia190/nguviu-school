@@ -1,59 +1,53 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import './App.css'; 
 import Header from "./components/Header";
 import Home from "./components/Home";
-import About from "./components/About";
-import Contact from "./components/Contact";
-import Admissions from "./components/Admissions";
-import Student from "./components/Student";
-import StudentLife from "./components/StudentLife";
-import Newsletter from "./components/Newsletter";
-import Gallery from "./components/Gallery";
-import Events from "./components/Events";
 import Footer from "./components/Footer";
 import Loader from "./components/Loader";
-import Login from "./components/Login";
-import SignUp from "./components/SignUp";
-import ResetPassword from "./components/ResetPassword";
-import AdminDashboard from "./components/AdminDashboard";
-import DevLogin from "./components/DevLogin";
-import Curriculum from "./components/Curriculum";
-import Performance from "./components/Performance";
-import Policies from "./components/Policies";
-import Parents from "./components/Parents";
-import Legal from "./components/Legal";
-import SearchResults from "./components/SearchResults";
-import FeeStructure from "./components/FeeStructure";
-import HomeworkPortal from "./components/HomeworkPortal"; // ✅ keep this one
-import TeacherHomework from "./components/TeacherHomework"; // ✅ teacher homework management
-import StudentVerification from "./components/StudentVerification";
-import StudentResults from "./components/StudentResults";
-import ResultsManagement from "./components/ResultsManagement";
-import SchoolPerformance from "./components/SchoolPerformance";
-import SchoolPerformanceAdmin from "./components/SchoolPerformanceAdmin";
 
-import CurriculumOverview from "./components/subpages/CurriculumOverview.jsx";
-import CurriculumPrimary from "./components/subpages/CurriculumPrimary.jsx";
-import CurriculumSecondary from "./components/subpages/CurriculumSecondary.jsx";
-import CurriculumSyllabus from "./components/subpages/CurriculumSyllabus.jsx";
-import CurriculumExtracurricular from "./components/subpages/CurriculumExtracurricular.jsx";
-import CurriculumAssessment from "./components/subpages/CurriculumAssessment.jsx";
+// Lazy-load all pages except Home (first paint)
+const About = lazy(() => import("./components/About"));
+const Contact = lazy(() => import("./components/Contact"));
+const Admissions = lazy(() => import("./components/Admissions"));
+const Student = lazy(() => import("./components/Student"));
+const StudentLife = lazy(() => import("./components/StudentLife"));
+const Newsletter = lazy(() => import("./components/Newsletter"));
+const Gallery = lazy(() => import("./components/Gallery"));
+const Events = lazy(() => import("./components/Events"));
+const Login = lazy(() => import("./components/Login"));
+const SignUp = lazy(() => import("./components/SignUp"));
+const ResetPassword = lazy(() => import("./components/ResetPassword"));
+const AdminDashboard = lazy(() => import("./components/AdminDashboard"));
+const DevLogin = lazy(() => import("./components/DevLogin"));
+const Curriculum = lazy(() => import("./components/Curriculum"));
+const Performance = lazy(() => import("./components/Performance"));
+const Policies = lazy(() => import("./components/Policies"));
+const Parents = lazy(() => import("./components/Parents"));
+const Legal = lazy(() => import("./components/Legal"));
+const SearchResults = lazy(() => import("./components/SearchResults"));
+const FeeStructure = lazy(() => import("./components/FeeStructure"));
+const HomeworkPortal = lazy(() => import("./components/HomeworkPortal"));
+const TeacherHomework = lazy(() => import("./components/TeacherHomework"));
+const StudentVerification = lazy(() => import("./components/StudentVerification"));
+const StudentResults = lazy(() => import("./components/StudentResults"));
+const ResultsManagement = lazy(() => import("./components/ResultsManagement"));
+const SchoolPerformance = lazy(() => import("./components/SchoolPerformance"));
+const SchoolPerformanceAdmin = lazy(() => import("./components/SchoolPerformanceAdmin"));
 
-import CurriculumDynamicSection from "./components/subpages/CurriculumDynamicSection.jsx";
-
-
-import StudentAdmissionsGuide from "./components/subpages/StudentAdmissionsGuide.jsx";
-import StudentFees from "./components/subpages/StudentFees.jsx";
-import StudentExams from "./components/subpages/StudentExams.jsx";
-import StudentClubs from "./components/subpages/StudentClubs.jsx";
-import StudentSupportServices from "./components/subpages/StudentSupportServices.jsx";
-import CurriculumCareers from "./components/subpages/CurriculumCareers.jsx";
-import PageBackgroundManagement from "./components/PageBackgroundManagement";
-
-
-
-// ❌ REMOVE this duplicate import (pages version)
-// import HomeworkPortal from "./pages/HomeworkPortal";
+const CurriculumOverview = lazy(() => import("./components/subpages/CurriculumOverview.jsx"));
+const CurriculumPrimary = lazy(() => import("./components/subpages/CurriculumPrimary.jsx"));
+const CurriculumSecondary = lazy(() => import("./components/subpages/CurriculumSecondary.jsx"));
+const CurriculumSyllabus = lazy(() => import("./components/subpages/CurriculumSyllabus.jsx"));
+const CurriculumExtracurricular = lazy(() => import("./components/subpages/CurriculumExtracurricular.jsx"));
+const CurriculumAssessment = lazy(() => import("./components/subpages/CurriculumAssessment.jsx"));
+const CurriculumDynamicSection = lazy(() => import("./components/subpages/CurriculumDynamicSection.jsx"));
+const StudentAdmissionsGuide = lazy(() => import("./components/subpages/StudentAdmissionsGuide.jsx"));
+const StudentFees = lazy(() => import("./components/subpages/StudentFees.jsx"));
+const StudentExams = lazy(() => import("./components/subpages/StudentExams.jsx"));
+const StudentClubs = lazy(() => import("./components/subpages/StudentClubs.jsx"));
+const StudentSupportServices = lazy(() => import("./components/subpages/StudentSupportServices.jsx"));
+const CurriculumCareers = lazy(() => import("./components/subpages/CurriculumCareers.jsx"));
+const PageBackgroundManagement = lazy(() => import("./components/PageBackgroundManagement"));
 
 function MenuButton({ route, setRoute, setLoading, user }) {
   const [open, setOpen] = useState(false);
@@ -385,14 +379,14 @@ export default function App() {
           padding: "140px 16px 20px 16px",
           minHeight: "60vh",
           opacity: loading ? 0 : 1,
-          transition: "opacity 0.3s ease-in",
+          transition: "opacity 0.15s ease-in",
           width: "100%",
           maxWidth: "100%",
           boxSizing: "border-box",
         }} 
       >
        
-     
+      <Suspense fallback={<div style={{ textAlign: "center", padding: "60px 20px" }}><Loader size={80} /></div>}>
         {(() => {
           const [mainRoute, subRoute] = route.split("/");
 
@@ -545,6 +539,7 @@ export default function App() {
 
           }
         })()}
+      </Suspense>
       </main>
 
       <Footer />

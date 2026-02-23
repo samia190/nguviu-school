@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { get } from "../utils/api";
+import { cachedGet } from "../utils/apiCache";
 import OptimizedImage from "./OptimizedImage";
 import Loader from "./Loader";
 
@@ -70,7 +71,7 @@ export default function StudentLife() {
         setLoading(true);
         setError("");
         // Fetch from /api/student-life endpoint
-        const data = await get("/api/student-life");
+        const data = await cachedGet("/api/student-life", get);
         let itemList = Array.isArray(data) ? data : (data.items || []);
         
         // Fallback: use default items if API returns empty
