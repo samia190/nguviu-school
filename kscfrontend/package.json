@@ -30,7 +30,7 @@
     "react-router-dom": "^7.9.6",
     "recharts": "^3.7.0",
     "serve": "^14.2.5",
-    "vite": "^7.3.1"
+    "vite": "^5.4.21"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.1.0",
