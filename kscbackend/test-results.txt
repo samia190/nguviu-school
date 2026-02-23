@@ -1,6 +1,0 @@
-200 GET /api/health => {"ok":true,"time":"2026-02-23T15:36:08.233Z"}
-500 GET /api/hero-content?page=home => {"error":"Failed to fetch hero content"}
-200 GET /api/events => []
-200 GET /api/student-life => []
-200 GET /api/content/gallery => []
-500 POST /api/auth/login => {"error":"Login failed"}

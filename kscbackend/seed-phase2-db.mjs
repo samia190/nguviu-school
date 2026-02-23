@@ -44,20 +44,29 @@ let authToken = null;
 
 async function apiLogin() {
   console.log(`\n🔐 Logging into ${API_BASE}...`);
-  const res = await fetch(`${API_BASE}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }),
-  });
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }),
+    });
 
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Login failed (${res.status}): ${body}`);
+    if (!res.ok) {
+      const body = await res.text();
+      console.warn(`  ⚠️  Login failed (${res.status}): ${body}`);
+      console.warn(`  ⚠️  Will skip auth-required routes (events, student-life)`);
+      return false;
+    }
+
+    const result = await res.json();
+    authToken = result.token;
+    console.log(`  ✅ Logged in as ${result.user?.name || ADMIN_EMAIL}`);
+    return true;
+  } catch (err) {
+    console.warn(`  ⚠️  Login error: ${err.message}`);
+    console.warn(`  ⚠️  Will skip auth-required routes (events, student-life)`);
+    return false;
   }
-
-  const result = await res.json();
-  authToken = result.token;
-  console.log(`  ✅ Logged in as ${result.user?.name || ADMIN_EMAIL}`);
 }
 
 async function apiPost(endpoint, body) {
@@ -355,24 +364,38 @@ async function main() {
   }
 
   // Login
-  await apiLogin();
+  const loggedIn = await apiLogin();
 
   // Get distribution
   const dist = getDistribution();
   console.log(`\n📊 Seeding plan:`);
   console.log(`   Hero:         ${dist.hero.length} slides`);
-  console.log(`   Events:       ${dist.events.length} items`);
-  console.log(`   Student Life: ${dist.studentLife.length} items`);
+  console.log(`   Events:       ${dist.events.length} items ${loggedIn ? '' : '(⚠️ requires auth)'}`);
+  console.log(`   Student Life: ${dist.studentLife.length} items ${loggedIn ? '' : '(⚠️ requires auth)'}`);
   console.log(`   Gallery:      ${dist.gallery.length} images`);
 
-  // Seed each section
+  // Seed each section — hero and gallery don't require auth
   await seedHero(dist.hero);
-  await seedEvents(dist.events);
-  await seedStudentLife(dist.studentLife);
+
+  if (loggedIn) {
+    await seedEvents(dist.events);
+    await seedStudentLife(dist.studentLife);
+  } else {
+    console.log("\n📅 ⏭️  Skipping Events — requires authentication");
+    console.log("🎓 ⏭️  Skipping Student Life — requires authentication");
+  }
+
   await seedGallery(dist.gallery);
 
   console.log("\n═══════════════════════════════════════════════");
-  console.log("  ✅ Phase 2 Complete — Database seeded!");
+  if (loggedIn) {
+    console.log("  ✅ Phase 2 Complete — All sections seeded!");
+  } else {
+    console.log("  ✅ Phase 2 Partial — Hero + Gallery seeded!");
+    console.log("  ⚠️  Events + Student Life skipped (login failed)");
+    console.log("  💡 To seed them later, fix JWT_SECRET on Render,");
+    console.log("     then run: node seed-phase2-db.mjs");
+  }
   console.log("═══════════════════════════════════════════════");
   console.log("\n📋 Next steps:");
   console.log("   1. Visit your site to verify images");

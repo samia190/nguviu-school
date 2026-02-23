@@ -2,30 +2,53 @@ import fs from 'fs';
 const BASE = 'https://kangarugirlsschool.onrender.com';
 const results = [];
 
-const endpoints = [
-  { url: '/api/health', method: 'GET' },
-  { url: '/api/hero-content?page=home', method: 'GET' },
-  { url: '/api/events', method: 'GET' },
-  { url: '/api/student-life', method: 'GET' },
-  { url: '/api/content/gallery', method: 'GET' },
-  { url: '/api/auth/login', method: 'POST', body: { email: 'admin@example.com', password: 'kangaruAD567MIN@9812' } },
-];
+// Test hero POST (no auth needed)
+try {
+  const imgPath = '../kscfrontend/public/images/DSC_5353.jpg';
+  const imgBuf = fs.readFileSync(imgPath);
+  const blob = new Blob([imgBuf], { type: 'image/jpeg' });
+  
+  const form = new FormData();
+  form.append('media', blob, 'DSC_5353.jpg');
+  form.append('type', 'slide');
+  form.append('page', 'home');
+  form.append('title', 'Test Slide');
+  form.append('description', 'Test');
+  form.append('displayOrder', '0');
 
-for (const ep of endpoints) {
-  try {
-    const opts = { method: ep.method, signal: AbortSignal.timeout(20000) };
-    if (ep.body) {
-      opts.headers = { 'Content-Type': 'application/json' };
-      opts.body = JSON.stringify(ep.body);
-    }
-    const r = await fetch(BASE + ep.url, opts);
-    const t = await r.text();
-    results.push(`${r.status} ${ep.method} ${ep.url} => ${t.substring(0, 200)}`);
-  } catch (e) {
-    results.push(`ERR ${ep.method} ${ep.url} => ${e.message}`);
-  }
+  const r = await fetch(BASE + '/api/hero-content', { method: 'POST', body: form });
+  const t = await r.text();
+  results.push(`hero POST: ${r.status} => ${t.substring(0, 300)}`);
+} catch (e) {
+  results.push(`hero POST: ERROR => ${e.message}`);
 }
 
-fs.writeFileSync('test-results.txt', results.join('\n'));
+// Test gallery POST (no auth)
+try {
+  const r = await fetch(BASE + '/api/content/gallery', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title: 'Test Gallery', body: 'Test' }),
+  });
+  const t = await r.text();
+  results.push(`gallery POST: ${r.status} => ${t.substring(0, 300)}`);
+} catch (e) {
+  results.push(`gallery POST: ERROR => ${e.message}`);
+}
+
+// Test login with more detail
+try {
+  const r = await fetch(BASE + '/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'admin@example.com', password: 'kangaruAD567MIN@9812' }),
+  });
+  const t = await r.text();
+  results.push(`login: ${r.status} => ${t}`);
+} catch (e) {
+  results.push(`login: ERROR => ${e.message}`);
+}
+
+fs.writeFileSync('test-results.txt', results.join('\n\n'));
 console.log('Done — see test-results.txt');
 process.exit(0);
