@@ -8,6 +8,14 @@ import fs from "fs";
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+// Helper: convert relative URLs to absolute
+function toAbsoluteUrl(req, relativePath) {
+  if (!relativePath) return relativePath;
+  if (String(relativePath).startsWith("http")) return relativePath;
+  const origin = process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`;
+  return `${origin}${relativePath}`;
+}
+
 // GET all students
 router.get("/", async (req, res) => {
   try {
@@ -30,7 +38,13 @@ router.get("/", async (req, res) => {
       .select("-idCardSecret") // Don't return sensitive data
       .sort({ class: 1, admissionNumber: 1 });
     
-    res.json({ students, count: students.length });
+    // Convert photoUrl to absolute URLs
+    const studentsWithAbsoluteUrls = students.map(student => ({
+      ...student.toObject(),
+      photoUrl: toAbsoluteUrl(req, student.photoUrl)
+    }));
+    
+    res.json({ students: studentsWithAbsoluteUrls, count: studentsWithAbsoluteUrls.length });
   } catch (err) {
     console.error("Error fetching students:", err);
     res.status(500).json({ error: "Failed to fetch students" });
@@ -44,7 +58,13 @@ router.get("/:id", async (req, res) => {
     if (!student) {
       return res.status(404).json({ error: "Student not found" });
     }
-    res.json(student);
+    
+    const studentWithAbsoluteUrl = {
+      ...student.toObject(),
+      photoUrl: toAbsoluteUrl(req, student.photoUrl)
+    };
+    
+    res.json(studentWithAbsoluteUrl);
   } catch (err) {
     console.error("Error fetching student:", err);
     res.status(500).json({ error: "Failed to fetch student" });
@@ -52,7 +72,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST create new student
-router.post("/", upload.single("photo"), async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const {
       admissionNumber,
@@ -74,7 +94,8 @@ router.post("/", upload.single("photo"), async (req, res) => {
       county,
       subCounty,
       ward,
-      village
+      village,
+      photoUrl
     } = req.body;
 
     // Validate required fields
@@ -86,27 +107,6 @@ router.post("/", upload.single("photo"), async (req, res) => {
     const existing = await Student.findOne({ admissionNumber });
     if (existing) {
       return res.status(400).json({ error: "Admission number already exists" });
-    }
-
-    let photoUrl = null;
-    if (req.file) {
-      try {
-        if (isS3Enabled()) {
-          photoUrl = await uploadBufferToS3(req.file.buffer, `students/${admissionNumber}/${req.file.originalname}`);
-        } else {
-          const uploadsDir = path.join(process.cwd(), "public", "uploads", "students", admissionNumber);
-          if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true });
-          }
-          const safeName = `${Date.now()}-${req.file.originalname.replace(/\s+/g, "_")}`;
-          const dest = path.join(uploadsDir, safeName);
-          fs.writeFileSync(dest, req.file.buffer);
-          photoUrl = `/uploads/students/${admissionNumber}/${safeName}`;
-        }
-      } catch (err) {
-        console.error("Error uploading photo:", err);
-        return res.status(400).json({ error: "Failed to upload photo" });
-      }
     }
 
     const student = new Student({
@@ -143,7 +143,12 @@ router.post("/", upload.single("photo"), async (req, res) => {
     const studentObj = student.toObject();
     delete studentObj.idCardSecret;
     
-    res.status(201).json(studentObj);
+    const response = {
+      ...studentObj,
+      photoUrl: toAbsoluteUrl(req, studentObj.photoUrl)
+    };
+    
+    res.status(201).json(response);
   } catch (err) {
     console.error("Error creating student:", err);
     res.status(500).json({ error: "Failed to create student" });
@@ -151,7 +156,7 @@ router.post("/", upload.single("photo"), async (req, res) => {
 });
 
 // PUT update student
-router.put("/:id", upload.single("photo"), async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) {
@@ -159,7 +164,6 @@ router.put("/:id", upload.single("photo"), async (req, res) => {
     }
 
     const {
-      admissionNumber,
       firstName,
       lastName,
       otherNames,
@@ -179,7 +183,8 @@ router.put("/:id", upload.single("photo"), async (req, res) => {
       subCounty,
       ward,
       village,
-      status
+      status,
+      photoUrl
     } = req.body;
 
     // Update fields
@@ -203,29 +208,7 @@ router.put("/:id", upload.single("photo"), async (req, res) => {
     if (ward) student.ward = ward;
     if (village) student.village = village;
     if (status) student.status = status;
-
-    // Handle photo upload if provided
-    if (req.file) {
-      try {
-        let photoUrl;
-        if (isS3Enabled()) {
-          photoUrl = await uploadBufferToS3(req.file.buffer, `students/${student.admissionNumber}/${req.file.originalname}`);
-        } else {
-          const uploadsDir = path.join(process.cwd(), "public", "uploads", "students", student.admissionNumber);
-          if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true });
-          }
-          const safeName = `${Date.now()}-${req.file.originalname.replace(/\s+/g, "_")}`;
-          const dest = path.join(uploadsDir, safeName);
-          fs.writeFileSync(dest, req.file.buffer);
-          photoUrl = `/uploads/students/${student.admissionNumber}/${safeName}`;
-        }
-        student.photoUrl = photoUrl;
-      } catch (err) {
-        console.error("Error uploading photo:", err);
-        return res.status(400).json({ error: "Failed to upload photo" });
-      }
-    }
+    if (photoUrl) student.photoUrl = photoUrl;
 
     student.updatedAt = new Date();
     await student.save();
@@ -234,7 +217,12 @@ router.put("/:id", upload.single("photo"), async (req, res) => {
     const studentObj = student.toObject();
     delete studentObj.idCardSecret;
     
-    res.json(studentObj);
+    const response = {
+      ...studentObj,
+      photoUrl: toAbsoluteUrl(req, studentObj.photoUrl)
+    };
+    
+    res.json(response);
   } catch (err) {
     console.error("Error updating student:", err);
     res.status(500).json({ error: "Failed to update student" });

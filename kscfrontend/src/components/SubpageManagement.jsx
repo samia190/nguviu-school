@@ -87,19 +87,28 @@ export default function SubpageManagement({
   // ========== TABLE MANAGEMENT ==========
   function addTableColumn() {
     const colName = prompt("Enter column name:");
-    if (colName && colName.trim()) {
-      setTableColumns([...tableColumns, colName.trim()]);
+    if (!colName) return;
+    const trimmedName = colName.trim();
+    if (!trimmedName) {
+      setError("Column name cannot be empty");
+      return;
     }
+    if (tableColumns.includes(trimmedName)) {
+      setError("Column already exists");
+      return;
+    }
+    setTableColumns([...tableColumns, trimmedName]);
   }
 
   function removeTableColumn(index) {
     if (!window.confirm("Remove this column?")) return;
+    const colName = tableColumns[index];
     const newCols = tableColumns.filter((_, i) => i !== index);
     setTableColumns(newCols);
     // Also remove this column from all rows
     setTableData(tableData.map(row => {
       const newRow = { ...row };
-      delete newRow[tableColumns[index]];
+      delete newRow[colName];
       return newRow;
     }));
   }

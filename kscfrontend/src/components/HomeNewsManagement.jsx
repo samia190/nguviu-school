@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { get, post, put, del } from "../utils/api";
+import { get, post, put, del, upload } from "../utils/api";
 import Loader from "./Loader";
 
 export default function HomeNewsManagement() {
@@ -11,6 +11,7 @@ export default function HomeNewsManagement() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
 
   const [form, setForm] = useState({
     title: "",
@@ -20,10 +21,33 @@ export default function HomeNewsManagement() {
     link: "",
     author: ""
   });
+  const [editingItem, setEditingItem] = useState(null);
 
   useEffect(() => {
     fetchNews();
   }, []);
+
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl && imagePreviewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+    };
+  }, []);
+
+  function handleImageFileChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Revoke old preview URL
+    if (imagePreviewUrl && imagePreviewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreviewUrl);
+    }
+
+    setImageFile(file);
+    setImagePreviewUrl(URL.createObjectURL(file));
+  }
 
   async function fetchNews() {
     setLoading(true);
@@ -54,26 +78,76 @@ export default function HomeNewsManagement() {
       return;
     }
 
-    try {
-      const formData = new FormData();
-      Object.keys(form).forEach(key => formData.append(key, form[key]));
-      if (imageFile) formData.append("image", imageFile);
+    if (!form.title.trim() || !form.description.trim()) {
+      setError("Title and description are required");
+      setSaving(false);
+      return;
+    }
 
+    try {
+      let imageUrl = null;
+
+      // Upload image separately if provided
+      if (imageFile) {
+        const fd = new FormData();
+        fd.append("file", imageFile);
+        try {
+          const uploadedFile = await upload("/api/files/upload", fd);
+          console.log("🔍 DEBUG: Upload response:", {
+            url: uploadedFile.url,
+            path: uploadedFile.path,
+            allKeys: Object.keys(uploadedFile)
+          });
+          imageUrl = uploadedFile.url || uploadedFile.downloadUrl;
+          console.log("🔍 DEBUG: Selected imageUrl for submission:", imageUrl);
+          if (!imageUrl) {
+            setError("Image upload failed: No URL returned from server");
+            setSaving(false);
+            return;
+          }
+        } catch (uploadErr) {
+          setError("Failed to upload image: " + (uploadErr.message || "Unknown error"));
+          setSaving(false);
+          return;
+        }
+      }
+
+      // Prepare JSON data
+      const data = {
+        title: form.title.trim(),
+        description: form.description.trim(),
+        category: form.category,
+        displayOrder: form.displayOrder,
+        link: form.link.trim() || null,
+        author: form.author.trim() || null
+      };
+
+      if (imageUrl) {
+        console.log("🔍 DEBUG: Sending to backend imageUrl:", imageUrl);
+        data.imageUrl = imageUrl;
+      }
+
+      // Send as JSON
       if (editingId) {
-        await put(`/api/home-news/${editingId}`, formData);
+        await put(`/api/home-news/${editingId}`, data);
         setSuccess("Updated!");
       } else {
-        await post("/api/home-news", formData);
+        await post("/api/home-news", data);
         setSuccess("Added!");
       }
 
       setForm({ title: "", description: "", category: "news", displayOrder: 0, link: "", author: "" });
       setImageFile(null);
+      if (imagePreviewUrl && imagePreviewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+      setImagePreviewUrl(null);
       setShowForm(false);
       setEditingId(null);
+      setEditingItem(null);
       fetchNews();
     } catch (err) {
-      setError(err.message || "Failed");
+      setError(err.message || "Failed to save news");
     } finally {
       setSaving(false);
     }
@@ -81,6 +155,7 @@ export default function HomeNewsManagement() {
 
   function handleEdit(item) {
     setEditingId(item._id);
+    setEditingItem(item);
     setForm({
       title: item.title,
       description: item.description,
@@ -89,6 +164,8 @@ export default function HomeNewsManagement() {
       link: item.link || "",
       author: item.author || ""
     });
+    setImageFile(null);
+    setImagePreviewUrl(null);
     setShowForm(true);
   }
 
@@ -110,7 +187,19 @@ export default function HomeNewsManagement() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
         <h1>📰 Home News Management</h1>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (showForm) {
+              // Clean up when closing
+              if (imagePreviewUrl && imagePreviewUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(imagePreviewUrl);
+              }
+            }
+            setShowForm(!showForm);
+            setEditingId(null);
+            setEditingItem(null);
+            setImageFile(null);
+            setImagePreviewUrl(null);
+          }}
           style={{
             padding: "12px 24px",
             background: showForm ? "#dc3545" : "#28a745",
@@ -143,8 +232,20 @@ export default function HomeNewsManagement() {
               <input type="text" name="author" placeholder="Author" value={form.author} onChange={handleFormChange} style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }} />
               <input type="text" name="link" placeholder="Link (optional)" value={form.link} onChange={handleFormChange} style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }} />
               <input type="number" name="displayOrder" placeholder="Order" value={form.displayOrder} onChange={handleFormChange} style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }} />
-              <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} style={{ padding: "10px" }} />
+              <input type="file" accept="image/*" onChange={handleImageFileChange} style={{ padding: "10px" }} />
             </div>
+            {editingItem && editingItem.imageUrl && !imageFile && (
+              <div style={{ marginTop: "15px" }}>
+                <label style={{ display: "block", marginBottom: "8px", fontSize: "12px", color: "#666" }}>Current Image:</label>
+                <img src={editingItem.imageUrl} alt={form.title} style={{ maxWidth: "200px", maxHeight: "150px", borderRadius: "4px" }} />
+              </div>
+            )}
+            {imagePreviewUrl && (
+              <div style={{ marginTop: "15px" }}>
+                <label style={{ display: "block", marginBottom: "8px", fontSize: "12px", color: "#666" }}>New Image Preview:</label>
+                <img src={imagePreviewUrl} alt="preview" style={{ maxWidth: "200px", maxHeight: "150px", borderRadius: "4px" }} />
+              </div>
+            )}
             <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
               <button type="submit" disabled={saving} style={{ padding: "10px 20px", background: "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: saving ? "not-allowed" : "pointer" }}>
                 {saving ? "Saving..." : "Save"}

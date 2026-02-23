@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { get, put, upload, del } from "../utils/api";
+import { get, put, upload, del, post } from "../utils/api";
 
 
 function fileHref(file) {
@@ -83,18 +83,33 @@ export default function EventsManagement() {
     setSavingText(true);
     setError("");
     setSuccess("");
+
+    // Validation
+    if (textForm.title.length > 255) {
+      setError("Title must be 255 characters or less");
+      setSavingText(false);
+      return;
+    }
+    if (textForm.body.length > 5000) {
+      setError("Body must be 5000 characters or less");
+      setSavingText(false);
+      return;
+    }
+
     try {
-      const fd = new FormData();
-      fd.append("type", "events");
-
-      if (textForm.title && textForm.title.trim().length > 0) {
-        fd.append("title", textForm.title);
+      // If content exists, update it; otherwise create it
+      if (content?._id) {
+        await put(`/api/content/${content._id}`, {
+          title: textForm.title,
+          body: textForm.body,
+        });
+      } else {
+        await post("/api/content", {
+          type: "events",
+          title: textForm.title,
+          body: textForm.body,
+        });
       }
-      if (textForm.body && textForm.body.trim().length > 0) {
-        fd.append("body", textForm.body);
-      }
-
-      await upload("/api/admin/content", fd);
       setSuccess("Events intro text saved.");
       await fetchContent();
     } catch (err) {
@@ -190,6 +205,19 @@ async function handleReplaceMedia(mediaId, newFile) {
     return;
   }
 
+  // Validate file type and size
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml', 'video/mp4', 'video/webm', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+  const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+
+  if (!ALLOWED_TYPES.includes(newFile.type)) {
+    setError(`Invalid file type: ${newFile.name}. Allowed: Images, Videos, PDFs, Word docs`);
+    return;
+  }
+  if (newFile.size > MAX_FILE_SIZE) {
+    setError(`File size must be 100MB or less. Received: ${(newFile.size / 1024 / 1024).toFixed(2)}MB`);
+    return;
+  }
+
   const fd = new FormData();
   fd.append("file", newFile);
 
@@ -225,6 +253,29 @@ async function handleReplaceMedia(mediaId, newFile) {
     if (!eventForm.title.trim() && !eventForm.description.trim()) {
       setError("Please provide at least a title or description for the event.");
       return;
+    }
+
+    // Validation
+    if (eventForm.title.length > 255) {
+      setError("Event title must be 255 characters or less");
+      return;
+    }
+    if (eventForm.description.length > 2000) {
+      setError("Event description must be 2000 characters or less");
+      return;
+    }
+    if (eventForm.location.length > 500) {
+      setError("Event location must be 500 characters or less");
+      return;
+    }
+    if (eventForm.linkUrl && eventForm.linkUrl.trim().length > 0) {
+      // Basic URL validation
+      try {
+        new URL(eventForm.linkUrl, window.location.origin);
+      } catch {
+        setError("Invalid URL format for event link");
+        return;
+      }
     }
 
     setSavingEvents(true);

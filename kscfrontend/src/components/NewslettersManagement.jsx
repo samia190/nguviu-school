@@ -101,6 +101,28 @@ export default function NewslettersManagement() {
   // ---------------- FILE UPLOADS ----------------
   function handleFileChange(e) {
     const files = Array.from(e.target.files || []);
+    
+    // Validate files
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif',
+      'application/pdf', 'video/mp4', 'video/webm'];
+    const maxFileSize = 50 * 1024 * 1024; // 50MB
+    
+    const invalidFiles = [];
+    for (const file of files) {
+      if (!validTypes.includes(file.type)) {
+        invalidFiles.push(`${file.name} (invalid type)`);
+      }
+      if (file.size > maxFileSize) {
+        invalidFiles.push(`${file.name} (exceeds 50MB)`);
+      }
+    }
+    
+    if (invalidFiles.length > 0) {
+      setError(`Invalid files: ${invalidFiles.join(', ')}`);
+      return;
+    }
+    
+    setError("");
     setSelectedFiles(files);
   }
 
@@ -176,6 +198,20 @@ export default function NewslettersManagement() {
   }
 
   async function handleReplaceMedia(mediaId, newFile) {
+    // Validate file
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif',
+      'application/pdf', 'video/mp4', 'video/webm'];
+    const maxFileSize = 50 * 1024 * 1024; // 50MB
+    
+    if (!validTypes.includes(newFile.type)) {
+      setError(`Invalid file type: ${newFile.name}`);
+      return;
+    }
+    if (newFile.size > maxFileSize) {
+      setError(`File exceeds 50MB limit: ${newFile.name}`);
+      return;
+    }
+    
     const fd = new FormData();
     fd.append("file", newFile);
 
@@ -187,6 +223,7 @@ export default function NewslettersManagement() {
         { method: "PUT" }
       );
       setSuccess("Media replaced.");
+      setError("");
       await fetchContent();
     } catch (err) {
       setError("Failed to replace media");
@@ -209,6 +246,16 @@ export default function NewslettersManagement() {
     }
     if (!postForm.title.trim() && !postForm.body.trim()) {
       setError("Please provide at least a title or body for the newsletter item.");
+      return;
+    }
+    
+    // Validate lengths
+    if (postForm.title.length > 255) {
+      setError("Newsletter item title cannot exceed 255 characters");
+      return;
+    }
+    if (postForm.body.length > 5000) {
+      setError("Newsletter item body cannot exceed 5,000 characters");
       return;
     }
 

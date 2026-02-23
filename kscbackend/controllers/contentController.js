@@ -2,48 +2,45 @@ import fs from "fs";
 import path from "path";
 
 const filePath = path.join(process.cwd(), "data/content.json");
+const defaultContent = {
+  gallery: [],
+  admissions: [],
+  feeStructure: [],
+  newsletters: [],
+  legal: [],
+  about: "",
+  contact: "",
+  curriculum: "",
+  performance: "",
+  policies: "",
+  parents: "",
+  students: "",
+  staff: "",
+  title: "Welcome, Admin",
+  intro: "You have access to manage school content, upload files, and oversee key settings.",
+  formHeading: "Post New Content",
+  data: {}
+};
 
 export function loadContent() {
-  const data = fs.readFileSync(filePath, "utf8");
-  return JSON.parse(data);
+  try {
+    if (!fs.existsSync(filePath)) {
+      console.warn("⚠️  content.json not found, using default content");
+      return defaultContent;
+    }
+    const data = fs.readFileSync(filePath, "utf8");
+    return JSON.parse(data);
+  } catch (err) {
+    console.error("❌ Error loading content:", err.message);
+    return defaultContent;
+  }
 }
 
 export function saveContent(data) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+  } catch (err) {
+    console.error("❌ Error saving content:", err.message);
+  }
 }
-exports.deleteMedia = async (req, res) => {
-  const { contentId, mediaId } = req.params;
-
-  const content = await Content.findById(contentId);
-  if (!content) return res.status(404).json({ error: "Content not found" });
-
-  const media = content.attachments.id(mediaId);
-  if (!media) return res.status(404).json({ error: "Media not found" });
-
-  // OPTIONAL: delete physical file here
-  // fs.unlinkSync(media.url)
-
-  media.remove();
-  await content.save();
-
-  res.json({ success: true });
-};
-
-exports.replaceMedia = async (req, res) => {
-  const { contentId, mediaId } = req.params;
-
-  const content = await Content.findById(contentId);
-  if (!content) return res.status(404).json({ error: "Content not found" });
-
-  const media = content.attachments.id(mediaId);
-  if (!media) return res.status(404).json({ error: "Media not found" });
-
-  media.url = req.file.path;
-  media.originalName = req.file.originalname;
-  media.mimetype = req.file.mimetype;
-  media.size = req.file.size;
-
-  await content.save();
-  res.json({ success: true });
-};
 

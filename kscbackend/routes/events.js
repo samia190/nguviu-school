@@ -4,6 +4,13 @@ import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 
 const router = express.Router();
 
+function toAbsoluteUrl(req, relativePath) {
+  if (!relativePath) return relativePath;
+  if (String(relativePath).startsWith("http")) return relativePath;
+  const origin = process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`;
+  return `${origin}${relativePath}`;
+}
+
 /**
  * GET /api/events
  * Fetch all active events or featured events
@@ -21,7 +28,12 @@ router.get("/", async (req, res) => {
       .sort({ date: -1, displayOrder: 1 })
       .exec();
 
-    res.json(events);
+    const eventsWithAbsoluteUrls = events.map(event => ({
+      ...event.toObject(),
+      imageUrl: toAbsoluteUrl(req, event.imageUrl)
+    }));
+
+    res.json(eventsWithAbsoluteUrls);
   } catch (error) {
     console.error("Error fetching events:", error);
     res.status(500).json({ error: "Failed to fetch events" });
@@ -38,7 +50,10 @@ router.get("/:id", async (req, res) => {
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
     }
-    res.json(event);
+    res.json({
+      ...event.toObject(),
+      imageUrl: toAbsoluteUrl(req, event.imageUrl)
+    });
   } catch (error) {
     console.error("Error fetching event:", error);
     res.status(500).json({ error: "Failed to fetch event" });
@@ -73,7 +88,10 @@ router.post("/", requireAuth, async (req, res) => {
       originalName
     });
 
-    res.status(201).json(event);
+    res.status(201).json({
+      ...event.toObject(),
+      imageUrl: toAbsoluteUrl(req, event.imageUrl)
+    });
   } catch (error) {
     console.error("Error creating event:", error);
     res.status(500).json({ error: "Failed to create event" });
@@ -100,7 +118,10 @@ router.patch("/:id", requireAuth, async (req, res) => {
       return res.status(404).json({ error: "Event not found" });
     }
 
-    res.json(event);
+    res.json({
+      ...event.toObject(),
+      imageUrl: toAbsoluteUrl(req, event.imageUrl)
+    });
   } catch (error) {
     console.error("Error updating event:", error);
     res.status(500).json({ error: "Failed to update event" });

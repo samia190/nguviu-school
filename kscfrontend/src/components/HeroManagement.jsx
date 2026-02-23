@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { get, post, put, del } from "../utils/api";
+import { get, post, put, del, upload } from "../utils/api";
 import Loader from "./Loader";
 
 export default function HeroManagement() {
@@ -53,25 +53,84 @@ export default function HeroManagement() {
     setSuccess("");
 
     if (!mediaFile && !editingId) {
-      setError("Media file is required");
+      setError("Media file is required for new hero content");
       setSaving(false);
       return;
     }
 
-    try {
-      const formData = new FormData();
-      Object.keys(form).forEach(key => {
-        formData.append(key, form[key]);
-      });
-      if (mediaFile) {
-        formData.append("media", mediaFile);
-      }
+    // Validation
+    if (!form.title || form.title.trim().length === 0) {
+      setError("Title is required");
+      setSaving(false);
+      return;
+    }
+    if (form.title.length > 255) {
+      setError("Title must be 255 characters or less");
+      setSaving(false);
+      return;
+    }
+    if (form.description.length > 5000) {
+      setError("Description must be 5000 characters or less");
+      setSaving(false);
+      return;
+    }
+    if (form.displayOrder < 0 || form.displayOrder > 9999) {
+      setError("Display order must be between 0 and 9999");
+      setSaving(false);
+      return;
+    }
 
+    // Validate media file if provided
+    if (mediaFile) {
+      const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
+      const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm'];
+      const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
+      const allowedTypes = form.type === "video" ? ALLOWED_VIDEO_TYPES : ALLOWED_IMAGE_TYPES;
+      if (!allowedTypes.includes(mediaFile.type)) {
+        setError(`Invalid ${form.type} file type. Allowed: ${form.type === "video" ? "MP4, WebM" : "JPG, PNG, WebP, GIF, SVG"}`);
+        setSaving(false);
+        return;
+      }
+      if (mediaFile.size > MAX_FILE_SIZE) {
+        setError(`File size must be 50MB or less. Received: ${(mediaFile.size / 1024 / 1024).toFixed(2)}MB`);
+        setSaving(false);
+        return;
+      }
+    }
+
+    try {
       if (editingId) {
-        await put(`/api/hero-content/${editingId}`, formData);
+        // For updates: send JSON metadata, then upload media separately if provided
+        await put(`/api/hero-content/${editingId}`, {
+          title: form.title,
+          description: form.description,
+          page: form.page,
+          type: form.type,
+          displayOrder: form.displayOrder
+        });
+
+        // If new media provided, upload it
+        if (mediaFile) {
+          const fd = new FormData();
+          fd.append("media", mediaFile);
+          await upload(`/api/hero-content/${editingId}/media`, fd);
+        }
+
         setSuccess("Hero content updated!");
       } else {
-        await post("/api/hero-content", formData);
+        // For creation: upload media and metadata together
+        const fd = new FormData();
+        fd.append("title", form.title);
+        fd.append("description", form.description);
+        fd.append("page", form.page);
+        fd.append("type", form.type);
+        fd.append("displayOrder", form.displayOrder);
+        if (mediaFile) {
+          fd.append("media", mediaFile);
+        }
+
+        await upload("/api/hero-content", fd);
         setSuccess("Hero content added!");
       }
 

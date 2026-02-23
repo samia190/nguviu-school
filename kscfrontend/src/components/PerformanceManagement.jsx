@@ -65,6 +65,17 @@ function safeArray(val) {
   return Array.isArray(val) ? val : [];
 }
 
+function isValidUrl(url) {
+  if (!url) return false;
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    // Check if it's a relative path
+    return url.startsWith('/');
+  }
+}
+
 function uid(prefix = "id") {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
@@ -179,7 +190,24 @@ export default function PerformanceManagement({ user }) {
 
   // ===== Results CRUD =====
   async function addResult() {
-    if (!newResult.year.trim()) return alert("Year is required.");
+    if (!newResult.year.trim()) {
+      alert("Year is required.");
+      return;
+    }
+    // Validate year is numeric (2000-current year)
+    const year = parseInt(newResult.year);
+    if (isNaN(year) || year < 2000 || year > new Date().getFullYear() + 1) {
+      alert("Year must be between 2000 and next year");
+      return;
+    }
+    if (!newResult.meanGrade.trim()) {
+      alert("Mean grade is required");
+      return;
+    }
+    if (newResult.meanGrade.length > 10) {
+      alert("Mean grade too long");
+      return;
+    }
     const row = { id: uid("r"), ...newResult };
     const next = [...safeArray(content.results), row];
     await saveSection("results", next);
@@ -199,7 +227,18 @@ export default function PerformanceManagement({ user }) {
 
   // ===== Reports CRUD =====
   async function addReport() {
-    if (!newReport.name.trim() || !newReport.url.trim()) return alert("Name and URL are required.");
+    if (!newReport.name.trim()) {
+      alert("Report name is required");
+      return;
+    }
+    if (!newReport.url.trim()) {
+      alert("Report URL is required");
+      return;
+    }
+    if (!isValidUrl(newReport.url)) {
+      alert("Please enter a valid URL (e.g., https://example.com/report.pdf or /files/report.pdf)");
+      return;
+    }
     const file = { id: uid("rep"), ...newReport };
     const next = [...safeArray(content.reports), file];
     await saveSection("reports", next);
@@ -219,7 +258,18 @@ export default function PerformanceManagement({ user }) {
 
   // ===== Charts/Images CRUD =====
   async function addChart() {
-    if (!newChart.name.trim() || !newChart.url.trim()) return alert("Name and URL are required.");
+    if (!newChart.name.trim()) {
+      alert("Chart name is required");
+      return;
+    }
+    if (!newChart.url.trim()) {
+      alert("Chart URL is required");
+      return;
+    }
+    if (!isValidUrl(newChart.url)) {
+      alert("Please enter a valid URL (e.g., https://example.com/chart.png or /files/chart.png)");
+      return;
+    }
     const item = { id: uid("chart"), ...newChart };
     const next = [...safeArray(content.charts), item];
     await saveSection("charts", next);
@@ -250,6 +300,22 @@ export default function PerformanceManagement({ user }) {
   async function handleChartFilePick(e) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Validate file type
+    const validImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
+    if (!validImageTypes.includes(file.type)) {
+      alert("Please select a valid image file (JPG, PNG, WebP, GIF, or SVG)");
+      e.target.value = "";
+      return;
+    }
+
+    // Validate file size (max 10MB for images)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert("Image too large. Maximum size is 10MB");
+      e.target.value = "";
+      return;
+    }
 
     try {
       const url = await uploadFileToServer(file);

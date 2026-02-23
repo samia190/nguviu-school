@@ -8,6 +8,14 @@ import fs from "fs";
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+// Helper: convert relative URLs to absolute
+function toAbsoluteUrl(req, relativePath) {
+  if (!relativePath) return relativePath;
+  if (String(relativePath).startsWith("http")) return relativePath;
+  const origin = process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`;
+  return `${origin}${relativePath}`;
+}
+
 function makeDownloadUrl(req, relPath) {
   if (!relPath) return relPath;
   if (String(relPath).startsWith("http")) return relPath;
@@ -27,7 +35,13 @@ router.get("/", async (req, res) => {
     
     const heroContent = await HeroContent.find(filter).sort({ displayOrder: 1 });
     
-    res.json(heroContent);
+    // Convert url to absolute URLs
+    const heroWithAbsoluteUrls = heroContent.map(item => ({
+      ...item.toObject(),
+      url: toAbsoluteUrl(req, item.url)
+    }));
+    
+    res.json(heroWithAbsoluteUrls);
   } catch (err) {
     console.error("Error fetching hero content:", err);
     res.status(500).json({ error: "Failed to fetch hero content" });
@@ -41,7 +55,13 @@ router.get("/:id", async (req, res) => {
     if (!hero) {
       return res.status(404).json({ error: "Hero content not found" });
     }
-    res.json(hero);
+    
+    const heroWithAbsoluteUrl = {
+      ...hero.toObject(),
+      url: toAbsoluteUrl(req, hero.url)
+    };
+    
+    res.json(heroWithAbsoluteUrl);
   } catch (err) {
     console.error("Error fetching hero content:", err);
     res.status(500).json({ error: "Failed to fetch hero content" });
@@ -94,7 +114,13 @@ router.post("/", upload.single("media"), async (req, res) => {
     });
 
     await heroContent.save();
-    res.status(201).json(heroContent);
+    
+    const response = {
+      ...heroContent.toObject(),
+      url: toAbsoluteUrl(req, heroContent.url)
+    };
+    
+    res.status(201).json(response);
   } catch (err) {
     console.error("Error creating hero content:", err);
     res.status(500).json({ error: "Failed to create hero content" });
@@ -145,7 +171,13 @@ router.put("/:id", upload.single("media"), async (req, res) => {
 
     hero.updatedAt = new Date();
     await hero.save();
-    res.json(hero);
+    
+    const response = {
+      ...hero.toObject(),
+      url: toAbsoluteUrl(req, hero.url)
+    };
+    
+    res.json(response);
   } catch (err) {
     console.error("Error updating hero content:", err);
     res.status(500).json({ error: "Failed to update hero content" });

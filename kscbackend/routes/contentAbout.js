@@ -79,6 +79,10 @@ router.get("/", async (req, res) => {
       }
     }
     
+    // Convert image URLs to absolute URLs
+    out.principalImageUrl = makeDownloadUrl(req, out.principalImageUrl);
+    out.deputyImageUrl = makeDownloadUrl(req, out.deputyImageUrl);
+    out.heroBackgroundUrl = makeDownloadUrl(req, out.heroBackgroundUrl);
     out.attachments = attachments;
     console.log("Returning result with coreValues:", out.coreValues ? "present" : "missing");
     return res.json(out);
@@ -132,6 +136,12 @@ router.patch("/:field", async (req, res) => {
     }));
 
     const out = { ...doc.toObject ? doc.toObject() : doc, attachments };
+    
+    // Convert image URLs to absolute URLs
+    out.principalImageUrl = makeDownloadUrl(req, out.principalImageUrl);
+    out.deputyImageUrl = makeDownloadUrl(req, out.deputyImageUrl);
+    out.heroBackgroundUrl = makeDownloadUrl(req, out.heroBackgroundUrl);
+    
     return res.json(out);
   } catch (err) {
     console.error("Error updating about field:", err);
@@ -152,6 +162,12 @@ router.put("/:id", async (req, res) => {
       downloadUrl: a.downloadUrl || makeDownloadUrl(req, a.url),
     }));
     const out = { ...updated.toObject ? updated.toObject() : updated, attachments };
+    
+    // Convert image URLs to absolute URLs
+    out.principalImageUrl = makeDownloadUrl(req, out.principalImageUrl);
+    out.deputyImageUrl = makeDownloadUrl(req, out.deputyImageUrl);
+    out.heroBackgroundUrl = makeDownloadUrl(req, out.heroBackgroundUrl);
+    
     return res.json(out);
   } catch (err) {
     console.error("Error updating about content:", err);

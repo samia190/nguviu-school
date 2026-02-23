@@ -77,13 +77,25 @@ export default function AdminDashboard({ user }) {
 
   useEffect(() => {
     get("/api/content/admin")
-      .then((data) => setContent(data || {}))
-      .catch(() => setError("Failed to load admin dashboard content."));
+      .then((data) => {
+        setContent(data || {});
+        setError("");
+      })
+      .catch((err) => {
+        console.error("Failed to load admin content:", err);
+        setError("Failed to load admin content: " + (err?.message || "Unknown error"));
+        setContent({});
+      });
   }, []);
 
   function updateSection(section, value) {
-    setLoading(true);
+    // Validate section name
+    if (!section || typeof section !== 'string') {
+      setError("Invalid section name");
+      return;
+    }
 
+    setLoading(true);
     setSuccess("");
 
     patch(`/api/content/admin/${section}`, { value })
@@ -107,10 +119,11 @@ export default function AdminDashboard({ user }) {
           return next;
         });
         setSuccess("Content saved successfully");
+        setError("");
       })
       .catch((err) => {
         console.error("Failed to save:", err);
-        setError("Failed to save content.");
+        setError("Failed to save content: " + (err?.message || "Unknown error"));
       })
       .finally(() => setLoading(false));
   }

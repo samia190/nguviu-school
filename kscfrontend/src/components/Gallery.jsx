@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { safePath } from "../utils/paths";
 import { get } from "../utils/api";
 import LazyImage from "./LazyImage";
@@ -8,11 +8,9 @@ export default function Gallery() {
   const [items, setItems] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [previewIndex, setPreviewIndex] = useState(null); // Index for the full-screen view
+  const [previewIndex, setPreviewIndex] = useState(null);
   const [imageLoading, setImageLoading] = useState(true);
-  const [startIndex, setStartIndex] = useState(0);
   const [currentCategory, setCurrentCategory] = useState("all");
-  const imagesPerPage = 4; // 2 rows x 2 columns
 
   const [categories, setCategories] = useState({
     all: [],
@@ -22,6 +20,23 @@ export default function Gallery() {
     tours: []
   });
 
+  // Get API origin for constructing absolute image URLs
+  const API_ORIGIN = useMemo(() => {
+    try {
+      if (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL;
+      }
+    } catch {}
+    return "http://localhost:4000";
+  }, []);
+
+  function absUrl(u) {
+    if (!u) return "";
+    if (u.startsWith("http")) return u;
+    // Convert relative URLs to absolute URLs pointing to the backend
+    return `${API_ORIGIN}${u.startsWith("/") ? u : "/" + u}`;
+  }
+
   useEffect(() => {
     async function load() {
       try {
@@ -29,42 +44,51 @@ export default function Gallery() {
         console.log('Gallery API response:', data);
         
         // backend returns array of gallery items; flatten attachments for simple gallery
-        if (Array.isArray(data) && data.length > 0) {
-          const flat = [];
-          data.forEach((section) => {
-            console.log('Processing gallery section:', section);
-            if (section && section.attachments && Array.isArray(section.attachments)) {
-              section.attachments.forEach((att) => {
-                if (att) {
-                  flat.push({ 
-                    url: att.url || att.downloadUrl, 
-                    originalName: att.title || att.originalName || section.title || "Gallery Item", 
-                    description: att.description || section.body || "" 
-                  });
-                }
-              });
-            }
-          });
-          console.log('Flattened gallery items:', flat);
-          if (flat.length > 0) {
-            setItems(flat);
-            setLoading(false);
-            return;
+        const items = Array.isArray(data) ? data : [];
+        const flat = [];
+        
+        items.forEach((section) => {
+          console.log('Processing gallery section:', section);
+          if (section && section.attachments && Array.isArray(section.attachments)) {
+            section.attachments.forEach((att) => {
+              if (att && att.url) {
+                flat.push({ 
+                  url: absUrl(att.url), // Convert to absolute URL
+                  originalName: att.title || att.originalName || section.title || "Gallery Image", 
+                  description: att.description || section.body || "",
+                  mimetype: att.mimetype
+                });
+              }
+            });
           }
-        }
-
-        // No data in database - show empty state
-        console.log('No gallery data available');
-        setCategories({
-          all: [],
-          main: [],
-          arts: [],
-          events: [],
-          tours: []
         });
-        setItems([]);
-        setError('No images available yet. Please upload images through the admin dashboard.');
-        setLoading(false);
+        
+        console.log('Flattened gallery items:', flat);
+        
+        if (flat.length > 0) {
+          setItems(flat);
+          setCategories({
+            all: flat,
+            main: flat.slice(0, Math.ceil(flat.length / 5)),
+            arts: flat.slice(Math.ceil(flat.length / 5), Math.ceil(flat.length / 5) * 2),
+            events: flat.slice(Math.ceil(flat.length / 5) * 2, Math.ceil(flat.length / 5) * 3),
+            tours: flat.slice(Math.ceil(flat.length / 5) * 3)
+          });
+          setLoading(false);
+        } else {
+          // No data in database - show empty state
+          console.log('No gallery data available');
+          setCategories({
+            all: [],
+            main: [],
+            arts: [],
+            events: [],
+            tours: []
+          });
+          setItems([]);
+          setError('No images available yet. Please upload images through the admin dashboard.');
+          setLoading(false);
+        }
       } catch (err) {
         console.error('Gallery loading error:', err);
         setItems([]);
@@ -74,7 +98,25 @@ export default function Gallery() {
     }
 
     load();
-  }, []);
+  }, [API_ORIGIN]);
+
+  // Keyboard navigation for full-screen preview
+  useEffect(() => {
+    if (previewIndex === null) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft') {
+        handlePrev();
+      } else if (e.key === 'ArrowRight') {
+        handleNext();
+      } else if (e.key === 'Escape') {
+        setPreviewIndex(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [previewIndex, items.length]);
 
   if (loading) {
     return (
@@ -96,33 +138,22 @@ export default function Gallery() {
 
   // Handle full-screen preview
   const handleImageClick = (index) => {
-    setPreviewIndex(index); // Set index of the clicked image for preview
+    setPreviewIndex(index);
   };
 
   const handlePrev = () => {
-    // Go to the previous image
     setPreviewIndex((prevIndex) => (prevIndex === 0 ? items.length - 1 : prevIndex - 1));
   };
 
   const handleNext = () => {
-    // Go to the next image
     setPreviewIndex((prevIndex) => (prevIndex === items.length - 1 ? 0 : prevIndex + 1));
-  };
-
-  const nextPage = () => {
-    setStartIndex((prev) => 
-      Math.min(prev + imagesPerPage, items.length - imagesPerPage)
-    );
-  };
-
-  const prevPage = () => {
-    setStartIndex((prev) => Math.max(0, prev - imagesPerPage));
   };
 
   const switchCategory = (category) => {
     setCurrentCategory(category);
-    setItems(categories[category]);
-    setStartIndex(0);
+    const selectedItems = categories[category] || [];
+    setItems(selectedItems);
+    setPreviewIndex(null);
   };
 
   const currentItems = items;
@@ -185,7 +216,7 @@ export default function Gallery() {
 
       <h2>Gallery</h2>
       <p style={{ maxWidth: 720, color: "#4b5563", fontSize: 14 }}>
-        Explore highlights from school life, events, and activities. Click on images to view them in a larger preview.
+        Explore highlights from school life, events, and activities. Click on any image to view it in full screen. Use arrow keys to navigate, or press Escape to close.
       </p>
 
       {/* Category Filter Buttons */}
@@ -199,10 +230,11 @@ export default function Gallery() {
             background: currentCategory === "all" ? "#007bff" : "#fff",
             color: currentCategory === "all" ? "#fff" : "#333",
             cursor: "pointer",
-            fontWeight: currentCategory === "all" ? "bold" : "normal"
+            fontWeight: currentCategory === "all" ? "bold" : "normal",
+            transition: "all 0.2s ease",
           }}
         >
-          All Images ({categories.all.length})
+          All ({categories.all.length})
         </button>
         <button 
           onClick={() => switchCategory("main")}
@@ -213,10 +245,11 @@ export default function Gallery() {
             background: currentCategory === "main" ? "#007bff" : "#fff",
             color: currentCategory === "main" ? "#fff" : "#333",
             cursor: "pointer",
-            fontWeight: currentCategory === "main" ? "bold" : "normal"
+            fontWeight: currentCategory === "main" ? "bold" : "normal",
+            transition: "all 0.2s ease",
           }}
         >
-          School Life ({categories.main.length})
+          Main ({categories.main.length})
         </button>
         <button 
           onClick={() => switchCategory("arts")}
@@ -227,10 +260,11 @@ export default function Gallery() {
             background: currentCategory === "arts" ? "#007bff" : "#fff",
             color: currentCategory === "arts" ? "#fff" : "#333",
             cursor: "pointer",
-            fontWeight: currentCategory === "arts" ? "bold" : "normal"
+            fontWeight: currentCategory === "arts" ? "bold" : "normal",
+            transition: "all 0.2s ease",
           }}
         >
-          Arts & Culture ({categories.arts.length})
+          Arts ({categories.arts.length})
         </button>
         <button 
           onClick={() => switchCategory("events")}
@@ -241,10 +275,11 @@ export default function Gallery() {
             background: currentCategory === "events" ? "#007bff" : "#fff",
             color: currentCategory === "events" ? "#fff" : "#333",
             cursor: "pointer",
-            fontWeight: currentCategory === "events" ? "bold" : "normal"
+            fontWeight: currentCategory === "events" ? "bold" : "normal",
+            transition: "all 0.2s ease",
           }}
         >
-          Events & Celebrations ({categories.events.length})
+          Events ({categories.events.length})
         </button>
         <button 
           onClick={() => switchCategory("tours")}
@@ -255,87 +290,66 @@ export default function Gallery() {
             background: currentCategory === "tours" ? "#007bff" : "#fff",
             color: currentCategory === "tours" ? "#fff" : "#333",
             cursor: "pointer",
-            fontWeight: currentCategory === "tours" ? "bold" : "normal"
+            fontWeight: currentCategory === "tours" ? "bold" : "normal",
+            transition: "all 0.2s ease",
           }}
         >
-          Educational Tours ({categories.tours.length})
+          Tours ({categories.tours.length})
         </button>
       </div>
 
-      {/* ================= IMAGE CONTAINER ================= */}
-      <div style={{ position: "relative", marginTop: 12 }}>
-        {startIndex > 0 && (
-          <button
-            onClick={prevPage}
-            className="gallery-nav gallery-nav-prev"
-            aria-label="Previous images"
-          >
-            ‹
-          </button>
-        )}
-        
+      {/* ================= IMAGE CONTAINER - RESPONSIVE GRID ================= */}
+      <div style={{ position: "relative", marginTop: 12, marginBottom: 30 }}>
         <div
           style={{
             display: "grid",
-            gap: "1rem",
-            gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 200px), 1fr))",
+            gap: "12px",
+            gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
           }}
           className="gallery-grid-optimized"
         >
-          {currentItems.slice(startIndex, startIndex + imagesPerPage).map((item, idx) => {
-            const actualIndex = startIndex + idx;
+          {currentItems.map((item, idx) => {
             return (
-          <div
-            key={actualIndex}
-            style={{
-              borderRadius: 12,
-              border: "1px solid #e5e7eb",
-              padding: "0.75rem",
-              background: "#ffffff",
-              boxShadow: "0 1px 3px rgba(15,23,42,0.06)",
-              cursor: "pointer",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-            }}
-            onClick={() => handleImageClick(actualIndex)}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-4px)";
-              e.currentTarget.style.boxShadow = "0 4px 12px rgba(15,23,42,0.15)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 1px 3px rgba(15,23,42,0.06)";
-            }}
-          >
-            <LazyImage
-              src={safePath(item.url)}
-              alt={item.originalName || `Gallery image ${actualIndex + 1}`}
-              style={{
-                width: "100%",
-                height: "180px",
-                objectFit: "cover",
-                borderRadius: "8px",
-              }}
-            />
-            <div style={{ marginTop: "10px" }}>
-              <h4 style={{ fontSize: "0.95rem", marginBottom: "4px" }}>{item.originalName}</h4>
-              <p style={{ fontSize: "0.8rem", color: "#6b7280", lineHeight: "1.4" }}>
-                {item.description}
-              </p>
-            </div>
-          </div>
+              <div
+                key={idx}
+                style={{
+                  borderRadius: 10,
+                  border: "2px solid #e5e7eb",
+                  overflow: "hidden",
+                  background: "#f9f9f9",
+                  cursor: "pointer",
+                  transition: "transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease",
+                  aspectRatio: "1",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                onClick={() => handleImageClick(idx)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "scale(1.08)";
+                  e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.15)";
+                  e.currentTarget.style.borderColor = "#007bff";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.borderColor = "#e5e7eb";
+                }}
+                title={item.originalName}
+              >
+                <LazyImage
+                  src={item.url}
+                  alt={item.originalName || `Gallery image ${idx + 1}`}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              </div>
             );
           })}
         </div>
-        
-        {startIndex + imagesPerPage < currentItems.length && (
-          <button
-            onClick={nextPage}
-            className="gallery-nav gallery-nav-next"
-            aria-label="Next images"
-          >
-            ›
-          </button>
-        )}
       </div>
 
       {/* Full-Screen Image Preview */}
@@ -345,79 +359,106 @@ export default function Gallery() {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.9)",
+            background: "rgba(0,0,0,0.95)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             zIndex: 9999,
             padding: "20px",
+            backdropFilter: "blur(4px)",
           }}
         >
           <div
+            onClick={(e) => e.stopPropagation()}
             style={{
-              maxWidth: "95%",
-              maxHeight: "95%",
+              maxWidth: "100%",
+              maxHeight: "100%",
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
               position: "relative",
             }}
           >
+            {/* Close button */}
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setPreviewIndex(null);
-              }}
+              onClick={() => setPreviewIndex(null)}
               style={{
                 position: "absolute",
-                top: -10,
-                right: -10,
-                background: "#fff",
-                borderRadius: "999px",
-                border: "none",
-                padding: "8px 12px",
+                top: "10px",
+                right: "10px",
+                background: "rgba(255,255,255,0.2)",
+                border: "2px solid #fff",
+                borderRadius: "50%",
+                width: "40px",
+                height: "40px",
                 cursor: "pointer",
-                fontWeight: 700,
-                fontSize: "18px",
-                zIndex: 10000,
+                fontWeight: "bold",
+                fontSize: "20px",
+                color: "#fff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.2s ease",
+                zIndex: 10001,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(255,255,255,0.3)";
+                e.currentTarget.style.transform = "scale(1.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(255,255,255,0.2)";
+                e.currentTarget.style.transform = "scale(1)";
               }}
               aria-label="Close preview"
             >
               ✕
             </button>
-            
+
+            {/* Loading indicator */}
             {imageLoading && (
               <div style={{
                 position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
                 color: "#fff",
+                fontSize: "16px",
+                zIndex: 10000,
               }}>
                 Loading...
               </div>
             )}
-            
+
+            {/* Full image - using contain to show complete image */}
             <OptimizedImage
               src={items[previewIndex].url}
-              alt="Preview"
+              alt={items[previewIndex].originalName || "Preview"}
               priority={true}
               onLoad={() => setImageLoading(false)}
               style={{
-                maxWidth: "100%",
-                maxHeight: "90vh",
+                maxWidth: "95vw",
+                maxHeight: "85vh",
+                width: "auto",
+                height: "auto",
                 display: "block",
-                borderRadius: 8,
+                borderRadius: "8px",
                 objectFit: "contain",
               }}
             />
+
+            {/* Image counter and navigation */}
             <div
               style={{
                 position: "absolute",
-                bottom: "10px",
+                bottom: "20px",
                 left: "50%",
                 transform: "translateX(-50%)",
                 display: "flex",
-                gap: "10px",
+                gap: "12px",
                 justifyContent: "center",
+                alignItems: "center",
+                zIndex: 10001,
               }}
             >
               <button
@@ -427,17 +468,39 @@ export default function Gallery() {
                   setImageLoading(true);
                 }}
                 style={{
-                  background: "rgba(255,255,255,0.9)",
-                  border: "none",
+                  background: "rgba(255,255,255,0.15)",
+                  border: "2px solid rgba(255,255,255,0.3)",
                   padding: "10px 16px",
                   cursor: "pointer",
                   borderRadius: "6px",
-                  fontWeight: 600,
+                  fontWeight: "600",
+                  color: "#fff",
+                  fontSize: "14px",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.25)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.15)";
                 }}
                 aria-label="Previous image"
               >
                 ← Previous
               </button>
+
+              <div style={{
+                color: "#fff",
+                fontSize: "14px",
+                background: "rgba(0,0,0,0.5)",
+                padding: "8px 16px",
+                borderRadius: "6px",
+                minWidth: "80px",
+                textAlign: "center",
+              }}>
+                {previewIndex + 1} / {items.length}
+              </div>
+
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -445,17 +508,46 @@ export default function Gallery() {
                   setImageLoading(true);
                 }}
                 style={{
-                  background: "rgba(255,255,255,0.9)",
-                  border: "none",
+                  background: "rgba(255,255,255,0.15)",
+                  border: "2px solid rgba(255,255,255,0.3)",
                   padding: "10px 16px",
                   cursor: "pointer",
                   borderRadius: "6px",
-                  fontWeight: 600,
+                  fontWeight: "600",
+                  color: "#fff",
+                  fontSize: "14px",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.25)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.15)";
                 }}
                 aria-label="Next image"
               >
                 Next →
               </button>
+            </div>
+
+            {/* Image name/title */}
+            <div
+              style={{
+                position: "absolute",
+                top: "20px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                color: "#fff",
+                fontSize: "16px",
+                textAlign: "center",
+                maxWidth: "90%",
+                background: "rgba(0,0,0,0.5)",
+                padding: "12px 20px",
+                borderRadius: "6px",
+                zIndex: 10001,
+              }}
+            >
+              {items[previewIndex].originalName}
             </div>
           </div>
         </div>

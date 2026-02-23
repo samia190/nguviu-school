@@ -27,11 +27,29 @@ export function requireRole(allowed = []) {
       // allow arrays and single string
       const roles = Array.isArray(allowed) ? allowed : [allowed];
       const token = extractToken(req);
-      if (!token) return res.status(401).json({ error: "Unauthorized" });
-      if (!process.env.JWT_SECRET) return res.status(500).json({ error: "JWT_SECRET not configured" });
+      
+      if (!token) {
+        console.log("No token provided for requireRole");
+        return res.status(401).json({ error: "Unauthorized - no token" });
+      }
+      
+      if (!process.env.JWT_SECRET) {
+        console.error("JWT_SECRET not configured!");
+        return res.status(500).json({ error: "Server configuration error" });
+      }
+      
       const payload = jwt.verify(token, process.env.JWT_SECRET);
-      if (!payload?.role) return res.status(403).json({ error: "Forbidden" });
-      if (!roles.includes(payload.role)) return res.status(403).json({ error: "Forbidden" });
+      
+      if (!payload?.role) {
+        console.log("No role in token payload");
+        return res.status(403).json({ error: "Forbidden - no role" });
+      }
+      
+      if (!roles.includes(payload.role)) {
+        console.log("User role", payload.role, "not in allowed roles", roles);
+        return res.status(403).json({ error: `Forbidden - requires role: ${roles.join(", ")}` });
+      }
+      
       req.user = payload;
       return next();
     } catch (err) {

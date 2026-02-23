@@ -40,9 +40,56 @@ export default function EventsManagement({ user }) {
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      if (!formevent.title || !formevent.imageUrl) {
-        setError('Title and image URL are required');
+      // Validation
+      if (!formevent.title || !formevent.title.trim()) {
+        setError('Title is required');
         return;
+      }
+      if (formevent.title.length > 255) {
+        setError('Title must be 255 characters or less');
+        return;
+      }
+
+      if (!formevent.imageUrl || !formevent.imageUrl.trim()) {
+        setError('Image URL is required');
+        return;
+      }
+
+      // Validate image URL format
+      try {
+        new URL(formevent.imageUrl);
+      } catch {
+        setError('Image URL must be a valid URL (e.g., https://example.com/image.jpg)');
+        return;
+      }
+
+      if (formevent.description.length > 2000) {
+        setError('Description must be 2000 characters or less');
+        return;
+      }
+
+      if (formevent.location.length > 500) {
+        setError('Location must be 500 characters or less');
+        return;
+      }
+
+      if (formevent.imageAlt.length > 255) {
+        setError('Image alt text must be 255 characters or less');
+        return;
+      }
+
+      if (formevent.displayOrder < 0 || formevent.displayOrder > 9999) {
+        setError('Display order must be between 0 and 9999');
+        return;
+      }
+
+      // Validate date if provided
+      if (formevent.date) {
+        const eventDate = new Date(formevent.date);
+        if (isNaN(eventDate.getTime())) {
+          setError('Invalid date format');
+          return;
+        }
       }
 
       if (editingId) {
@@ -66,7 +113,7 @@ export default function EventsManagement({ user }) {
       setEditingId(null);
       setError('');
     } catch (err) {
-      setError('Failed to save event');
+      setError('Failed to save event: ' + (err?.message || 'Unknown error'));
       console.error(err);
     }
   }

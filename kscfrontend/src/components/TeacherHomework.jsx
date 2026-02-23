@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { get, post, put, del } from "../utils/api";
+import { get, post, put, del, upload } from "../utils/api";
 import Loader from "./Loader";
 
 export default function TeacherHomework({ user }) {
@@ -66,24 +66,72 @@ export default function TeacherHomework({ user }) {
     setSuccess("");
 
     try {
-      const formData = new FormData();
-      formData.append("title", form.title);
-      formData.append("description", form.description);
-      formData.append("subject", form.subject);
-      formData.append("class", form.class);
-      formData.append("contentType", form.contentType);
-      formData.append("dueDate", form.dueDate);
-      formData.append("status", form.status);
+      // Validate attachments
+      const validImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      const validDocTypes = ['application/pdf', 'application/msword', 
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/zip', 'application/x-zip-compressed'];
+      const allowedTypes = [...validImageTypes, ...validDocTypes];
+      const maxFileSize = 50 * 1024 * 1024; // 50MB per file
+      
+      const failedFiles = [];
+      for (const file of attachmentFiles) {
+        if (!allowedTypes.includes(file.type)) {
+          failedFiles.push(`${file.name} (invalid type)`);
+        }
+        if (file.size > maxFileSize) {
+          failedFiles.push(`${file.name} (exceeds 50MB)`);
+        }
+      }
+      
+      if (failedFiles.length > 0) {
+        setError(`File validation failed: ${failedFiles.join(', ')}`);
+        setSaving(false);
+        return;
+      }
 
+      // Build FormData with files
+      const formData = new FormData();
       attachmentFiles.forEach(file => {
         formData.append("attachments", file);
       });
 
+      // Build JSON body with metadata
+      const bodyData = {
+        title: form.title,
+        description: form.description,
+        subject: form.subject,
+        class: form.class,
+        contentType: form.contentType,
+        dueDate: form.dueDate,
+        status: form.status
+      };
+
       if (editingId) {
-        await put(`/api/homework/${editingId}`, formData);
+        // Update: first update metadata with PUT, then upload files with upload()
+        await put(`/api/homework/${editingId}`, bodyData);
+        if (attachmentFiles.length > 0) {
+          await upload(`/api/homework/${editingId}/attachments`, formData);
+        }
         setSuccess("Homework updated!");
       } else {
-        await post("/api/homework", formData);
+        // Create: first upload files, then get return data
+        let uploadResult = { _id: null };
+        if (attachmentFiles.length > 0) {
+          formData.append("title", bodyData.title);
+          formData.append("description", bodyData.description);
+          formData.append("subject", bodyData.subject);
+          formData.append("class", bodyData.class);
+          formData.append("contentType", bodyData.contentType);
+          formData.append("dueDate", bodyData.dueDate);
+          formData.append("status", bodyData.status);
+          uploadResult = await upload("/api/homework", formData);
+        } else {
+          // No files, just POST metadata
+          uploadResult = await post("/api/homework", bodyData);
+        }
         setSuccess("Homework uploaded successfully!");
       }
 

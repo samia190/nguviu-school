@@ -95,8 +95,35 @@ router.post("/upload", upload.single("file"), optimizeMedia(), async (req, res) 
       uploadedAt: doc.uploadedAt,
     });
   } catch (err) {
-    console.error("Upload error:", err);
+    console.error("❌ Upload error:", err);
     return res.status(500).json({ error: "Upload failed", details: err.message });
+  }
+});
+
+// DEBUG endpoint to check what URL is being returned
+router.post("/test-upload", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const saved = saveBufferToDisk(req.file.buffer, req.file.originalname, uploadsDir);
+    const relativeUrl = saved.url; // /uploads/...
+    const absoluteUrl = toAbsoluteUrl(req, relativeUrl); // http://localhost:4000/uploads/...
+
+    console.log("\n🔍 DEBUG: Upload Test");
+    console.log(`   Relative URL from saveBufferToDisk: ${relativeUrl}`);
+    console.log(`   Absolute URL from toAbsoluteUrl: ${absoluteUrl}`);
+    console.log(`   Starts with http: ${absoluteUrl.startsWith("http")}`);
+
+    return res.json({
+      relativeUrl,
+      absoluteUrl,
+      shouldSendToFrontend: absoluteUrl
+    });
+  } catch (err) {
+    console.error("❌ Debug upload error:", err);
+    return res.status(500).json({ error: "Debug upload failed", details: err.message });
   }
 });
 

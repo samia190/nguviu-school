@@ -4,6 +4,13 @@ import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 
 const router = express.Router();
 
+function toAbsoluteUrl(req, relativePath) {
+  if (!relativePath) return relativePath;
+  if (String(relativePath).startsWith("http")) return relativePath;
+  const origin = process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`;
+  return `${origin}${relativePath}`;
+}
+
 /**
  * GET /api/student-life
  * Fetch all active student life items or by category
@@ -25,7 +32,12 @@ router.get("/", async (req, res) => {
       .sort({ displayOrder: 1, createdAt: -1 })
       .exec();
 
-    res.json(items);
+    const itemsWithAbsoluteUrls = items.map(item => ({
+      ...item.toObject(),
+      imageUrl: toAbsoluteUrl(req, item.imageUrl)
+    }));
+
+    res.json(itemsWithAbsoluteUrls);
   } catch (error) {
     console.error("Error fetching student life items:", error);
     res.status(500).json({ error: "Failed to fetch student life items" });
@@ -42,7 +54,10 @@ router.get("/:id", async (req, res) => {
     if (!item) {
       return res.status(404).json({ error: "Student life item not found" });
     }
-    res.json(item);
+    res.json({
+      ...item.toObject(),
+      imageUrl: toAbsoluteUrl(req, item.imageUrl)
+    });
   } catch (error) {
     console.error("Error fetching student life item:", error);
     res.status(500).json({ error: "Failed to fetch student life item" });
@@ -76,7 +91,10 @@ router.post("/", requireAuth, async (req, res) => {
       originalName
     });
 
-    res.status(201).json(item);
+    res.status(201).json({
+      ...item.toObject(),
+      imageUrl: toAbsoluteUrl(req, item.imageUrl)
+    });
   } catch (error) {
     console.error("Error creating student life item:", error);
     res.status(500).json({ error: "Failed to create student life item" });
@@ -103,7 +121,10 @@ router.patch("/:id", requireAuth, async (req, res) => {
       return res.status(404).json({ error: "Student life item not found" });
     }
 
-    res.json(item);
+    res.json({
+      ...item.toObject(),
+      imageUrl: toAbsoluteUrl(req, item.imageUrl)
+    });
   } catch (error) {
     console.error("Error updating student life item:", error);
     res.status(500).json({ error: "Failed to update student life item" });

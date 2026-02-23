@@ -8,6 +8,14 @@ import fs from "fs";
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+// Helper: convert relative URLs to absolute
+function toAbsoluteUrl(req, relativePath) {
+  if (!relativePath) return relativePath;
+  if (String(relativePath).startsWith("http")) return relativePath;
+  const origin = process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`;
+  return `${origin}${relativePath}`;
+}
+
 // Middleware to check admin role
 function isAdmin(req, res, next) {
   // This assumes auth middleware sets req.user
@@ -36,7 +44,13 @@ router.get("/", async (req, res) => {
     
     const staff = await Staff.find(filter).sort({ displayOrder: 1, createdAt: -1 });
     
-    res.json(staff);
+    // Convert photoUrl to absolute URLs
+    const staffWithAbsoluteUrls = staff.map(member => ({
+      ...member.toObject(),
+      photoUrl: toAbsoluteUrl(req, member.photoUrl)
+    }));
+    
+    res.json(staffWithAbsoluteUrls);
   } catch (err) {
     console.error("Error fetching staff:", err);
     res.status(500).json({ error: "Failed to fetch staff" });
@@ -50,7 +64,13 @@ router.get("/:id", async (req, res) => {
     if (!staff) {
       return res.status(404).json({ error: "Staff member not found" });
     }
-    res.json(staff);
+    
+    const staffWithAbsoluteUrl = {
+      ...staff.toObject(),
+      photoUrl: toAbsoluteUrl(req, staff.photoUrl)
+    };
+    
+    res.json(staffWithAbsoluteUrl);
   } catch (err) {
     console.error("Error fetching staff:", err);
     res.status(500).json({ error: "Failed to fetch staff" });
@@ -82,15 +102,21 @@ router.post("/", async (req, res) => {
     });
 
     await staff.save();
-    res.status(201).json(staff);
+    
+    const response = {
+      ...staff.toObject(),
+      photoUrl: toAbsoluteUrl(req, staff.photoUrl)
+    };
+    
+    res.status(201).json(response);
   } catch (err) {
     console.error("Error creating staff:", err);
     res.status(500).json({ error: "Failed to create staff member" });
   }
 });
 
-// PUT update staff member (with optional photo upload)
-router.put("/:id", upload.single("photo"), async (req, res) => {
+// PUT update staff member
+router.put("/:id", async (req, res) => {
   try {
     const staff = await Staff.findById(req.params.id);
     if (!staff) {
@@ -98,7 +124,7 @@ router.put("/:id", upload.single("photo"), async (req, res) => {
     }
 
     // Update basic fields
-    const { fullName, title, type, department, remarks, email, phone, qualifications, experience, displayOrder } = req.body;
+    const { fullName, title, type, department, remarks, email, phone, qualifications, experience, displayOrder, photoUrl } = req.body;
 
     if (fullName) staff.fullName = fullName;
     if (title) staff.title = title;
@@ -110,33 +136,17 @@ router.put("/:id", upload.single("photo"), async (req, res) => {
     if (qualifications) staff.qualifications = qualifications;
     if (experience) staff.experience = experience;
     if (displayOrder !== undefined) staff.displayOrder = displayOrder;
-
-    // Handle photo upload if provided
-    if (req.file) {
-      try {
-        let photoUrl;
-        if (isS3Enabled()) {
-          photoUrl = await uploadBufferToS3(req.file.buffer, `staff/${req.file.originalname}`);
-        } else {
-          const uploadsDir = path.join(process.cwd(), "public", "uploads", "staff");
-          if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true });
-          }
-          const safeName = `${Date.now()}-${req.file.originalname.replace(/\s+/g, "_")}`;
-          const dest = path.join(uploadsDir, safeName);
-          fs.writeFileSync(dest, req.file.buffer);
-          photoUrl = `/uploads/staff/${safeName}`;
-        }
-        staff.photoUrl = photoUrl;
-      } catch (err) {
-        console.error("Error uploading photo:", err);
-        return res.status(400).json({ error: "Failed to upload photo" });
-      }
-    }
+    if (photoUrl) staff.photoUrl = photoUrl;
 
     staff.updatedAt = new Date();
     await staff.save();
-    res.json(staff);
+    
+    const response = {
+      ...staff.toObject(),
+      photoUrl: toAbsoluteUrl(req, staff.photoUrl)
+    };
+    
+    res.json(response);
   } catch (err) {
     console.error("Error updating staff:", err);
     res.status(500).json({ error: "Failed to update staff member" });

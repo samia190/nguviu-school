@@ -9,6 +9,9 @@ const PAGES = [
   { key: "signup", label: "Signup Page" },
 ];
 
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
 function fileHref(file) {
   return file?.downloadUrl || file?.url || "";
 }
@@ -29,6 +32,17 @@ export default function PageBackgroundManagement() {
     fetchContent();
   }, []);
 
+  useEffect(() => {
+    // Cleanup blob URLs on unmount
+    return () => {
+      Object.values(previews).forEach(url => {
+        if (url && url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, []);
+
   async function fetchContent() {
     setLoading(true);
     setError("");
@@ -40,7 +54,7 @@ export default function PageBackgroundManagement() {
         Object.fromEntries(
           PAGES.map((p) => [
             p.key,
-            data?.data?.[p.key]?.overlay ?? 0.55,
+            Math.max(0, Math.min(0.8, data?.data?.[p.key]?.overlay ?? 0.55)),
           ])
         )
       );
@@ -54,18 +68,38 @@ export default function PageBackgroundManagement() {
 
   // ---------------- FILE SELECT + PREVIEW ----------------
   function handleFileChange(page, file) {
-    setSelectedFiles((prev) => ({ ...prev, [page]: file }));
+    if (!file) return;
 
-    if (file) {
-      setPreviews((prev) => ({
-        ...prev,
-        [page]: URL.createObjectURL(file),
-      }));
+    // Validate file type
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setError(`Invalid file type. Allowed: JPG, PNG, WebP, GIF, SVG`);
+      return;
     }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      setError(`File size must be 50MB or less. Received: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+      return;
+    }
+
+    // Revoke old preview if exists
+    if (previews[page] && previews[page].startsWith('blob:')) {
+      URL.revokeObjectURL(previews[page]);
+    }
+
+    setError("");
+    setSelectedFiles((prev) => ({ ...prev, [page]: file }));
+    setPreviews((prev) => ({
+      ...prev,
+      [page]: URL.createObjectURL(file),
+    }));
   }
 
   function handleOverlayChange(page, value) {
-    setOverlays((prev) => ({ ...prev, [page]: Number(value) }));
+    const numValue = Number(value);
+    // Clamp value between 0 and 0.8
+    const clampedValue = Math.max(0, Math.min(0.8, numValue));
+    setOverlays((prev) => ({ ...prev, [page]: clampedValue }));
   }
 
   // ---------------- SAVE / UPDATE ----------------
@@ -103,6 +137,9 @@ export default function PageBackgroundManagement() {
       });
       setPreviews((prev) => {
         const copy = { ...prev };
+        if (copy[page] && copy[page].startsWith('blob:')) {
+          URL.revokeObjectURL(copy[page]);
+        }
         delete copy[page];
         return copy;
       });
@@ -194,7 +231,7 @@ export default function PageBackgroundManagement() {
 
             <div style={{ marginTop: "0.5rem" }}>
               <label>
-                Overlay darkness ({overlays[page.key]})
+                Overlay darkness ({overlays[page.key].toFixed(2)})
               </label>
               <input
                 type="range"

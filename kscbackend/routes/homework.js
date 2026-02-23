@@ -8,6 +8,25 @@ import fs from "fs";
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+function toAbsoluteUrl(req, relativePath) {
+  if (!relativePath) return relativePath;
+  if (String(relativePath).startsWith("http")) return relativePath;
+  const origin = process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`;
+  return `${origin}${relativePath}`;
+}
+
+function normalizeHomeworkUrls(req, homework) {
+  if (!homework) return homework;
+  const obj = homework.toObject ? homework.toObject() : homework;
+  return {
+    ...obj,
+    attachments: (obj.attachments || []).map(att => ({
+      ...att,
+      url: toAbsoluteUrl(req, att.url)
+    }))
+  };
+}
+
 // GET all homework (public or admin/teacher)
 router.get("/", async (req, res) => {
   try {
@@ -23,10 +42,36 @@ router.get("/", async (req, res) => {
       .sort({ dueDate: -1, createdAt: -1 })
       .limit(100);
 
-    res.json(homework);
+    const normalized = homework.map(hw => normalizeHomeworkUrls(req, hw));
+    res.json(normalized);
   } catch (err) {
     console.error("Error fetching homework:", err);
     res.status(500).json({ error: "Failed to fetch homework" });
+  }
+});
+
+// GET all homework for admin dashboard (all statuses)
+router.get("/admin/all", requireAuth, async (req, res) => {
+  try {
+    console.log("Admin homework fetch - User:", req.user?._id, "Role:", req.user?.role);
+    
+    // Only admins and teachers can view all homework
+    if (req.user?.role !== "admin" && req.user?.role !== "teacher") {
+      console.log("Unauthorized - user role:", req.user?.role);
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    const homework = await Homework.find({})
+      .sort({ dueDate: -1, createdAt: -1 })
+      .limit(200)
+      .lean();
+
+    console.log("Found homework count:", homework.length);
+    const normalized = (homework || []).map(hw => normalizeHomeworkUrls(req, hw));
+    res.json(normalized);
+  } catch (err) {
+    console.error("Error fetching homework:", err.message);
+    res.status(500).json({ error: "Failed to fetch homework: " + err.message });
   }
 });
 
@@ -37,7 +82,7 @@ router.get("/:id", async (req, res) => {
     if (!homework) {
       return res.status(404).json({ error: "Homework not found" });
     }
-    res.json(homework);
+    res.json(normalizeHomeworkUrls(req, homework));
   } catch (err) {
     console.error("Error fetching homework:", err);
     res.status(500).json({ error: "Failed to fetch homework" });
@@ -102,7 +147,7 @@ router.post("/", requireAuth, upload.array("attachments", 10), async (req, res) 
     });
 
     await homework.save();
-    res.status(201).json(homework);
+    res.status(201).json(normalizeHomeworkUrls(req, homework));
   } catch (err) {
     console.error("Error creating homework:", err);
     res.status(500).json({ error: "Failed to create homework" });
@@ -162,7 +207,7 @@ router.put("/:id", requireAuth, upload.array("attachments", 10), async (req, res
 
     homework.updatedAt = new Date();
     await homework.save();
-    res.json(homework);
+    res.json(normalizeHomeworkUrls(req, homework));
   } catch (err) {
     console.error("Error updating homework:", err);
     res.status(500).json({ error: "Failed to update homework" });

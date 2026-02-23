@@ -39,6 +39,33 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET /api/submissions/stats
+// Return statistics about submissions
+router.get("/stats", async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.json({ stats: { total: 0, pending: 0, approved: 0, rejected: 0 } });
+    }
+
+    const total = await File.countDocuments({});
+    const pending = await File.countDocuments({ status: "pending" });
+    const approved = await File.countDocuments({ status: "approved" });
+    const rejected = await File.countDocuments({ status: "rejected" });
+
+    return res.json({
+      stats: {
+        total,
+        pending,
+        approved,
+        rejected
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    return res.json({ stats: { total: 0, pending: 0, approved: 0, rejected: 0 } });
+  }
+});
+
 // GET single submission
 router.get("/:id", async (req, res) => {
   try {

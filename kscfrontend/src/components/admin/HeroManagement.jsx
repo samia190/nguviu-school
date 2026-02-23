@@ -48,9 +48,29 @@ export default function HeroManagement({ user }) {
   // Handle file selection
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
+    if (!file) return;
+
+    // File type validation based on type selected
+    const validImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const validVideoTypes = ['video/mp4', 'video/webm'];
+    
+    const allowedTypes = formData.type === 'video' ? validVideoTypes : validImageTypes;
+    
+    if (!allowedTypes.includes(file.type)) {
+      alert(`Invalid file type. Expected ${formData.type === 'video' ? 'MP4 or WebM' : 'JPG, PNG, or WebP'}`);
+      return;
+    }
+
+    // File size validation (max 50MB for video, 5MB for images)
+    const maxSize = formData.type === 'video' ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert(`File too large. Max ${formData.type === 'video' ? '50MB' : '5MB'}`);
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
-      media: file || null,
+      media: file,
     }));
   };
 
@@ -63,12 +83,36 @@ export default function HeroManagement({ user }) {
       return;
     }
 
+    if (!formData.page) {
+      alert("Please select a page");
+      return;
+    }
+
+    if (!formData.type) {
+      alert("Please select a type");
+      return;
+    }
+
+    // Validation
+    if (formData.title.length > 255) {
+      alert("Title must be 255 characters or less");
+      return;
+    }
+    if (formData.description.length > 5000) {
+      alert("Description must be 5000 characters or less");
+      return;
+    }
+    if (formData.displayOrder < 0 || formData.displayOrder > 9999) {
+      alert("Display order must be between 0 and 9999");
+      return;
+    }
+
     const data = new FormData();
     data.append("media", formData.media);
     data.append("page", formData.page);
     data.append("type", formData.type);
-    if (formData.title) data.append("title", formData.title);
-    if (formData.description) data.append("description", formData.description);
+    if (formData.title?.trim()) data.append("title", formData.title);
+    if (formData.description?.trim()) data.append("description", formData.description);
     data.append("displayOrder", formData.displayOrder);
 
     try {

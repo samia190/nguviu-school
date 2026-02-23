@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { get, put, upload, del } from "../utils/api";
+import { get, put, post, upload, del } from "../utils/api";
 import Loader from "./Loader";
 
 function fileHref(file) {
@@ -70,6 +70,21 @@ export default function FeeStructureManagement() {
 
   async function handleSaveText(e) {
     e.preventDefault();
+    
+    // Validate text field lengths
+    if (textForm.title.length > 255) {
+      setError("Title cannot exceed 255 characters");
+      return;
+    }
+    if (textForm.body.length > 5000) {
+      setError("Description cannot exceed 5,000 characters");
+      return;
+    }
+    if (textForm.notes.length > 5000) {
+      setError("Notes cannot exceed 5,000 characters");
+      return;
+    }
+    
     setSavingText(true);
     setError("");
     setSuccess("");
@@ -85,14 +100,13 @@ export default function FeeStructureManagement() {
         setContent(updated);
         setSuccess("Fee structure text saved.");
       } else {
-        // First-time create: POST via /api/admin/content
-        const fd = new FormData();
-        fd.append("type", "feestructure");
-        fd.append("title", textForm.title);
-        fd.append("body", textForm.body);
-        fd.append("notes", textForm.notes);
-
-        const data = await upload("/api/admin/content", fd);
+        // First-time create: POST JSON data
+        const data = await post("/api/content", {
+          type: "feestructure",
+          title: textForm.title,
+          body: textForm.body,
+          notes: textForm.notes,
+        });
         const created = data.content || data;
         setContent(created);
         setSuccess("Fee structure text saved.");
@@ -108,6 +122,32 @@ export default function FeeStructureManagement() {
   // ---------- FILE UPLOAD ----------
   function handleFileChange(e) {
     const files = Array.from(e.target.files || []);
+    
+    // Validate files
+    const validDocTypes = ['application/pdf', 'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/zip', 'application/x-zip-compressed',
+      'image/jpeg', 'image/png', 'image/webp'];
+    const maxFileSize = 50 * 1024 * 1024; // 50MB
+    
+    const invalidFiles = [];
+    for (const file of files) {
+      if (!validDocTypes.includes(file.type)) {
+        invalidFiles.push(`${file.name} (invalid type)`);
+      }
+      if (file.size > maxFileSize) {
+        invalidFiles.push(`${file.name} (exceeds 50MB)`);
+      }
+    }
+    
+    if (invalidFiles.length > 0) {
+      setError(`Invalid files: ${invalidFiles.join(', ')}`);
+      return;
+    }
+    
+    setError("");
     setSelectedFiles(files);
   }
 
@@ -186,6 +226,24 @@ export default function FeeStructureManagement() {
   }
 
   async function handleReplaceMedia(mediaId, newFile) {
+    // Validate file
+    const validDocTypes = ['application/pdf', 'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/zip', 'application/x-zip-compressed',
+      'image/jpeg', 'image/png', 'image/webp'];
+    const maxFileSize = 50 * 1024 * 1024; // 50MB
+    
+    if (!validDocTypes.includes(newFile.type)) {
+      setError(`Invalid file type: ${newFile.name}`);
+      return;
+    }
+    if (newFile.size > maxFileSize) {
+      setError(`File exceeds 50MB limit: ${newFile.name}`);
+      return;
+    }
+    
     const fd = new FormData();
     fd.append("file", newFile);
 
@@ -197,6 +255,7 @@ export default function FeeStructureManagement() {
         { method: "PUT" }
       );
       setSuccess("Media replaced.");
+      setError("");
       await fetchContent();
     } catch (err) {
       setError("Failed to replace media");

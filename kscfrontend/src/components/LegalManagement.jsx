@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { get, post, put, del } from "../utils/api";
+import { get, post, put, del, upload } from "../utils/api";
 
 export default function LegalManagement() {
   const [documents, setDocuments] = useState([]);
@@ -30,7 +30,25 @@ export default function LegalManagement() {
   function handleChange(e) {
     const { name, value, files } = e.target;
     if (files) {
-      setForm((f) => ({ ...f, file: files[0] }));
+      const file = files[0];
+      
+      // Validate file type
+      const validTypes = ['application/pdf', 'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!validTypes.includes(file.type)) {
+        setFormError("Only PDF, DOC, and DOCX files are allowed");
+        return;
+      }
+      
+      // Validate file size (max 20MB)
+      const maxSize = 20 * 1024 * 1024;
+      if (file.size > maxSize) {
+        setFormError("File size cannot exceed 20MB");
+        return;
+      }
+      
+      setFormError("");
+      setForm((f) => ({ ...f, file: file }));
     } else {
       setForm((f) => ({ ...f, [name]: value }));
     }
@@ -56,30 +74,61 @@ export default function LegalManagement() {
   async function handleSubmit(e) {
     e.preventDefault();
     setFormError("");
+    
+    // Validate title
     if (!form.title) {
       setFormError("Title is required");
+      return;
+    }
+    if (form.title.length > 255) {
+      setFormError("Title cannot exceed 255 characters");
+      return;
+    }
+    if (form.description.length > 2000) {
+      setFormError("Description cannot exceed 2,000 characters");
       return;
     }
 
     setFormLoading(true);
     try {
-      const formData = new FormData();
-      formData.append("title", form.title);
-      formData.append("description", form.description);
-      if (form.file) formData.append("file", form.file);
+      const bodyData = {
+        title: form.title,
+        description: form.description,
+      };
 
-      const url = editId ? `/api/legal/${editId}` : "/api/legal";
-      const method = editId ? "PUT" : "POST";
-
-      const saveMethod = editId ? put : post;
-      const saved = await saveMethod(url, formData);
-      if (!saved) throw new Error("Failed to save document");
+      if (editId) {
+        // Update document metadata
+        await put(`/api/legal/${editId}`, bodyData);
+        
+        // If new file provided, upload it separately
+        if (form.file) {
+          const formData = new FormData();
+          formData.append("file", form.file);
+          await upload(`/api/legal/${editId}/file`, formData);
+        }
+      } else {
+        // Create new document
+        if (!form.file) {
+          setFormError("File is required for new documents");
+          setFormLoading(false);
+          return;
+        }
+        
+        // Upload file first
+        const formData = new FormData();
+        formData.append("file", form.file);
+        formData.append("title", form.title);
+        formData.append("description", form.description);
+        
+        const saved = await upload("/api/legal", formData);
+        if (!saved) throw new Error("Failed to create document");
+      }
 
       setForm({ title: "", description: "", file: null });
       setEditId(null);
       fetchDocuments();
     } catch (err) {
-      setFormError(err.message);
+      setFormError(err.message || "Failed to save document");
     } finally {
       setFormLoading(false);
     }

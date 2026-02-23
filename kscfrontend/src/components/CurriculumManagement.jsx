@@ -67,32 +67,46 @@ export default function CurriculumManagement() {
     try {
       setSaving(true);
       const uploadedMedia = [];
+      const failedFiles = [];
 
       for (const file of files) {
         const fd = new FormData();
         fd.append("file", file);
 
-        // IMPORTANT:
-        // Your ../utils/api `post` helper should detect FormData and set the correct headers.
-        // If not, adjust this call to match how you upload in other sections (Admissions/Newsletter).
-        const uploaded = await post("/api/files", fd);
+        try {
+          // IMPORTANT:
+          // Your ../utils/api `post` helper should detect FormData and set the correct headers.
+          // If not, adjust this call to match how you upload in other sections (Admissions/Newsletter).
+          const uploaded = await post("/api/files", fd);
 
-        // Normalise what we store in the content document
-        uploadedMedia.push({
-          fileId: uploaded._id, // adjust if your API returns id instead of _id
-          url: uploaded.url,
-          mimeType: uploaded.mimeType || uploaded.mimetype,
-          originalName: uploaded.originalName || uploaded.filename || file.name,
-        });
+          // Normalise what we store in the content document
+          uploadedMedia.push({
+            fileId: uploaded._id, // adjust if your API returns id instead of _id
+            url: uploaded.url,
+            mimeType: uploaded.mimeType || uploaded.mimetype,
+            originalName: uploaded.originalName || uploaded.filename || file.name,
+          });
+        } catch (fileErr) {
+          console.error("Failed to upload file:", file.name, fileErr);
+          failedFiles.push(file.name);
+        }
       }
 
-      setFormData((prev) => ({
-        ...prev,
-        media: [...(prev.media || []), ...uploadedMedia],
-      }));
+      if (failedFiles.length > 0) {
+        setError(`Failed to upload ${failedFiles.length} file(s): ${failedFiles.join(", ")}`);
+      } else {
+        setError("");
+      }
+
+      if (uploadedMedia.length > 0) {
+        setFormData((prev) => ({
+          ...prev,
+          media: [...(prev.media || []), ...uploadedMedia],
+        }));
+      }
     } catch (err) {
       console.error(err);
-      setError("Failed to upload one or more files.");
+      setError("Failed to upload one or more files: " + (err?.message || "Unknown error"));
     } finally {
       setSaving(false);
       // reset input so the same file can be chosen again if needed

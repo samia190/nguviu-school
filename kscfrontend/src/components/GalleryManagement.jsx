@@ -74,10 +74,26 @@ export default function GalleryManagement() {
     const files = Array.from(fileArray || []);
     if (files.length === 0) return;
 
+    // Validate files
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml', 'video/mp4', 'video/webm', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'];
+    const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+
+    for (const file of files) {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        setError(`Invalid file type: ${file.name}. Allowed: Images, Videos, PDFs, Word docs, Excel sheets, PowerPoint`);
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        setError(`File too large: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB). Max 100MB per file`);
+        return;
+      }
+    }
+
     const section = items.find((it) => String(it._id || it.id) === String(itemId));
     const currentAttachments = section?.attachments || [];
 
     try {
+      setError("");
       setUploading((s) => ({
         ...s,
         [itemId]: { uploading: true, progress: 0, message: "Uploading..." },
@@ -126,7 +142,7 @@ export default function GalleryManagement() {
           message: `❌ Upload failed (${e?.message || "error"})`,
         },
       }));
-      alert("Upload failed. Check /api/files route on the backend.");
+      setError(`Upload failed: ${e?.message || "error"}`);
     }
   }
 
@@ -168,12 +184,38 @@ export default function GalleryManagement() {
 
   async function createSectionWithMedia() {
     if (!newTitle.trim() && !newBody.trim() && newFiles.length === 0) {
-      alert("Add a title/body or select media files.");
+      setError("Add a title/body or select media files.");
       return;
+    }
+
+    // Validation
+    if (newTitle.length > 255) {
+      setError("Title must be 255 characters or less");
+      return;
+    }
+    if (newBody.length > 5000) {
+      setError("Description must be 5000 characters or less");
+      return;
+    }
+
+    // Validate files if any
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml', 'video/mp4', 'video/webm', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'];
+    const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+
+    for (const file of newFiles) {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        setError(`Invalid file type: ${file.name}. Allowed: Images, Videos, PDFs, Word docs, Excel sheets, PowerPoint`);
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        setError(`File too large: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB). Max 100MB per file`);
+        return;
+      }
     }
 
     try {
       setCreating(true);
+      setError("");
 
       // 1) Create section (title + body, no attachments yet)
       const created = await post("/api/content/gallery", {
@@ -198,7 +240,7 @@ export default function GalleryManagement() {
       setNewFiles([]);
     } catch (e) {
       console.error(e);
-      alert(`Failed to create section. ${e?.message || ""}`);
+      setError(`Failed to create section. ${e?.message || ""}`);
     } finally {
       setCreating(false);
     }
@@ -330,63 +372,123 @@ export default function GalleryManagement() {
                 )}
               </div>
 
-              {/* Attachments */}
-              <div style={{ marginTop: 8 }}>
+              {/* Attachments Grid Display */}
+              <div style={{ marginTop: 12 }}>
+                <h4 style={{ marginTop: 0, marginBottom: 12, fontSize: 14 }}>Media Files ({item.attachments?.length || 0})</h4>
+                
                 {(!item.attachments || item.attachments.length === 0) && (
-                  <p style={{ margin: 0, fontSize: 13 }}>No media attachments yet.</p>
+                  <p style={{ margin: 0, fontSize: 13, color: "#666" }}>No media attachments yet.</p>
                 )}
 
-                <div style={{ display: "grid", gap: 8 }}>
+                <div style={{ 
+                  display: "grid", 
+                  gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
+                  gap: "12px",
+                  marginTop: item.attachments?.length > 0 ? "8px" : "0"
+                }}>
                   {item.attachments?.map((att, idx) => {
                     const url = absUrl(att.url);
                     const img = isImage(att.mimetype);
                     const vid = isVideo(att.mimetype);
 
                     return (
-                      <div key={att._id || idx} style={{ position: "relative" }}>
+                      <div 
+                        key={att._id || idx} 
+                        style={{ 
+                          position: "relative",
+                          borderRadius: 8,
+                          overflow: "hidden",
+                          backgroundColor: "#f0f0f0",
+                          aspectRatio: "1",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                          transition: "transform 0.2s ease, box-shadow 0.2s ease"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "scale(1.05)";
+                          e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "scale(1)";
+                          e.currentTarget.style.boxShadow = "none";
+                        }}
+                      >
                         {img && (
                           <img
                             src={safePath(url)}
-                            alt={att.originalName || "image"}
-                            style={{ width: "100%", borderRadius: 6, cursor: "pointer" }}
+                            alt={att.originalName || `Image ${idx + 1}`}
+                            style={{ 
+                              width: "100%", 
+                              height: "100%",
+                              objectFit: "cover"
+                            }}
                             onClick={() => setPreview({ url, name: att.originalName })}
+                            title={att.originalName || "Click to preview"}
                           />
                         )}
 
                         {vid && (
-                          <video
-                            src={safePath(url)}
-                            controls
-                            style={{ width: "100%", borderRadius: 6 }}
-                          />
+                          <div style={{ textAlign: "center", width: "100%", height: "100%" }}>
+                            <video
+                              src={safePath(url)}
+                              style={{ 
+                                width: "100%", 
+                                height: "100%",
+                                objectFit: "cover"
+                              }}
+                            />
+                            <div style={{
+                              position: "absolute",
+                              inset: 0,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              backgroundColor: "rgba(0,0,0,0.3)"
+                            }}>
+                              <span style={{ fontSize: 24, color: "#fff" }}>▶</span>
+                            </div>
+                          </div>
                         )}
 
                         {!img && !vid && (
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ fontSize: 13 }}
-                          >
-                            {att.originalName || "Download file"}
-                          </a>
+                          <div style={{ 
+                            textAlign: "center", 
+                            padding: "8px",
+                            fontSize: "11px"
+                          }}>
+                            📄<br/>
+                            <span style={{ wordBreak: "break-word", display: "block", marginTop: "4px" }}>
+                              {att.originalName?.substring(0, 15) || "File"}
+                            </span>
+                          </div>
                         )}
 
+                        {/* Remove button */}
                         <button
                           type="button"
                           onClick={() => removeAttachment(itemId, att._id)}
                           style={{
                             position: "absolute",
-                            top: 6,
-                            right: 6,
-                            background: "rgba(0,0,0,0.6)",
+                            top: 2,
+                            right: 2,
+                            background: "rgba(220, 38, 38, 0.9)",
                             color: "#fff",
                             border: "none",
-                            borderRadius: 999,
-                            width: 26,
-                            height: 26,
+                            borderRadius: "50%",
+                            width: 24,
+                            height: 24,
                             cursor: "pointer",
+                            fontSize: 12,
+                            padding: 0,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            transition: "background 0.2s ease"
                           }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(220, 38, 38, 1)"}
+                          onMouseLeave={(e) => e.currentTarget.style.background = "rgba(220, 38, 38, 0.9)"}
                           title="Remove this file"
                         >
                           ✕

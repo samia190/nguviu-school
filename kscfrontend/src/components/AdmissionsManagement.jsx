@@ -8,6 +8,11 @@ function fileHref(file) {
   return file?.downloadUrl || file?.url || "";
 }
 
+function isValidFileName(filename) {
+  // Prevent path traversal and dangerous characters
+  return !filename.includes("..") && !filename.includes("/") && !filename.includes("\\");
+}
+
 export default function AdmissionsManagement() {
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -83,6 +88,37 @@ export default function AdmissionsManagement() {
 
   async function handleSaveText(e) {
     e.preventDefault();
+    
+    // Validate text field lengths
+    if (textForm.title.length > 255) {
+      setError("Title cannot exceed 255 characters");
+      return;
+    }
+    if (textForm.overview.length > 10000) {
+      setError("Overview cannot exceed 10,000 characters");
+      return;
+    }
+    if (textForm.process.length > 10000) {
+      setError("Process description cannot exceed 10,000 characters");
+      return;
+    }
+    if (textForm.requirements.length > 10000) {
+      setError("Requirements cannot exceed 10,000 characters");
+      return;
+    }
+    if (textForm.importantDates.length > 5000) {
+      setError("Important dates cannot exceed 5,000 characters");
+      return;
+    }
+    if (textForm.contactInfo.length > 5000) {
+      setError("Contact info cannot exceed 5,000 characters");
+      return;
+    }
+    if (textForm.downloadsHeading.length > 255) {
+      setError("Downloads heading cannot exceed 255 characters");
+      return;
+    }
+    
     if (!content?._id) {
       setError(
         "Cannot save text yet. Please upload at least one file or save once using this form."
@@ -117,6 +153,32 @@ export default function AdmissionsManagement() {
   // ---------- FILE UPLOAD ----------
   function handleFileChange(e) {
     const files = Array.from(e.target.files || []);
+    
+    // Validate files
+    const validDocTypes = ['application/pdf', 'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/zip', 'application/x-zip-compressed',
+      'image/jpeg', 'image/png', 'image/webp'];
+    const maxFileSize = 50 * 1024 * 1024; // 50MB
+    
+    const invalidFiles = [];
+    for (const file of files) {
+      if (!validDocTypes.includes(file.type)) {
+        invalidFiles.push(`${file.name} (invalid type)`);
+      }
+      if (file.size > maxFileSize) {
+        invalidFiles.push(`${file.name} (exceeds 50MB)`);
+      }
+    }
+    
+    if (invalidFiles.length > 0) {
+      setError(`Invalid files: ${invalidFiles.join(', ')}`);
+      return;
+    }
+    
+    setError("");
     setSelectedFiles(files);
   }
 
@@ -199,6 +261,24 @@ export default function AdmissionsManagement() {
   }
 
   async function handleReplaceMedia(mediaId, newFile) {
+    // Validate file
+    const validDocTypes = ['application/pdf', 'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/zip', 'application/x-zip-compressed',
+      'image/jpeg', 'image/png', 'image/webp'];
+    const maxFileSize = 50 * 1024 * 1024; // 50MB
+    
+    if (!validDocTypes.includes(newFile.type)) {
+      setError(`Invalid file type: ${newFile.name}`);
+      return;
+    }
+    if (newFile.size > maxFileSize) {
+      setError(`File exceeds 50MB limit: ${newFile.name}`);
+      return;
+    }
+    
     const fd = new FormData();
     fd.append("file", newFile);
 
@@ -210,6 +290,7 @@ export default function AdmissionsManagement() {
         { method: "PUT" }
       );
       setSuccess("Media replaced.");
+      setError("");
       await fetchContent();
     } catch (err) {
       setError("Failed to replace media");

@@ -74,7 +74,18 @@ export default function ParentsManagement() {
 
   // ===== Announcements CRUD =====
   async function addAnnouncement() {
-    if (!newAnnouncement.title.trim()) return setError("Title is required.");
+    if (!newAnnouncement.title.trim()) {
+      setError("Title is required.");
+      return;
+    }
+    if (newAnnouncement.title.length > 255) {
+      setError("Title cannot exceed 255 characters");
+      return;
+    }
+    if (newAnnouncement.body.length > 5000) {
+      setError("Announcement content cannot exceed 5,000 characters");
+      return;
+    }
     const item = { id: uid("ann"), ...newAnnouncement, createdAt: new Date().toISOString() };
     await saveSection("announcements", [...content.announcements, item]);
     setNewAnnouncement({ title: "", body: "", date: "", visible: true });
@@ -92,7 +103,29 @@ export default function ParentsManagement() {
 
   // ===== Resources CRUD =====
   async function addResource() {
-    if (!newResource.name.trim()) return setError("Name is required.");
+    if (!newResource.name.trim()) {
+      setError("Resource name is required.");
+      return;
+    }
+    if (newResource.name.length > 255) {
+      setError("Resource name cannot exceed 255 characters");
+      return;
+    }
+    if (newResource.url && newResource.url.trim()) {
+      // Validate URL format
+      try {
+        new URL(newResource.url);
+      } catch {
+        if (!newResource.url.startsWith('/')) {
+          setError("Please enter a valid URL (e.g., https://example.com or /files/doc.pdf)");
+          return;
+        }
+      }
+    }
+    if (newResource.description.length > 2000) {
+      setError("Resource description cannot exceed 2,000 characters");
+      return;
+    }
     const item = { id: uid("res"), ...newResource, createdAt: new Date().toISOString() };
     await saveSection("resources", [...content.resources, item]);
     setNewResource({ name: "", description: "", url: "", type: "link", visible: true });
@@ -110,7 +143,22 @@ export default function ParentsManagement() {
 
   // ===== Events CRUD =====
   async function addEvent() {
-    if (!newEvent.title.trim()) return setError("Title is required.");
+    if (!newEvent.title.trim()) {
+      setError("Event title is required.");
+      return;
+    }
+    if (newEvent.title.length > 255) {
+      setError("Event title cannot exceed 255 characters");
+      return;
+    }
+    if (newEvent.location.length > 500) {
+      setError("Event location cannot exceed 500 characters");
+      return;
+    }
+    if (newEvent.description.length > 3000) {
+      setError("Event description cannot exceed 3,000 characters");
+      return;
+    }
     const item = { id: uid("evt"), ...newEvent, createdAt: new Date().toISOString() };
     await saveSection("events", [...content.events, item]);
     setNewEvent({ title: "", date: "", time: "", location: "", description: "", visible: true });

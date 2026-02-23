@@ -29,6 +29,16 @@ export default function PoliciesManagement() {
   }
 
   function handleSave() {
+    // Validate field lengths
+    if (content.title.length > 255) {
+      setError("Title cannot exceed 255 characters");
+      return;
+    }
+    if (content.policiesText.length > 50000) {
+      setError("Policies text cannot exceed 50,000 characters");
+      return;
+    }
+    
     setSaving(true);
     setError("");
     setSuccess("");

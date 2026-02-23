@@ -9,6 +9,13 @@ import { optimizeMedia, mediaFileFilter } from "../middleware/mediaOptimizer.js"
 
 const router = express.Router();
 
+function toAbsoluteUrl(req, relativePath) {
+  if (!relativePath) return relativePath;
+  if (String(relativePath).startsWith("http")) return relativePath;
+  const origin = process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`;
+  return `${origin}${relativePath}`;
+}
+
 // ✅ Must match your index.js static folder
 // index.js: app.use("/uploads", express.static(path.join(process.cwd(),"public","uploads")))
 const uploadsDir = path.join(process.cwd(), "public", "uploads");
@@ -38,7 +45,15 @@ const upload = multer({
 router.get("/", async (req, res) => {
   try {
     const items = await GalleryItem.find().sort({ createdAt: -1 });
-    res.json(items);
+    const itemsWithAbsoluteUrls = items.map(item => ({
+      ...item.toObject(),
+      attachments: (item.attachments || []).map(att => ({
+        ...att,
+        url: toAbsoluteUrl(req, att.url),
+        thumbnail: toAbsoluteUrl(req, att.thumbnail)
+      }))
+    }));
+    res.json(itemsWithAbsoluteUrls);
   } catch (err) {
     console.error("Gallery list error:", err);
     res.status(500).json({ error: "Failed to load gallery" });
@@ -50,7 +65,14 @@ router.get("/:id", async (req, res) => {
   try {
     const item = await GalleryItem.findById(req.params.id);
     if (!item) return res.status(404).json({ error: "Not found" });
-    res.json(item);
+    res.json({
+      ...item.toObject(),
+      attachments: (item.attachments || []).map(att => ({
+        ...att,
+        url: toAbsoluteUrl(req, att.url),
+        thumbnail: toAbsoluteUrl(req, att.thumbnail)
+      }))
+    });
   } catch (err) {
     console.error("Gallery get error:", err);
     res.status(500).json({ error: "Failed to load gallery item" });
@@ -144,7 +166,16 @@ router.post("/:id/attachments", upload.array("attachments", 100), optimizeMedia(
     item.attachments.push(...added);
     await item.save();
 
-    res.json({ added, item });
+    const normalizedAttachments = (item.attachments || []).map(att => ({
+      ...att,
+      url: toAbsoluteUrl(req, att.url),
+      thumbnail: toAbsoluteUrl(req, att.thumbnail)
+    }));
+
+    res.json({ 
+      added: normalizedAttachments.slice(-added.length),
+      item: { ...item.toObject(), attachments: normalizedAttachments }
+    });
   } catch (err) {
     console.error("Gallery attachment upload error:", err);
     res.status(500).json({ error: "Upload failed" });
@@ -179,7 +210,17 @@ router.delete("/:id/attachments/:attachmentId", async (req, res) => {
     await item.save();
 
     const after = item.attachments.length;
-    res.json({ ok: true, removed: before - after, item });
+    const normalizedAttachments = (item.attachments || []).map(att => ({
+      ...att,
+      url: toAbsoluteUrl(req, att.url),
+      thumbnail: toAbsoluteUrl(req, att.thumbnail)
+    }));
+
+    res.json({ 
+      ok: true, 
+      removed: before - after, 
+      item: { ...item.toObject(), attachments: normalizedAttachments }
+    });
   } catch (err) {
     console.error("Delete attachment error:", err);
     res.status(500).json({ error: "Delete failed" });

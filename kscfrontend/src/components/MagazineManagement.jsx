@@ -120,27 +120,59 @@ export default function MagazineManagement({ user }) {
       return;
     }
 
+    // Text field validation
+    if (!formData.title || formData.title.trim().length === 0) {
+      setError("Title is required");
+      return;
+    }
+    if (formData.title.length > 255) {
+      setError("Title must be 255 characters or less");
+      return;
+    }
+    if (formData.issue.length > 255) {
+      setError("Issue/Edition must be 255 characters or less");
+      return;
+    }
+    if (formData.description.length > 5000) {
+      setError("Description must be 5000 characters or less");
+      return;
+    }
+
+    let pdfUrl = formData.pdfUrl;
+    let coverUrl = formData.coverImage;
+
     try {
       setSaving(true);
       setUploading(true);
       setError("");
       setSuccess("");
 
-      let pdfUrl = formData.pdfUrl;
-      let coverUrl = formData.coverImage;
-
       // Upload PDF if new file selected
       if (selectedPdfFile) {
-        console.log('Starting PDF upload...');
-        pdfUrl = await uploadFile(selectedPdfFile, 'pdf');
-        console.log('PDF uploaded successfully:', pdfUrl);
+        try {
+          console.log('Starting PDF upload...');
+          pdfUrl = await uploadFile(selectedPdfFile, 'pdf');
+          console.log('PDF uploaded successfully:', pdfUrl);
+        } catch (err) {
+          setError(`PDF upload failed: ${err.message}`);
+          setUploading(false);
+          setSaving(false);
+          return;
+        }
       }
 
       // Upload cover image if new file selected
       if (selectedCoverFile) {
-        console.log('Starting cover image upload...');
-        coverUrl = await uploadFile(selectedCoverFile, 'image');
-        console.log('Cover image uploaded successfully:', coverUrl);
+        try {
+          console.log('Starting cover image upload...');
+          coverUrl = await uploadFile(selectedCoverFile, 'image');
+          console.log('Cover image uploaded successfully:', coverUrl);
+        } catch (err) {
+          setError(`Cover image upload failed: ${err.message}`);
+          setUploading(false);
+          setSaving(false);
+          // Don't return - allow magazine save without cover image
+        }
       }
 
       setUploading(false);
@@ -191,10 +223,10 @@ export default function MagazineManagement({ user }) {
 
       // Refresh list
       fetchMagazines();
-      setSaving(false);
     } catch (err) {
       console.error("Error saving magazine:", err);
       setError(`Failed to save magazine: ${err.message}`);
+    } finally {
       setSaving(false);
       setUploading(false);
     }

@@ -8,6 +8,14 @@ import fs from "fs";
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+// Helper: convert relative URLs to absolute
+function toAbsoluteUrl(req, relativePath) {
+  if (!relativePath) return relativePath;
+  if (String(relativePath).startsWith("http")) return relativePath;
+  const origin = process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`;
+  return `${origin}${relativePath}`;
+}
+
 // GET all active news items
 router.get("/", async (req, res) => {
   try {
@@ -21,7 +29,13 @@ router.get("/", async (req, res) => {
       .sort({ displayOrder: 1, publishDate: -1 })
       .limit(20);
     
-    res.json(news);
+    // Convert imageUrl to absolute URL
+    const newsWithAbsoluteUrls = news.map(item => ({
+      ...item.toObject(),
+      imageUrl: toAbsoluteUrl(req, item.imageUrl)
+    }));
+    
+    res.json(newsWithAbsoluteUrls);
   } catch (err) {
     console.error("Error fetching home news:", err);
     res.status(500).json({ error: "Failed to fetch news" });
@@ -38,43 +52,36 @@ router.get("/:id", async (req, res) => {
     // Increment view count
     newsItem.views = (newsItem.views || 0) + 1;
     await newsItem.save();
-    res.json(newsItem);
+    
+    // Convert imageUrl to absolute URL
+    const newsWithAbsoluteUrl = {
+      ...newsItem.toObject(),
+      imageUrl: toAbsoluteUrl(req, newsItem.imageUrl)
+    };
+    
+    res.json(newsWithAbsoluteUrl);
   } catch (err) {
     console.error("Error fetching news:", err);
     res.status(500).json({ error: "Failed to fetch news" });
   }
 });
 
-// POST create new news item (with image upload)
-router.post("/", upload.single("image"), async (req, res) => {
+// POST create new news item
+router.post("/", async (req, res) => {
   try {
-    const { title, description, category, displayOrder, link, author } = req.body;
+    const { title, description, category, displayOrder, link, author, imageUrl } = req.body;
+
+    console.log("\n🔍 DEBUG: Home News POST");
+    console.log(`   Received imageUrl: "${imageUrl}"`);
+    console.log(`   Is absolute (starts with http): ${imageUrl?.startsWith("http")}`);
+    console.log(`   Is relative (starts with /): ${imageUrl?.startsWith("/")}`);
 
     if (!title || !description) {
       return res.status(400).json({ error: "Missing required fields: title, description" });
     }
 
-    if (!req.file) {
-      return res.status(400).json({ error: "Image file required" });
-    }
-
-    let imageUrl;
-    try {
-      if (isS3Enabled()) {
-        imageUrl = await uploadBufferToS3(req.file.buffer, `news/${req.file.originalname}`);
-      } else {
-        const uploadsDir = path.join(process.cwd(), "public", "uploads", "news");
-        if (!fs.existsSync(uploadsDir)) {
-          fs.mkdirSync(uploadsDir, { recursive: true });
-        }
-        const safeName = `${Date.now()}-${req.file.originalname.replace(/\s+/g, "_")}`;
-        const dest = path.join(uploadsDir, safeName);
-        fs.writeFileSync(dest, req.file.buffer);
-        imageUrl = `/uploads/news/${safeName}`;
-      }
-    } catch (err) {
-      console.error("Error uploading image:", err);
-      return res.status(400).json({ error: "Failed to upload image" });
+    if (!imageUrl) {
+      return res.status(400).json({ error: "Image file required (url: /api/home-news)" });
     }
 
     const newsItem = new HomeNews({
@@ -90,7 +97,18 @@ router.post("/", upload.single("image"), async (req, res) => {
     });
 
     await newsItem.save();
-    res.status(201).json(newsItem);
+
+    console.log(`   Stored in DB as: "${newsItem.imageUrl}"`);
+    console.log(`   Storage successful: ${newsItem._id}`);
+    
+    const response = {
+      ...newsItem.toObject(),
+      imageUrl: toAbsoluteUrl(req, newsItem.imageUrl)
+    };
+
+    console.log(`   Response imageUrl will be: "${response.imageUrl}"`);
+
+    res.status(201).json(response);
   } catch (err) {
     console.error("Error creating news:", err);
     res.status(500).json({ error: "Failed to create news item" });
@@ -98,14 +116,14 @@ router.post("/", upload.single("image"), async (req, res) => {
 });
 
 // PUT update news item
-router.put("/:id", upload.single("image"), async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
     const newsItem = await HomeNews.findById(req.params.id);
     if (!newsItem) {
       return res.status(404).json({ error: "News item not found" });
     }
 
-    const { title, description, category, displayOrder, link, author, active } = req.body;
+    const { title, description, category, displayOrder, link, author, active, imageUrl } = req.body;
 
     if (title) newsItem.title = title;
     if (description) newsItem.description = description;
@@ -114,33 +132,17 @@ router.put("/:id", upload.single("image"), async (req, res) => {
     if (link) newsItem.link = link;
     if (author) newsItem.author = author;
     if (active !== undefined) newsItem.active = active === "true" || active === true;
-
-    // Handle image upload if provided
-    if (req.file) {
-      try {
-        let imageUrl;
-        if (isS3Enabled()) {
-          imageUrl = await uploadBufferToS3(req.file.buffer, `news/${req.file.originalname}`);
-        } else {
-          const uploadsDir = path.join(process.cwd(), "public", "uploads", "news");
-          if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true });
-          }
-          const safeName = `${Date.now()}-${req.file.originalname.replace(/\s+/g, "_")}`;
-          const dest = path.join(uploadsDir, safeName);
-          fs.writeFileSync(dest, req.file.buffer);
-          imageUrl = `/uploads/news/${safeName}`;
-        }
-        newsItem.imageUrl = imageUrl;
-      } catch (err) {
-        console.error("Error uploading image:", err);
-        return res.status(400).json({ error: "Failed to upload image" });
-      }
-    }
+    if (imageUrl) newsItem.imageUrl = imageUrl;
 
     newsItem.updatedAt = new Date();
     await newsItem.save();
-    res.json(newsItem);
+    
+    const response = {
+      ...newsItem.toObject(),
+      imageUrl: toAbsoluteUrl(req, newsItem.imageUrl)
+    };
+    
+    res.json(response);
   } catch (err) {
     console.error("Error updating news:", err);
     res.status(500).json({ error: "Failed to update news item" });

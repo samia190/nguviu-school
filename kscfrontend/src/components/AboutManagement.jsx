@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { get, put, upload } from "../utils/api";
+import { get, put, post } from "../utils/api";
 import Loader from "./Loader";
 
 export default function AboutManagement() {
@@ -99,39 +99,108 @@ export default function AboutManagement() {
     setSuccess("");
 
     try {
+      // Validation
+      if (!form.title || form.title.trim().length === 0) {
+        setError("Title is required");
+        setSaving(false);
+        return;
+      }
+      if (form.title.length > 255) {
+        setError("Title must be 255 characters or less");
+        setSaving(false);
+        return;
+      }
+      if (form.intro.length > 5000) {
+        setError("Intro text must be 5000 characters or less");
+        setSaving(false);
+        return;
+      }
+      if (form.missionHeading.length > 255) {
+        setError("Mission heading must be 255 characters or less");
+        setSaving(false);
+        return;
+      }
+      if (form.mission.length > 5000) {
+        setError("Mission text must be 5000 characters or less");
+        setSaving(false);
+        return;
+      }
+      if (form.visionHeading.length > 255) {
+        setError("Vision heading must be 255 characters or less");
+        setSaving(false);
+        return;
+      }
+      if (form.vision.length > 5000) {
+        setError("Vision text must be 5000 characters or less");
+        setSaving(false);
+        return;
+      }
+      if (form.mottoHeading.length > 255) {
+        setError("Motto heading must be 255 characters or less");
+        setSaving(false);
+        return;
+      }
+      if (form.motto.length > 5000) {
+        setError("Motto text must be 5000 characters or less");
+        setSaving(false);
+        return;
+      }
+      if (form.coreValuesHeading.length > 255) {
+        setError("Core values heading must be 255 characters or less");
+        setSaving(false);
+        return;
+      }
+      if (form.coreValues.length > 5000) {
+        setError("Core values text must be 5000 characters or less");
+        setSaving(false);
+        return;
+      }
+      if (form.promiseHeading.length > 255) {
+        setError("Promise heading must be 255 characters or less");
+        setSaving(false);
+        return;
+      }
+      if (form.promise.length > 5000) {
+        setError("Promise text must be 5000 characters or less");
+        setSaving(false);
+        return;
+      }
+
       // If document already exists, update it via PUT /api/content/:id
       if (content?._id) {
-        const updated = await put(`/api/content/${content._1d || content._id}`, {
+        const updated = await put(`/api/content/${content._id}`, {
           title: form.title,
           intro: form.intro,
           missionHeading: form.missionHeading,
           mission: form.mission,
           visionHeading: form.visionHeading,
           vision: form.vision,
+          mottoHeading: form.mottoHeading,
           motto: form.motto,
+          coreValuesHeading: form.coreValuesHeading,
           coreValues: form.coreValues,
+          promiseHeading: form.promiseHeading,
           promise: form.promise,
         });
         setContent(updated);
         setSuccess("About page content saved.");
       } else {
-        // First-time create via /api/admin/content
-        const fd = new FormData();
-        fd.append("type", "about");
-        fd.append("title", form.title);
-        fd.append("intro", form.intro);
-        fd.append("missionHeading", form.missionHeading);
-        fd.append("mission", form.mission);
-        fd.append("visionHeading", form.visionHeading);
-        fd.append("vision", form.vision);
-        fd.append("mottoHeading", form.mottoHeading);
-        fd.append("motto", form.motto);
-        fd.append("coreValuesHeading", form.coreValuesHeading);
-        fd.append("coreValues", form.coreValues);
-        fd.append("promiseHeading", form.promiseHeading);
-        fd.append("promise", form.promise);
-
-        const data = await upload("/api/admin/content", fd);
+        // First-time create via /api/content with JSON
+        const data = await post("/api/content", {
+          type: "about",
+          title: form.title,
+          intro: form.intro,
+          missionHeading: form.missionHeading,
+          mission: form.mission,
+          visionHeading: form.visionHeading,
+          vision: form.vision,
+          mottoHeading: form.mottoHeading,
+          motto: form.motto,
+          coreValuesHeading: form.coreValuesHeading,
+          coreValues: form.coreValues,
+          promiseHeading: form.promiseHeading,
+          promise: form.promise,
+        });
         const created = data.content || data;
         setContent(created);
         setSuccess("About page content saved.");

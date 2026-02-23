@@ -40,8 +40,39 @@ export default function StudentLifeManagement({ user }) {
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      if (!formItem.title || !formItem.imageUrl) {
-        setError('Title and image URL are required');
+      if (!formItem.title || formItem.title.trim().length === 0) {
+        setError('Title is required');
+        return;
+      }
+      if (formItem.title.length > 255) {
+        setError('Title must be 255 characters or less');
+        return;
+      }
+      if (formItem.description.length > 5000) {
+        setError('Description must be 5000 characters or less');
+        return;
+      }
+      if (formItem.imageAlt.length > 255) {
+        setError('Image alt text must be 255 characters or less');
+        return;
+      }
+      if (!formItem.imageUrl || formItem.imageUrl.trim().length === 0) {
+        setError('Image URL is required');
+        return;
+      }
+      // Basic URL validation
+      try {
+        new URL(formItem.imageUrl, window.location.origin);
+      } catch {
+        setError('Image URL must be a valid URL');
+        return;
+      }
+      if (!categories.includes(formItem.category)) {
+        setError('Invalid category selected');
+        return;
+      }
+      if (formItem.displayOrder < 0 || formItem.displayOrder > 9999) {
+        setError('Display order must be between 0 and 9999');
         return;
       }
 

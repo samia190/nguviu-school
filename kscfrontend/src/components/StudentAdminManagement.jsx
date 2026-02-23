@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { get, post, put, del } from "../utils/api";
+import { get, post, put, del, upload } from "../utils/api";
 import Loader from "./Loader";
 
 export default function StudentAdminManagement() {
@@ -65,15 +65,33 @@ export default function StudentAdminManagement() {
     setSuccess("");
 
     try {
-      const formData = new FormData();
-      Object.keys(form).forEach(key => formData.append(key, form[key]));
-      if (photoFile) formData.append("photo", photoFile);
+      let photoUrl = null;
+
+      // Upload photo separately if provided
+      if (photoFile) {
+        const fd = new FormData();
+        fd.append("file", photoFile);
+        try {
+          const uploadedFile = await upload("/api/files/upload", fd);
+          photoUrl = uploadedFile.url || uploadedFile.downloadUrl;
+        } catch (uploadErr) {
+          setError("Failed to upload photo: " + (uploadErr.message || "Unknown error"));
+          setSaving(false);
+          return;
+        }
+      }
+
+      // Prepare JSON data
+      const data = { ...form };
+      if (photoUrl) {
+        data.photoUrl = photoUrl;
+      }
 
       if (editingId) {
-        await put(`/api/admin/students/${editingId}`, formData);
+        await put(`/api/admin/students/${editingId}`, data);
         setSuccess("Student updated!");
       } else {
-        await post("/api/admin/students", formData);
+        await post("/api/admin/students", data);
         setSuccess("Student added!");
       }
 

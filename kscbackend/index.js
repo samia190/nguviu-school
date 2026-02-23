@@ -144,13 +144,13 @@ app.use("/images", express.static(imagesDir, {
 
 // Mount routes
 app.use("/api/auth", authRoutes);
-// Mount dedicated home route BEFORE the generic content router so it takes precedence
+// Mount dedicated content routes BEFORE the generic content router so they take precedence
 app.use("/api/content/home", homeRoutes);
 app.use("/api/content/about", aboutRoutes);
+app.use("/api/content/gallery", galleryRoutes);
 app.use("/api/content", contentRoutes);
 app.use("/api/files", filesRoutes);
 app.use("/api/downloads", downloadRoutes);
-app.use("/api/content/gallery", galleryRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/submissions", submissionsRoutes);
 // Public submit form and admin helpers
@@ -182,6 +182,18 @@ export { dbConnected };
 
 // Health check route
 app.get("/api/health", (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
+
+// Global error handler - MUST be last, catches any errors thrown by routes
+app.use((err, req, res, next) => {
+  console.error("[ERROR]", req.method, req.path);
+  console.error("Message:", err.message);
+  console.error("Stack:", err.stack);
+  res.status(err.status || 500).json({ 
+    error: err.message || "Internal Server Error",
+    path: req.path,
+    method: req.method
+  });
+});
 
 // Start the server
 const PORT = process.env.PORT || 4000;

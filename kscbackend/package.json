@@ -12,10 +12,12 @@
     "db:connect": "node scripts/db-setup.js --connect-only",
     "db:admin": "node scripts/db-setup.js --admin-only",
     "create-admin": "node scripts/create-admin.js",
+    "seed:admin": "node seed-admin.mjs",
     "add:principal": "node scripts/add-principal-margret.mjs",
     "seed:about": "node scripts/seed-about-content.mjs",
     "seed:images": "node scripts/seed-distributed-images.mjs",
-    "hero:distribute": "node scripts/distribute-hero-to-gallery.mjs"
+    "hero:distribute": "node scripts/distribute-hero-to-gallery.mjs",
+    "upload:gallery": "node scripts/upload-frontend-images.mjs"
   },
   "keywords": [],
   "author": "",

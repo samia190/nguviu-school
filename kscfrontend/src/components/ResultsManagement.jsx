@@ -115,8 +115,22 @@ const ResultsManagement = ({ user }) => {
   };
 
   const addSubject = () => {
+    // Validate required fields
     if (!currentSubject.subjectName || !currentSubject.marks || !currentSubject.grade) {
       alert("Please fill in subject name, marks, and grade");
+      return;
+    }
+
+    // Validate marks is numeric and in valid range
+    const marks = parseFloat(currentSubject.marks);
+    if (isNaN(marks) || marks < 0 || marks > 100) {
+      alert("Marks must be a number between 0 and 100");
+      return;
+    }
+
+    // Validate grade is not empty and reasonable length
+    if (currentSubject.grade.trim().length > 5) {
+      alert("Grade should be short (e.g., A, B+, A-)");
       return;
     }
 
@@ -200,6 +214,37 @@ const ResultsManagement = ({ user }) => {
     setError("");
     setSuccess("");
 
+    // Validate form before submission
+    if (!formData.admissionNumber || !formData.studentName) {
+      setError("Student selection is required");
+      setLoading(false);
+      return;
+    }
+
+    if (formData.subjects.length === 0) {
+      setError("At least one subject is required");
+      setLoading(false);
+      return;
+    }
+
+    if (formData.curriculum === "CBC" && !formData.assessmentNumber) {
+      setError("Assessment number is required for CBC students");
+      setLoading(false);
+      return;
+    }
+
+    if (formData.position && isNaN(parseInt(formData.position))) {
+      setError("Position must be a number");
+      setLoading(false);
+      return;
+    }
+
+    if (formData.year < 2000 || formData.year > new Date().getFullYear() + 1) {
+      setError("Year must be between 2000 and next year");
+      setLoading(false);
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
       const url = editingResult
@@ -229,7 +274,7 @@ const ResultsManagement = ({ user }) => {
         setError(data.error || "Failed to save result");
       }
     } catch (err) {
-      setError("Failed to save result");
+      setError("Failed to save result: " + err.message);
     } finally {
       setLoading(false);
     }

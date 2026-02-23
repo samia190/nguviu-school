@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { get, put, upload } from "../utils/api";
+import { get, put, post, upload } from "../utils/api";
 
 export default function ContactManagement() {
   const [contentDoc, setContentDoc] = useState(null);
@@ -76,6 +76,40 @@ export default function ContactManagement() {
     setSuccess("");
 
     try {
+      // Validate email format
+      if (form.email.trim() && !form.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        setError("Please enter a valid email address");
+        setSaving(false);
+        return;
+      }
+
+      // Validate field lengths
+      if (form.address.length > 1000) {
+        setError("Address cannot exceed 1,000 characters");
+        setSaving(false);
+        return;
+      }
+      if (form.phone.length > 50) {
+        setError("Phone number cannot exceed 50 characters");
+        setSaving(false);
+        return;
+      }
+      if (form.whatsappNumber.length > 50) {
+        setError("WhatsApp number cannot exceed 50 characters");
+        setSaving(false);
+        return;
+      }
+      if (form.whatsappLink.length > 500) {
+        setError("WhatsApp link cannot exceed 500 characters");
+        setSaving(false);
+        return;
+      }
+      if (form.mapEmbed.length > 5000) {
+        setError("Map embed code cannot exceed 5,000 characters");
+        setSaving(false);
+        return;
+      }
+
       if (contentDoc && contentDoc._id) {
         // Update existing Content document
         const updatedDoc = {
@@ -102,17 +136,18 @@ export default function ContactManagement() {
 
         setSuccess("Contact content saved successfully.");
       } else {
-        // First time: create new Content document via /api/admin/content
-        const fd = new FormData();
-        fd.append("type", "contact");
-        fd.append("address", form.address);
-        fd.append("phone", form.phone);
-        fd.append("email", form.email);
-        fd.append("whatsappNumber", form.whatsappNumber);
-        fd.append("whatsappLink", form.whatsappLink);
-        fd.append("mapEmbed", form.mapEmbed);
+        // First time: create new Content document via JSON POST
+        const newDoc = {
+          type: "contact",
+          address: form.address,
+          phone: form.phone,
+          email: form.email,
+          whatsappNumber: form.whatsappNumber,
+          whatsappLink: form.whatsappLink,
+          mapEmbed: form.mapEmbed,
+        };
 
-        const data = await upload("/api/admin/content", fd);
+        const data = await post("/api/content", newDoc);
         const created = data.content || data;
         setContentDoc(created);
 

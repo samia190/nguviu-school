@@ -3,6 +3,8 @@ import { apiFetch } from "../utils/api";
 import notify from "../utils/notify";
 import AdminButton from "./AdminButton";
 
+const SCHOOL_NAME = import.meta.env.VITE_SCHOOL_NAME || "Saint Angela KANGARU GIRLS' Senior School";
+
 function formatDate(d) {
   try {
     return new Date(d).toLocaleString();
@@ -25,6 +27,7 @@ export default function AdminSubmissions() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [total, setTotal] = useState(0);
+  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
   const [isNarrow, setIsNarrow] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
@@ -34,6 +37,17 @@ export default function AdminSubmissions() {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+
+  // Fetch stats from backend
+  async function loadStats() {
+    try {
+      const response = await apiFetch('/api/submissions/stats');
+      setStats(response.stats || { total: 0, pending: 0, approved: 0, rejected: 0 });
+    } catch (err) {
+      console.warn("Could not load stats:", err);
+      setStats({ total: 0, pending: 0, approved: 0, rejected: 0 });
+    }
+  }
 
   async function load(p = page) {
     setLoading(true);
@@ -56,7 +70,13 @@ export default function AdminSubmissions() {
     }
   }
 
-  useEffect(() => { load(1); }, [limit]);
+  useEffect(() => { load(1); loadStats(); }, [limit]);
+  
+  // Reset pagination when filter changes
+  useEffect(() => {
+    load(1);
+    loadStats();
+  }, [statusFilter, query]);
 
   async function refreshAndClose() {
     await load();
@@ -89,22 +109,10 @@ export default function AdminSubmissions() {
   async function downloadAsZip(submission) {
     setDownloading(true);
     try {
-      const response = await fetch(`/api/submissions/${submission._id}/download-zip`);
-      if (!response.ok) throw new Error("Failed to download ZIP");
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `admission-${submission.fullName || submission._id}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      notify("Download started", "success");
+      // ZIP download endpoint not implemented - fall back to PDF
+      await downloadAsPDF(submission);
     } catch (err) {
-      notify("Download failed. Feature may not be implemented yet on backend.", "error");
+      notify("Download failed. Please try PDF format.", "error");
       console.error(err);
     } finally {
       setDownloading(false);
@@ -157,7 +165,7 @@ export default function AdminSubmissions() {
       </head>
       <body>
         <div class="header">
-          <h1>ST. ANGELA KANGARU GIRLS' SENIOR SCHOOL</h1>
+          <h1>${SCHOOL_NAME}</h1>
           <h3>Admission Application Form</h3>
           <p>Application ID: ${sub._id}</p>
           <p>Submitted: ${formatDate(sub.submittedAt || sub.uploadedAt)}</p>
@@ -265,7 +273,7 @@ export default function AdminSubmissions() {
         <p>${sub.parentComments || 'No comments'}</p>
 
         <div class="footer">
-          <p>This is a computer-generated document from St. Angela KANGARU GIRLS' Senior School Admission System</p>
+          <p>This is a computer-generated document from ${SCHOOL_NAME} Admission System</p>
           <p>Generated on: ${new Date().toLocaleString()}</p>
         </div>
       </body>
@@ -337,7 +345,7 @@ export default function AdminSubmissions() {
           color: '#fff', 
           textAlign: 'center' 
         }}>
-          <div style={{ fontSize: 32, fontWeight: 700 }}>{items.filter(i => i.status === 'pending').length}</div>
+          <div style={{ fontSize: 32, fontWeight: 700 }}>{stats.pending}</div>
           <div style={{ fontSize: 13, marginTop: 5, opacity: 0.9 }}>Pending Review</div>
         </div>
         <div style={{ 
@@ -347,7 +355,7 @@ export default function AdminSubmissions() {
           color: '#fff', 
           textAlign: 'center' 
         }}>
-          <div style={{ fontSize: 32, fontWeight: 700 }}>{items.filter(i => i.status === 'approved').length}</div>
+          <div style={{ fontSize: 32, fontWeight: 700 }}>{stats.approved}</div>
           <div style={{ fontSize: 13, marginTop: 5, opacity: 0.9 }}>Approved</div>
         </div>
         <div style={{ 
@@ -357,7 +365,7 @@ export default function AdminSubmissions() {
           color: '#fff', 
           textAlign: 'center' 
         }}>
-          <div style={{ fontSize: 32, fontWeight: 700 }}>{items.filter(i => i.status === 'rejected').length}</div>
+          <div style={{ fontSize: 32, fontWeight: 700 }}>{stats.rejected}</div>
           <div style={{ fontSize: 13, marginTop: 5, opacity: 0.9 }}>Rejected</div>
         </div>
       </div>

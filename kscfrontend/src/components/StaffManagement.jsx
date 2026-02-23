@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { get, post, put, del } from "../utils/api";
+import { get, post, put, del, upload } from "../utils/api";
 import Loader from "./Loader";
 
 export default function StaffManagement() {
@@ -60,29 +60,45 @@ export default function StaffManagement() {
     setSuccess("");
 
     try {
-      if (editingId) {
-        // Update existing staff
-        const formData = new FormData();
-        Object.keys(form).forEach(key => {
-          formData.append(key, form[key]);
-        });
-        if (photoFile) {
-          formData.append("photo", photoFile);
-        }
+      let photoUrl = null;
 
-        await put(`/api/staff/${editingId}`, formData);
+      // Upload photo separately if provided
+      if (photoFile) {
+        const fd = new FormData();
+        fd.append("file", photoFile);
+        try {
+          const uploadedFile = await upload("/api/files/upload", fd);
+          photoUrl = uploadedFile.url || uploadedFile.downloadUrl;
+        } catch (uploadErr) {
+          setError("Failed to upload photo: " + (uploadErr.message || "Unknown error"));
+          setSaving(false);
+          return;
+        }
+      }
+
+      // Prepare JSON data
+      const data = {
+        fullName: form.fullName,
+        title: form.title,
+        type: form.type,
+        department: form.department,
+        remarks: form.remarks,
+        email: form.email,
+        phone: form.phone,
+        qualifications: form.qualifications,
+        experience: form.experience,
+        displayOrder: form.displayOrder
+      };
+
+      if (photoUrl) {
+        data.photoUrl = photoUrl;
+      }
+
+      if (editingId) {
+        await put(`/api/staff/${editingId}`, data);
         setSuccess("Staff member updated successfully!");
       } else {
-        // Create new staff
-        const formData = new FormData();
-        Object.keys(form).forEach(key => {
-          formData.append(key, form[key]);
-        });
-        if (photoFile) {
-          formData.append("photo", photoFile);
-        }
-
-        await post("/api/staff", formData);
+        await post("/api/staff", data);
         setSuccess("Staff member added successfully!");
       }
 

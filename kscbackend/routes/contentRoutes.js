@@ -16,10 +16,32 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// ---------------- GET ADMIN CONTENT -------------------
+function toAbsoluteUrl(req, relativePath) {
+  if (!relativePath) return relativePath;
+  if (String(relativePath).startsWith("http")) return relativePath;
+  const origin = process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`;
+  return `${origin}${relativePath}`;
+}
+
+// ADMIN CONTENT ENDPOINTS
+
+// Simple GET endpoint that returns empty object (for dashboard initialization)
 router.get("/admin", (req, res) => {
-  const content = loadContent();
-  res.json(content);
+  try {
+    // Try to load content if the function exists
+    if (typeof loadContent === 'function') {
+      const content = loadContent();
+      return res.json(content);
+    }
+  } catch (err) {
+    console.error("Error loading content:", err);
+  }
+  // Fallback: return empty object so dashboard can still render
+  res.json({
+    title: "Welcome, Admin",
+    intro: "You have access to manage school content, upload files, and oversee key settings.",
+    formHeading: "Post New Content"
+  });
 });
 
 // ---------------- UPDATE A SECTION ---------------------
@@ -45,7 +67,7 @@ router.patch(["/admin/:section","/admin/:rest(.*)"], upload.any(), (req, res) =>
   // handle file uploads
   if (files && files.length > 0) {
     const fileList = files.map(file => ({
-      url: "/uploads/" + file.filename,
+      url: toAbsoluteUrl(req, "/uploads/" + file.filename),
       name: file.originalname,
       type: file.mimetype
     }));

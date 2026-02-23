@@ -12,6 +12,8 @@ export default function StudentIDManagement({ user }) {
   const [showIDCard, setShowIDCard] = useState(false);
   const [status, setStatus] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [qrGenerationInProgress, setQrGenerationInProgress] = useState(null); // Track which student's QR is being generated
+  const [lastQrGeneration, setLastQrGeneration] = useState({}); // Track last generation time per student
 
   useEffect(() => {
     loadStudents();
@@ -30,7 +32,22 @@ export default function StudentIDManagement({ user }) {
   }
 
   async function generateQRCode(student) {
+    // Rate limiting: prevent spam clicks (max 1 request per 2 seconds per student)
+    const now = Date.now();
+    const lastTime = lastQrGeneration[student._id] || 0;
+    if (now - lastTime < 2000) {
+      setStatus("Please wait before generating another QR code");
+      return;
+    }
+
+    // Prevent double-click
+    if (qrGenerationInProgress === student._id) {
+      return;
+    }
+
     try {
+      setQrGenerationInProgress(student._id);
+      setLastQrGeneration(prev => ({ ...prev, [student._id]: now }));
       setStatus("Generating QR code...");
       
       // Generate fresh token
@@ -57,6 +74,8 @@ export default function StudentIDManagement({ user }) {
       setStatus(`QR code generated for ${student.fullName} (valid for 2 minutes)`);
     } catch (err) {
       setStatus(`Error: ${err.message}`);
+    } finally {
+      setQrGenerationInProgress(null);
     }
   }
 
@@ -389,18 +408,20 @@ export default function StudentIDManagement({ user }) {
                   </button>
                   <button
                     onClick={() => generateQRCode(student)}
+                    disabled={qrGenerationInProgress === student._id}
                     style={{
                       padding: "10px 20px",
-                      background: "#059669",
+                      background: qrGenerationInProgress === student._id ? "#ccc" : "#059669",
                       color: "white",
                       border: "none",
                       borderRadius: "6px",
                       fontSize: "14px",
                       fontWeight: "600",
-                      cursor: "pointer"
+                      cursor: qrGenerationInProgress === student._id ? "wait" : "pointer",
+                      opacity: qrGenerationInProgress === student._id ? 0.6 : 1
                     }}
                   >
-                    📱 Generate QR
+                    {qrGenerationInProgress === student._id ? "⏳ Generating..." : "📱 Generate QR"}
                   </button>
                   <button
                     onClick={() => issueNewCard(student._id)}

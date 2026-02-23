@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { get, post, put, del } from "../../utils/api";
+import { get, post, put, del, upload } from "../../utils/api";
 import Loader from "../Loader";
 
 export default function HomeworkManagement({ user }) {
@@ -38,7 +38,7 @@ export default function HomeworkManagement({ user }) {
   async function fetchHomework() {
     setLoading(true);
     try {
-      const data = await get("/api/homework?status=published&status=draft");
+      const data = await get("/api/homework/admin/all");
       setHomework(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error fetching homework:", err);
@@ -64,24 +64,49 @@ export default function HomeworkManagement({ user }) {
     setSuccess("");
 
     try {
-      const formData = new FormData();
-      formData.append("title", form.title);
-      formData.append("description", form.description);
-      formData.append("subject", form.subject);
-      formData.append("class", form.class);
-      formData.append("contentType", form.contentType);
-      formData.append("dueDate", form.dueDate);
-      formData.append("status", form.status);
+      // Upload attachments first if provided
+      let attachmentUrls = [];
+      if (attachmentFiles.length > 0) {
+        for (const file of attachmentFiles) {
+          const fd = new FormData();
+          fd.append("file", file);
+          try {
+            const uploadedFile = await upload("/api/files/upload", fd);
+            attachmentUrls.push({
+              url: uploadedFile.url || uploadedFile.downloadUrl,
+              originalName: file.name,
+              size: file.size,
+              mimetype: file.type
+            });
+          } catch (uploadErr) {
+            setError("Failed to upload file " + file.name + ": " + (uploadErr.message || "Unknown error"));
+            setSaving(false);
+            return;
+          }
+        }
+      }
 
-      attachmentFiles.forEach(file => {
-        formData.append("attachments", file);
-      });
+      // Prepare JSON data
+      const data = {
+        title: form.title,
+        description: form.description,
+        subject: form.subject,
+        class: form.class,
+        contentType: form.contentType,
+        dueDate: form.dueDate,
+        status: form.status
+      };
 
+      if (attachmentUrls.length > 0) {
+        data.attachments = attachmentUrls;
+      }
+
+      // Send as JSON
       if (editingId) {
-        await put(`/api/homework/${editingId}`, formData);
+        await put(`/api/homework/${editingId}`, data);
         setSuccess("Homework updated!");
       } else {
-        await post("/api/homework", formData);
+        await post("/api/homework", data);
         setSuccess("Homework added!");
       }
 
@@ -91,7 +116,7 @@ export default function HomeworkManagement({ user }) {
       setEditingId(null);
       fetchHomework();
     } catch (err) {
-      setError(err.message || "Failed to save");
+      setError(err.message || "Failed to save homework");
     } finally {
       setSaving(false);
     }

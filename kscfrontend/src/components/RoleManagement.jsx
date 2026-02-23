@@ -45,13 +45,22 @@ export default function RoleManagement() {
   async function confirmChange() {
     if (!confirm) return;
     const { id, role } = confirm;
+    
+    // Validate role value
+    const validRoles = ['admin', 'teacher', 'user'];
+    if (!validRoles.includes(role)) {
+      notify("Invalid role selected", "error");
+      setConfirm(null);
+      return;
+    }
+
     try {
       await put(`/api/admin/users/${id}/role`, { role });
       notify(`Role updated to ${role}`, "success");
       setUsers((s) => s.map((u) => (u._id === id || u.id === id ? { ...u, role } : u)));
     } catch (err) {
       console.error(err);
-      notify("Failed to update role", "error");
+      notify("Failed to update role: " + (err?.message || "Unknown error"), "error");
     } finally {
       setConfirm(null);
     }
