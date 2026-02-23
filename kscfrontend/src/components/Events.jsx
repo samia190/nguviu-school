@@ -3,14 +3,17 @@ import { get } from "../utils/api";
 import OptimizedImage from "./OptimizedImage";
 import Loader from "./Loader";
 
-// Default events from public/images/ — shown when no API data is available
+// Cloudinary base for optimized images
+const CLD = 'https://res.cloudinary.com/ddm1dgws8/image/upload';
+
+// Default events — shown when no API data is available
 const defaultEvents = [
-  { _id: 'ev-1', title: 'Open Day', date: '2025-02-15', location: 'School Campus', description: 'Visit our campus and learn about our programs, meet teachers, and experience Kangaru Girls School firsthand.', imageUrl: '/images/DSC_5443.jpg', featured: true },
-  { _id: 'ev-2', title: 'Science & Innovation Week', date: '2025-03-10', location: 'Science Block', description: 'A week dedicated to science experiments, innovation showcases, and hands-on STEM activities.', imageUrl: '/images/DSC_5447.jpg' },
-  { _id: 'ev-3', title: 'Inter-School Sports', date: '2025-04-05', location: 'Sports Ground', description: 'Competitive sports events with neighboring schools in athletics, volleyball, and more.', imageUrl: '/images/DSC_5462.jpg', featured: true },
-  { _id: 'ev-4', title: 'Career Day', date: '2025-05-20', location: 'School Hall', description: 'Professionals from various fields share career guidance and mentorship with students.', imageUrl: '/images/DSC_5489.jpg' },
-  { _id: 'ev-5', title: 'Music Festival', date: '2025-06-15', location: 'School Grounds', description: 'Annual music festival featuring student performances, choir competitions, and instrumental showcases.', imageUrl: '/images/DSC_5502.jpg' },
-  { _id: 'ev-6', title: 'Graduation Ceremony', date: '2025-11-28', location: 'Main Hall', description: 'Celebrating our graduating class achievements and welcoming them to the next chapter of their lives.', imageUrl: '/images/DSC_5515.jpg', featured: true },
+  { _id: 'ev-1', title: 'Open Day', date: '2025-02-15', location: 'School Campus', description: 'Visit our campus and learn about our programs, meet teachers, and experience Kangaru Girls School firsthand.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5443.jpg`, featured: true },
+  { _id: 'ev-2', title: 'Science & Innovation Week', date: '2025-03-10', location: 'Science Block', description: 'A week dedicated to science experiments, innovation showcases, and hands-on STEM activities.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5447.jpg` },
+  { _id: 'ev-3', title: 'Inter-School Sports', date: '2025-04-05', location: 'Sports Ground', description: 'Competitive sports events with neighboring schools in athletics, volleyball, and more.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5462.jpg`, featured: true },
+  { _id: 'ev-4', title: 'Career Day', date: '2025-05-20', location: 'School Hall', description: 'Professionals from various fields share career guidance and mentorship with students.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5489.jpg` },
+  { _id: 'ev-5', title: 'Music Festival', date: '2025-06-15', location: 'School Grounds', description: 'Annual music festival featuring student performances, choir competitions, and instrumental showcases.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5502.jpg` },
+  { _id: 'ev-6', title: 'Graduation Ceremony', date: '2025-11-28', location: 'Main Hall', description: 'Celebrating our graduating class achievements and welcoming them to the next chapter of their lives.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5515.jpg`, featured: true },
 ];
 
 
@@ -97,7 +100,7 @@ export default function Events() {
           minHeight: 380,
           overflow: "hidden",
           marginBottom: 30,
-          background: "url('/images/DSC_5454.jpg') center/cover no-repeat, linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: `url('${CLD}/w_1200,q_auto,f_auto/kangaru/DSC_5454.jpg') center/cover no-repeat, linear-gradient(135deg, #667eea 0%, #764ba2 100%)`,
         }}
       >
         <div

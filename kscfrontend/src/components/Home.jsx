@@ -8,13 +8,16 @@ import OptimizedImage from "./OptimizedImage";
 import OptimizedVideo from "./OptimizedVideo";
 import { useBatchImagePreload } from "../hooks/useImagePreload";
 
-// Default hero slides from public/images/ — shown when no API data is available
+// Cloudinary base for optimized images
+const CLD = 'https://res.cloudinary.com/ddm1dgws8/image/upload';
+
+// Default hero slides — shown when no API data is available
 const defaultHeroSlides = [
-  { _id: 'default-1', url: '/images/DSC_5353.jpg', title: 'Welcome to Kangaru Girls School', description: 'A center of excellence in education', active: true, type: 'slide' },
-  { _id: 'default-2', url: '/images/DSC_5400.jpg', title: 'Academic Excellence', description: 'Nurturing future leaders with knowledge and confidence', active: true, type: 'slide' },
-  { _id: 'default-3', url: '/images/DSC_5500.jpg', title: 'Student Life', description: 'Vibrant community and enriching experiences', active: true, type: 'slide' },
-  { _id: 'default-4', url: '/images/DSC_5613.jpg', title: 'Sports & Activities', description: 'Building character through sports and extracurricular activities', active: true, type: 'slide' },
-  { _id: 'default-5', url: '/images/DSC_5820.jpg', title: 'Our Campus', description: 'A beautiful and serene learning environment', active: true, type: 'slide' },
+  { _id: 'default-1', url: `${CLD}/w_1200,q_auto,f_auto/kangaru/DSC_5353.jpg`, title: 'Welcome to Kangaru Girls School', description: 'A center of excellence in education', active: true, type: 'slide' },
+  { _id: 'default-2', url: `${CLD}/w_1200,q_auto,f_auto/kangaru/DSC_5400.jpg`, title: 'Academic Excellence', description: 'Nurturing future leaders with knowledge and confidence', active: true, type: 'slide' },
+  { _id: 'default-3', url: `${CLD}/w_1200,q_auto,f_auto/kangaru/DSC_5500.jpg`, title: 'Student Life', description: 'Vibrant community and enriching experiences', active: true, type: 'slide' },
+  { _id: 'default-4', url: `${CLD}/w_1200,q_auto,f_auto/kangaru/DSC_5613.jpg`, title: 'Sports & Activities', description: 'Building character through sports and extracurricular activities', active: true, type: 'slide' },
+  { _id: 'default-5', url: `${CLD}/w_1200,q_auto,f_auto/kangaru/DSC_5820.jpg`, title: 'Our Campus', description: 'A beautiful and serene learning environment', active: true, type: 'slide' },
 ];
 
 export default function Home({ user, setRoute }) {

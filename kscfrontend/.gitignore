@@ -14,7 +14,7 @@ dist-ssr
 
 # Generated and copied images (not tracked)
 public/.optimized/
-public/images/
+# public/images/ — now tracked so images deploy to Render
 
 # Editor directories and files
 .vscode/*

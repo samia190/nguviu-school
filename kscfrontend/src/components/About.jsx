@@ -28,13 +28,13 @@ export default function About({ user }) {
           const activeHero = heroData.find(h => h.active) || heroData[0];
           setHeroContent(activeHero);
         } else {
-          // Fallback hero image from public/images/
-          setHeroContent({ url: '/images/DSC_5392.jpg', title: 'About Kangaru Girls School' });
+          // Fallback hero image from Cloudinary
+          setHeroContent({ url: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_1200,q_auto,f_auto/kangaru/DSC_5392.jpg', title: 'About Kangaru Girls School' });
         }
       })
       .catch(() => {
         setError("Failed to load about page content.");
-        setHeroContent({ url: '/images/DSC_5392.jpg', title: 'About Kangaru Girls School' });
+        setHeroContent({ url: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_1200,q_auto,f_auto/kangaru/DSC_5392.jpg', title: 'About Kangaru Girls School' });
       });
   }, []);
 
@@ -56,7 +56,7 @@ export default function About({ user }) {
             type: 'principal',
             fullName: 'School Principal',
             title: 'Principal - Kangaru Girls School',
-            photoUrl: '/images/Principal.png',
+            photoUrl: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/Principal.png',
             remarks: 'Welcome to Kangaru Girls School. We are dedicated to nurturing excellence and developing well-rounded young women who will be leaders of tomorrow.'
           });
         }
@@ -65,7 +65,7 @@ export default function About({ user }) {
         // Prepare staff images for preloading
         const images = allStaff
           .map(person => ({
-            src: person.photoUrl || (person.type === 'principal' ? '/images/Principal.png' : '/images/DSC_5372.jpg')
+            src: person.photoUrl || (person.type === 'principal' ? 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/Principal.png' : 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/DSC_5372.jpg')
           }));
         setStaffImages(images);
       })
@@ -332,7 +332,7 @@ export default function About({ user }) {
               }}
             >
               <OptimizedImage
-                src={principal.photoUrl || "/images/Principal.png"}
+                src={principal.photoUrl || "https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/Principal.png"}
                 alt={principal.fullName}
                 priority={true}
                 fetchPriority="high"
@@ -384,7 +384,7 @@ export default function About({ user }) {
                 }}
               >
                 <OptimizedImage
-                  src={deputy.photoUrl || "/images/DSC_5372.jpg"}
+                  src={deputy.photoUrl || "https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/DSC_5372.jpg"}
                   alt={deputy.fullName}
                   priority={idx === 0}
                   fetchPriority={idx === 0 ? "high" : "auto"}

@@ -3,20 +3,23 @@ import { get } from "../utils/api";
 import OptimizedImage from "./OptimizedImage";
 import Loader from "./Loader";
 
-// Default student life items from public/images/ — shown when no API data is available
+// Cloudinary base for optimized images
+const CLD = 'https://res.cloudinary.com/ddm1dgws8/image/upload';
+
+// Default student life items — shown when no API data is available
 const defaultStudentLifeItems = [
-  { _id: 'sl-1', title: 'Sports Day', category: 'sports', description: 'Annual sports day featuring athletics, swimming, and team sports competitions where students showcase their athletic abilities.', imageUrl: '/images/DSC_5410.jpg', featured: true },
-  { _id: 'sl-2', title: 'Drama Club', category: 'clubs', description: 'Students showcase their acting talents in plays and drama performances throughout the school year.', imageUrl: '/images/DSC_5415.jpg' },
-  { _id: 'sl-3', title: 'Science Fair', category: 'activities', description: 'Students present innovative science projects and experiments, pushing the boundaries of discovery.', imageUrl: '/images/DSC_5420.jpg' },
-  { _id: 'sl-4', title: 'Cultural Day', category: 'traditions', description: 'Celebrating our diverse cultures and traditions through music, dance, food, and vibrant performances.', imageUrl: '/images/DSC_5427.jpg', featured: true },
-  { _id: 'sl-5', title: 'Athletics', category: 'sports', description: 'Track and field events where students compete at inter-school and regional level.', imageUrl: '/images/DSC_5432.jpg' },
-  { _id: 'sl-6', title: 'Debate Club', category: 'clubs', description: 'Developing public speaking and critical thinking skills through competitive debate sessions.', imageUrl: '/images/DSC_5440.jpg' },
-  { _id: 'sl-7', title: 'Community Service', category: 'activities', description: 'Students give back to the community through various outreach programs and volunteer work.', imageUrl: '/images/DSC_5456.jpg' },
-  { _id: 'sl-8', title: 'Prize Giving Day', category: 'traditions', description: 'Annual ceremony recognizing academic and extracurricular achievements of our students.', imageUrl: '/images/DSC_5472.jpg' },
-  { _id: 'sl-9', title: 'Volleyball', category: 'sports', description: 'Competitive volleyball training and tournaments building teamwork and sportsmanship.', imageUrl: '/images/DSC_5614.jpg' },
-  { _id: 'sl-10', title: 'Music Club', category: 'clubs', description: 'Students explore musical talents through choir, instrumental music, and music festivals.', imageUrl: '/images/DSC_5501.jpg' },
-  { _id: 'sl-11', title: 'Environmental Club', category: 'activities', description: 'Promoting environmental awareness through tree planting, recycling, and conservation activities.', imageUrl: '/images/DSC_5728.jpg' },
-  { _id: 'sl-12', title: 'Founders Day', category: 'traditions', description: 'Commemorating the founding of our school with special ceremonies and celebrations.', imageUrl: '/images/DSC_5463.jpg' },
+  { _id: 'sl-1', title: 'Sports Day', category: 'sports', description: 'Annual sports day featuring athletics, swimming, and team sports competitions where students showcase their athletic abilities.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5410.jpg`, featured: true },
+  { _id: 'sl-2', title: 'Drama Club', category: 'clubs', description: 'Students showcase their acting talents in plays and drama performances throughout the school year.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5415.jpg` },
+  { _id: 'sl-3', title: 'Science Fair', category: 'activities', description: 'Students present innovative science projects and experiments, pushing the boundaries of discovery.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5420.jpg` },
+  { _id: 'sl-4', title: 'Cultural Day', category: 'traditions', description: 'Celebrating our diverse cultures and traditions through music, dance, food, and vibrant performances.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5427.jpg`, featured: true },
+  { _id: 'sl-5', title: 'Athletics', category: 'sports', description: 'Track and field events where students compete at inter-school and regional level.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5432.jpg` },
+  { _id: 'sl-6', title: 'Debate Club', category: 'clubs', description: 'Developing public speaking and critical thinking skills through competitive debate sessions.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5440.jpg` },
+  { _id: 'sl-7', title: 'Community Service', category: 'activities', description: 'Students give back to the community through various outreach programs and volunteer work.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5456.jpg` },
+  { _id: 'sl-8', title: 'Prize Giving Day', category: 'traditions', description: 'Annual ceremony recognizing academic and extracurricular achievements of our students.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5472.jpg` },
+  { _id: 'sl-9', title: 'Volleyball', category: 'sports', description: 'Competitive volleyball training and tournaments building teamwork and sportsmanship.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5614.jpg` },
+  { _id: 'sl-10', title: 'Music Club', category: 'clubs', description: 'Students explore musical talents through choir, instrumental music, and music festivals.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5501.jpg` },
+  { _id: 'sl-11', title: 'Environmental Club', category: 'activities', description: 'Promoting environmental awareness through tree planting, recycling, and conservation activities.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5728.jpg` },
+  { _id: 'sl-12', title: 'Founders Day', category: 'traditions', description: 'Commemorating the founding of our school with special ceremonies and celebrations.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5463.jpg` },
 ];
 
 const categoryColors = {
@@ -140,7 +143,7 @@ export default function StudentLife() {
           minHeight: 380,
           overflow: "hidden",
           marginBottom: 30,
-          background: "url('/images/DSC_5384.jpg') center/cover no-repeat, linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: `url('${CLD}/w_1200,q_auto,f_auto/kangaru/DSC_5384.jpg') center/cover no-repeat, linear-gradient(135deg, #667eea 0%, #764ba2 100%)`,
         }}
       >
         <div

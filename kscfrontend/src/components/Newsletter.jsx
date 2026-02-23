@@ -97,7 +97,7 @@ export default function Newsletter() {
           minHeight: 340,
           overflow: "hidden",
           marginBottom: 30,
-          background: "url('/images/DSC_5473.jpg') center/cover no-repeat, linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: "url('https://res.cloudinary.com/ddm1dgws8/image/upload/w_1200,q_auto,f_auto/kangaru/DSC_5473.jpg') center/cover no-repeat, linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
         }}
       >
         <div
