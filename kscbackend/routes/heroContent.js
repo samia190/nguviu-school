@@ -1,9 +1,7 @@
 import express from "express";
 import multer from "multer";
 import HeroContent from "../models/HeroContent.js";
-import { isS3Enabled, uploadBufferToS3, saveBufferToDisk } from "../utils/storage.js";
-import path from "path";
-import fs from "fs";
+import { uploadBuffer, deleteFile } from "../utils/storage.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -14,14 +12,6 @@ function toAbsoluteUrl(req, relativePath) {
   if (String(relativePath).startsWith("http")) return relativePath;
   const origin = process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`;
   return `${origin}${relativePath}`;
-}
-
-function makeDownloadUrl(req, relPath) {
-  if (!relPath) return relPath;
-  if (String(relPath).startsWith("http")) return relPath;
-  const origin = process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`;
-  const p = String(relPath).startsWith("/") ? relPath : `/${relPath}`;
-  return `${origin}${p}`;
 }
 
 // GET hero content for a specific page
@@ -35,7 +25,6 @@ router.get("/", async (req, res) => {
     
     const heroContent = await HeroContent.find(filter).sort({ displayOrder: 1 });
     
-    // Convert url to absolute URLs
     const heroWithAbsoluteUrls = heroContent.map(item => ({
       ...item.toObject(),
       url: toAbsoluteUrl(req, item.url)
@@ -56,12 +45,10 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ error: "Hero content not found" });
     }
     
-    const heroWithAbsoluteUrl = {
+    res.json({
       ...hero.toObject(),
       url: toAbsoluteUrl(req, hero.url)
-    };
-    
-    res.json(heroWithAbsoluteUrl);
+    });
   } catch (err) {
     console.error("Error fetching hero content:", err);
     res.status(500).json({ error: "Failed to fetch hero content" });
@@ -83,18 +70,8 @@ router.post("/", upload.single("media"), async (req, res) => {
 
     let mediaUrl;
     try {
-      if (isS3Enabled()) {
-        mediaUrl = await uploadBufferToS3(req.file.buffer, `hero/${req.file.originalname}`);
-      } else {
-        const uploadsDir = path.join(process.cwd(), "public", "uploads", "hero");
-        if (!fs.existsSync(uploadsDir)) {
-          fs.mkdirSync(uploadsDir, { recursive: true });
-        }
-        const safeName = `${Date.now()}-${req.file.originalname.replace(/\s+/g, "_")}`;
-        const dest = path.join(uploadsDir, safeName);
-        fs.writeFileSync(dest, req.file.buffer);
-        mediaUrl = `/uploads/hero/${safeName}`;
-      }
+      const uploaded = await uploadBuffer(req.file.buffer, req.file.originalname, req.file.mimetype);
+      mediaUrl = uploaded.url;
     } catch (err) {
       console.error("Error uploading media:", err);
       return res.status(400).json({ error: "Failed to upload media" });
@@ -115,12 +92,10 @@ router.post("/", upload.single("media"), async (req, res) => {
 
     await heroContent.save();
     
-    const response = {
+    res.status(201).json({
       ...heroContent.toObject(),
       url: toAbsoluteUrl(req, heroContent.url)
-    };
-    
-    res.status(201).json(response);
+    });
   } catch (err) {
     console.error("Error creating hero content:", err);
     res.status(500).json({ error: "Failed to create hero content" });
@@ -146,20 +121,10 @@ router.put("/:id", upload.single("media"), async (req, res) => {
     // Handle media upload if provided
     if (req.file) {
       try {
-        let mediaUrl;
-        if (isS3Enabled()) {
-          mediaUrl = await uploadBufferToS3(req.file.buffer, `hero/${req.file.originalname}`);
-        } else {
-          const uploadsDir = path.join(process.cwd(), "public", "uploads", "hero");
-          if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true });
-          }
-          const safeName = `${Date.now()}-${req.file.originalname.replace(/\s+/g, "_")}`;
-          const dest = path.join(uploadsDir, safeName);
-          fs.writeFileSync(dest, req.file.buffer);
-          mediaUrl = `/uploads/hero/${safeName}`;
-        }
-        hero.url = mediaUrl;
+        // Delete old media if it exists
+        if (hero.url) await deleteFile(hero.url);
+        const uploaded = await uploadBuffer(req.file.buffer, req.file.originalname, req.file.mimetype);
+        hero.url = uploaded.url;
         hero.originalName = req.file.originalname;
         hero.size = req.file.size;
         hero.mimetype = req.file.mimetype;
@@ -172,12 +137,10 @@ router.put("/:id", upload.single("media"), async (req, res) => {
     hero.updatedAt = new Date();
     await hero.save();
     
-    const response = {
+    res.json({
       ...hero.toObject(),
       url: toAbsoluteUrl(req, hero.url)
-    };
-    
-    res.json(response);
+    });
   } catch (err) {
     console.error("Error updating hero content:", err);
     res.status(500).json({ error: "Failed to update hero content" });
@@ -191,6 +154,8 @@ router.delete("/:id", async (req, res) => {
     if (!hero) {
       return res.status(404).json({ error: "Hero content not found" });
     }
+    // Clean up the stored media
+    if (hero.url) await deleteFile(hero.url);
     res.json({ message: "Hero content deleted successfully" });
   } catch (err) {
     console.error("Error deleting hero content:", err);

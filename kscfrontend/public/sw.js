@@ -80,6 +80,21 @@ self.addEventListener('fetch', (event) => {
           return response;
         }
 
+        // Don't cache responses where content-type doesn't match the request.
+        // This prevents caching HTML error pages served for missing images/assets.
+        const contentType = response.headers.get('content-type') || '';
+        const requestPath = url.pathname.toLowerCase();
+
+        const isAssetRequest = /\.(jpg|jpeg|png|gif|webp|svg|mp4|webm|pdf|css|js|ico|woff2?|ttf|eot)(\?|$)/i.test(requestPath)
+          || requestPath.startsWith('/images/')
+          || requestPath.startsWith('/uploads/')
+          || requestPath.startsWith('/downloads/');
+
+        // If the request looks like an asset but got HTML back, don't cache it
+        if (isAssetRequest && contentType.includes('text/html')) {
+          return response;
+        }
+
         // Clone and cache the response
         const responseClone = response.clone();
         caches.open(RUNTIME_CACHE).then((cache) => {

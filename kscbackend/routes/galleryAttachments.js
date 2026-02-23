@@ -1,32 +1,34 @@
 // routes/gallery.js (ESM)
 import express from "express";
+import mongoose from "mongoose";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 import GalleryItem from "../models/GalleryItem.js";
+import { uploadBuffer, deleteFile } from "../utils/storage.js";
 // ========== MEDIA OPTIMIZATION ==========
 import { optimizeMedia, mediaFileFilter } from "../middleware/mediaOptimizer.js";
 
 const router = express.Router();
 
+function toAbsoluteUrl(req, relativePath) {
+  if (!relativePath) return relativePath;
+  if (String(relativePath).startsWith("http")) return relativePath;
+  const origin = process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`;
+  return `${origin}${relativePath}`;
+}
+
 // ✅ Must match your index.js static folder
-// index.js: app.use("/uploads", express.static(path.join(process.cwd(),"public","uploads")))
 const uploadsDir = path.join(process.cwd(), "public", "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
-// Multer storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
-});
-
-// ========== UPDATED: Use media file filter for validation ==========
+// Use memory storage so we can route to Cloudinary/S3/disk via uploadBuffer()
 const upload = multer({
-  storage,
-  fileFilter: mediaFileFilter,  // Validate file types (images, videos, documents)
+  storage: multer.memoryStorage(),
+  fileFilter: mediaFileFilter,
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB max (videos can be large)
-    files: 150, // allow many files in request (frontend chunks anyway)
+    fileSize: 100 * 1024 * 1024,
+    files: 150,
   },
 });
 
@@ -37,8 +39,19 @@ const upload = multer({
 // GET /api/content/gallery  -> list all gallery items
 router.get("/", async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.json([]);
+    }
     const items = await GalleryItem.find().sort({ createdAt: -1 });
-    res.json(items);
+    const itemsWithAbsoluteUrls = items.map(item => ({
+      ...item.toObject(),
+      attachments: (item.attachments || []).map(att => ({
+        ...att,
+        url: toAbsoluteUrl(req, att.url),
+        thumbnail: toAbsoluteUrl(req, att.thumbnail)
+      }))
+    }));
+    res.json(itemsWithAbsoluteUrls);
   } catch (err) {
     console.error("Gallery list error:", err);
     res.status(500).json({ error: "Failed to load gallery" });
@@ -50,7 +63,14 @@ router.get("/:id", async (req, res) => {
   try {
     const item = await GalleryItem.findById(req.params.id);
     if (!item) return res.status(404).json({ error: "Not found" });
-    res.json(item);
+    res.json({
+      ...item.toObject(),
+      attachments: (item.attachments || []).map(att => ({
+        ...att,
+        url: toAbsoluteUrl(req, att.url),
+        thumbnail: toAbsoluteUrl(req, att.thumbnail)
+      }))
+    });
   } catch (err) {
     console.error("Gallery get error:", err);
     res.status(500).json({ error: "Failed to load gallery item" });
@@ -74,18 +94,32 @@ router.post("/", async (req, res) => {
   }
 });
 
-// PATCH /api/content/gallery/:id -> update title/body
+// PATCH /api/content/gallery/:id -> update title/body/attachments
 router.patch("/:id", async (req, res) => {
   try {
-    const { title, body } = req.body || {};
+    const { title, body, attachments } = req.body || {};
+    const updateFields = {};
+    if (title !== undefined) updateFields.title = title;
+    if (body !== undefined) updateFields.body = body;
+    if (attachments !== undefined) updateFields.attachments = attachments;
+
     const updated = await GalleryItem.findByIdAndUpdate(
       req.params.id,
-      { ...(title !== undefined ? { title } : {}), ...(body !== undefined ? { body } : {}) },
+      updateFields,
       { new: true, runValidators: true }
     );
 
     if (!updated) return res.status(404).json({ error: "Not found" });
-    res.json({ updated });
+    res.json({
+      updated: {
+        ...updated.toObject(),
+        attachments: (updated.attachments || []).map(att => ({
+          ...att,
+          url: toAbsoluteUrl(req, att.url),
+          thumbnail: toAbsoluteUrl(req, att.thumbnail)
+        }))
+      }
+    });
   } catch (err) {
     console.error("Gallery update error:", err);
     res.status(400).json({ error: "Failed to update gallery item" });
@@ -119,32 +153,41 @@ router.post("/:id/attachments", upload.array("attachments", 100), optimizeMedia(
       return res.status(400).json({ error: "No files uploaded" });
     }
 
-    // ========== UPDATED: Use optimized file data & handle thumbnails ==========
-    const added = req.files.map((f) => {
+    // Upload each file via unified storage (Cloudinary > S3 > Disk)
+    const added = [];
+    for (const f of req.files) {
+      const uploaded = await uploadBuffer(f.buffer, f.originalname, f.mimetype, uploadsDir);
       const attachment = {
         originalName: f.originalname,
-        filename: f.filename,
-        url: `/uploads/${f.filename}`, // ✅ served by index.js
+        filename: uploaded.filename || uploaded.public_id || f.originalname,
+        url: uploaded.url,
         mimetype: f.mimetype,
-        size: f.size,
+        size: f.size || (f.buffer ? f.buffer.length : 0),
         uploadedAt: new Date(),
       };
-      
-      // If video has thumbnail, save it and add to attachment
+
+      // If video has thumbnail, upload it too
       if (f._thumbnail) {
-        const thumbName = `${Date.now()}-${f._thumbnail.name}`;
-        const thumbPath = path.join(uploadsDir, thumbName);
-        fs.writeFileSync(thumbPath, f._thumbnail.buffer);
-        attachment.thumbnail = `/uploads/${thumbName}`;
+        const thumbUploaded = await uploadBuffer(f._thumbnail.buffer, f._thumbnail.name, "image/jpeg", uploadsDir);
+        attachment.thumbnail = thumbUploaded.url;
       }
-      
-      return attachment;
-    });
+
+      added.push(attachment);
+    }
 
     item.attachments.push(...added);
     await item.save();
 
-    res.json({ added, item });
+    const normalizedAttachments = (item.attachments || []).map(att => ({
+      ...(att.toObject ? att.toObject() : att),
+      url: toAbsoluteUrl(req, att.url),
+      thumbnail: toAbsoluteUrl(req, att.thumbnail)
+    }));
+
+    res.json({ 
+      added: normalizedAttachments.slice(-added.length),
+      item: { ...item.toObject(), attachments: normalizedAttachments }
+    });
   } catch (err) {
     console.error("Gallery attachment upload error:", err);
     res.status(500).json({ error: "Upload failed" });
@@ -163,15 +206,12 @@ router.delete("/:id/attachments/:attachmentId", async (req, res) => {
     const att = item.attachments.id(req.params.attachmentId);
     if (!att) return res.status(404).json({ error: "Attachment not found" });
 
-    // try deleting the physical file too (optional but good)
-    if (att.filename) {
-      const p = path.join(uploadsDir, att.filename);
-      if (fs.existsSync(p)) {
-        try {
-          fs.unlinkSync(p);
-        } catch (e) {
-          console.warn("Could not delete file from disk:", e?.message || e);
-        }
+    // try deleting the physical file too (Cloud or disk)
+    if (att.url) {
+      try {
+        await deleteFile(att.url);
+      } catch (e) {
+        console.warn("Could not delete file from storage:", e?.message || e);
       }
     }
 
@@ -179,7 +219,17 @@ router.delete("/:id/attachments/:attachmentId", async (req, res) => {
     await item.save();
 
     const after = item.attachments.length;
-    res.json({ ok: true, removed: before - after, item });
+    const normalizedAttachments = (item.attachments || []).map(a => ({
+      ...(a.toObject ? a.toObject() : a),
+      url: toAbsoluteUrl(req, a.url),
+      thumbnail: toAbsoluteUrl(req, a.thumbnail)
+    }));
+
+    res.json({ 
+      ok: true, 
+      removed: before - after, 
+      item: { ...item.toObject(), attachments: normalizedAttachments }
+    });
   } catch (err) {
     console.error("Delete attachment error:", err);
     res.status(500).json({ error: "Delete failed" });

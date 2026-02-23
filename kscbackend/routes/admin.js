@@ -10,7 +10,7 @@ import AuditLog from "../models/AuditLog.js";
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const { sendEmail } = require('../utils/email-sender-fallback.js');
-import { isS3Enabled, uploadBufferToS3, saveBufferToDisk } from "../utils/storage.js";
+import { uploadBuffer } from "../utils/storage.js";
 // ========== MEDIA OPTIMIZATION ==========
 import { optimizeMedia, mediaFileFilter } from "../middleware/mediaOptimizer.js";
 
@@ -69,35 +69,20 @@ router.post("/content", upload.array("files", 10), optimizeMedia(), async (req, 
     }
 
     const files = req.files || [];
-    const useS3 = isS3Enabled();
 
     const attachments = [];
 
     for (const f of files) {
-      let relUrl;
-      let name = f.originalname;
+      // Unified upload: Cloudinary > S3 > Disk
+      const uploaded = await uploadBuffer(f.buffer, f.originalname, f.mimetype, uploadsDir);
+      let relUrl = uploaded.url;
+      let name = uploaded.filename || uploaded.public_id || f.originalname;
       let thumbnailUrl = null;
 
-      if (useS3) {
-        const uploaded = await uploadBufferToS3(f.buffer, f.originalname, f.mimetype);
-        relUrl = uploaded.url; // absolute
-        name = uploaded.key;
-        
-        // ========== ADDED: Upload video thumbnail to S3 ==========
-        if (f._thumbnail) {
-          const thumbUpload = await uploadBufferToS3(f._thumbnail.buffer, f._thumbnail.name, f._thumbnail.mimetype);
-          thumbnailUrl = thumbUpload.url;
-        }
-      } else {
-        const saved = saveBufferToDisk(f.buffer, f.originalname, uploadsDir);
-        relUrl = saved.url; // relative
-        name = saved.filename;
-        
-        // ========== ADDED: Save video thumbnail to disk ==========
-        if (f._thumbnail) {
-          const thumbSaved = saveBufferToDisk(f._thumbnail.buffer, f._thumbnail.name, uploadsDir);
-          thumbnailUrl = thumbSaved.url;
-        }
+      // Handle video thumbnail if present
+      if (f._thumbnail) {
+        const thumbUploaded = await uploadBuffer(f._thumbnail.buffer, f._thumbnail.name, f._thumbnail.mimetype, uploadsDir);
+        thumbnailUrl = thumbUploaded.url;
       }
 
       // ========== UPDATED: Include thumbnail in attachment if present ==========
@@ -261,16 +246,9 @@ router.put("/content/:contentId/media/:mediaId", upload.single("file"), optimize
 
     if (!attachment) return res.status(404).json({ error: "Media not found" });
 
-    const useS3 = isS3Enabled();
-    let newUrl;
-
-    if (useS3) {
-      const uploaded = await uploadBufferToS3(req.file.buffer, req.file.originalname, req.file.mimetype);
-      newUrl = uploaded.url;
-    } else {
-      const saved = saveBufferToDisk(req.file.buffer, req.file.originalname, uploadsDir);
-      newUrl = saved.url;
-    }
+    // Unified upload: Cloudinary > S3 > Disk
+    const uploaded = await uploadBuffer(req.file.buffer, req.file.originalname, req.file.mimetype, uploadsDir);
+    const newUrl = uploaded.url;
 
     // Update attachment
     attachment.url = newUrl;

@@ -2,7 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import multer from "multer";
 import Content from "../models/Content.js";
-import { isS3Enabled, uploadBufferToS3, saveBufferToDisk } from "../utils/storage.js";
+import { uploadBuffer } from "../utils/storage.js";
 import path from "path";
 
 const router = express.Router();
@@ -180,24 +180,16 @@ router.put("/:id", async (req, res) => {
 router.post("/upload", upload.array("files", 10), async (req, res) => {
   try {
     const files = req.files || [];
-    const useS3 = isS3Enabled();
 
     const uploadsDir = path.join(process.cwd(), "public", "uploads");
 
     const attachments = [];
 
     for (const f of files) {
-      let relUrl;
-      let name = f.originalname;
-      if (useS3) {
-        const uploaded = await uploadBufferToS3(f.buffer, f.originalname, f.mimetype);
-        relUrl = uploaded.url; // absolute S3 url
-        name = uploaded.key;
-      } else {
-        const saved = saveBufferToDisk(f.buffer, f.originalname, uploadsDir);
-        relUrl = saved.url; // relative url
-        name = saved.filename;
-      }
+      // Unified upload: Cloudinary > S3 > Disk
+      const uploaded = await uploadBuffer(f.buffer, f.originalname, f.mimetype, uploadsDir);
+      const relUrl = uploaded.url;
+      const name = uploaded.filename || uploaded.public_id || f.originalname;
 
       attachments.push({
         name: f.originalname,

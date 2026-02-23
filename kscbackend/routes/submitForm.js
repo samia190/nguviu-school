@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import File from "../models/File.js";
-import { isS3Enabled, uploadBufferToS3, saveBufferToDisk } from "../utils/storage.js";
+import { uploadBuffer } from "../utils/storage.js";
 import { requireRole } from "../middleware/requireAuth.js";
 // ========== MEDIA OPTIMIZATION ==========
 import { optimizeMedia, mediaFileFilter } from "../middleware/mediaOptimizer.js";
@@ -28,15 +28,11 @@ router.post("/", upload.fields([ { name: "applicationForm", maxCount: 1 }, { nam
     const files = req.files || {};
     const created = [];
 
-    // helper to persist one file buffer either to S3 or disk
+    // helper to persist one file buffer via unified storage (Cloudinary > S3 > Disk)
     async function persistFile(file) {
       if (!file) return null;
-      if (isS3Enabled()) {
-        const uploaded = await uploadBufferToS3(file.buffer, file.originalname, file.mimetype);
-        return { filename: uploaded.key || file.originalname, url: uploaded.url };
-      }
-      const saved = saveBufferToDisk(file.buffer, file.originalname, path.join(process.cwd(), "public", "uploads"));
-      return { filename: saved.filename, url: saved.url };
+      const uploaded = await uploadBuffer(file.buffer, file.originalname, file.mimetype);
+      return { filename: uploaded.filename || uploaded.public_id || file.originalname, url: uploaded.url };
     }
 
     if (files.applicationForm && files.applicationForm[0]) {

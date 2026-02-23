@@ -303,7 +303,7 @@ export default function Home({ user, setRoute }) {
         // Render hero carousel for slides or single hero for image/video
         heroContent.type === "slide" ? (
           <div style={{ width: "100%"}}>
-            <HeroCarousel heroData={heroContent.data} />
+            <HeroCarousel slides={heroContent.data} />
           </div>
         ) : heroContent.type === "video" ? (
           <div

@@ -1,7 +1,90 @@
 import fs from "fs";
 import path from "path";
+import { v2 as cloudinary } from "cloudinary";
 
+// ══════════════════════════════════════════════════════════════
+// Cloudinary integration — preferred cloud storage
+// Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in .env
+// ══════════════════════════════════════════════════════════════
+function isCloudinaryEnabled() {
+  return !!(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
+  );
+}
+
+if (isCloudinaryEnabled()) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+  console.log("[Storage] ☁️  Cloudinary enabled —", process.env.CLOUDINARY_CLOUD_NAME);
+}
+
+/**
+ * Upload a buffer to Cloudinary
+ * @param {Buffer} buffer
+ * @param {string} filename - original filename (used for public_id)
+ * @param {string} mimetype
+ * @returns {Promise<{url: string, public_id: string, filename: string}>}
+ */
+async function uploadToCloudinary(buffer, filename, mimetype) {
+  const safeName = filename.replace(/\s+/g, "_").replace(/\.[^.]+$/, "");
+  const folder = process.env.CLOUDINARY_FOLDER || "kangaru";
+  const resourceType = mimetype?.startsWith("video/") ? "video" : "image";
+
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        public_id: `${Date.now()}-${safeName}`,
+        resource_type: resourceType,
+        overwrite: true,
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve({
+          url: result.secure_url,
+          public_id: result.public_id,
+          filename: result.public_id.split("/").pop(),
+        });
+      }
+    );
+    stream.end(buffer);
+  });
+}
+
+/**
+ * Delete a file from Cloudinary by public_id or URL
+ * @param {string} publicIdOrUrl
+ * @returns {Promise<boolean>}
+ */
+async function deleteFromCloudinary(publicIdOrUrl) {
+  try {
+    let publicId = publicIdOrUrl;
+    // If it's a full Cloudinary URL, extract the public_id
+    if (publicId?.startsWith("http") && publicId.includes("cloudinary")) {
+      // URL format: https://res.cloudinary.com/<cloud>/image/upload/v123/<folder>/<id>.<ext>
+      const parts = publicId.split("/upload/");
+      if (parts[1]) {
+        // Remove version and extension
+        publicId = parts[1].replace(/^v\d+\//, "").replace(/\.[^.]+$/, "");
+      }
+    }
+    if (!publicId) return false;
+    const result = await cloudinary.uploader.destroy(publicId);
+    return result.result === "ok";
+  } catch (err) {
+    console.warn("[Storage] Cloudinary delete failed:", err.message);
+    return false;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
 // Optional AWS S3 integration (uses @aws-sdk/client-s3)
+// ══════════════════════════════════════════════════════════════
 let s3Client = null;
 let S3Client, PutObjectCommand, DeleteObjectCommand;
 
@@ -11,8 +94,6 @@ function isS3Enabled() {
 
 if (isS3Enabled()) {
   try {
-    // dynamic import so running without the package still works for local dev
-    // eslint-disable-next-line import/no-extraneous-dependencies
     ({ S3Client, PutObjectCommand, DeleteObjectCommand } = await import("@aws-sdk/client-s3"));
     const region = process.env.AWS_REGION || "us-east-1";
     const clientConfig = { region };
@@ -49,6 +130,9 @@ async function uploadBufferToS3(buffer, filename, contentType) {
   return { key, url: `${baseUrl}/${key}` };
 }
 
+// ══════════════════════════════════════════════════════════════
+// Disk storage fallback (local development)
+// ══════════════════════════════════════════════════════════════
 function saveBufferToDisk(buffer, filename, uploadsDir) {
   if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
   const safeName = `${Date.now()}-${filename.replace(/\s+/g, "_")}`;
@@ -57,22 +141,58 @@ function saveBufferToDisk(buffer, filename, uploadsDir) {
   return { filename: safeName, url: `/uploads/${safeName}` };
 }
 
-// ========== ADDED: Helper to save video thumbnails ==========
+// ══════════════════════════════════════════════════════════════
+// Unified upload function: Cloudinary > S3 > Disk
+// All routes should use this for consistent behaviour
+// ══════════════════════════════════════════════════════════════
 /**
- * Save a video thumbnail to storage (S3 or disk)
- * @param {Buffer} thumbnailBuffer - The thumbnail image buffer
- * @param {string} thumbnailName - The thumbnail filename
- * @param {string} uploadsDir - Directory for disk storage
- * @returns {Promise<{url: string, filename?: string, key?: string}>}
+ * Upload a buffer to the best available storage backend.
+ * Priority: Cloudinary → S3 → Disk
+ * @param {Buffer} buffer
+ * @param {string} filename - original filename
+ * @param {string} mimetype
+ * @param {string} [uploadsDir] - disk fallback dir (default: public/uploads)
+ * @returns {Promise<{url: string, filename: string, public_id?: string, key?: string}>}
+ */
+async function uploadBuffer(buffer, filename, mimetype, uploadsDir) {
+  if (isCloudinaryEnabled()) {
+    return uploadToCloudinary(buffer, filename, mimetype);
+  }
+  if (isS3Enabled()) {
+    return uploadBufferToS3(buffer, filename, mimetype);
+  }
+  const dir = uploadsDir || path.join(process.cwd(), "public", "uploads");
+  return saveBufferToDisk(buffer, filename, dir);
+}
+
+// ========== Helper to save video thumbnails ==========
+/**
+ * Save a video thumbnail to storage (Cloudinary > S3 > Disk)
+ * @param {Buffer} thumbnailBuffer
+ * @param {string} thumbnailName
+ * @param {string} uploadsDir
+ * @returns {Promise<{url: string, filename?: string}>}
  */
 async function saveThumbnail(thumbnailBuffer, thumbnailName, uploadsDir) {
+  if (isCloudinaryEnabled()) {
+    return uploadToCloudinary(thumbnailBuffer, thumbnailName, "image/jpeg");
+  }
   if (isS3Enabled()) {
     return uploadBufferToS3(thumbnailBuffer, thumbnailName, "image/jpeg");
   }
   return saveBufferToDisk(thumbnailBuffer, thumbnailName, uploadsDir);
 }
 
-export { isS3Enabled, uploadBufferToS3, saveBufferToDisk, saveThumbnail };
+export {
+  isCloudinaryEnabled,
+  uploadToCloudinary,
+  deleteFromCloudinary,
+  isS3Enabled,
+  uploadBufferToS3,
+  saveBufferToDisk,
+  uploadBuffer,
+  saveThumbnail,
+};
 
 async function deleteFromS3Key(key) {
   if (!s3Client) throw new Error("S3 client not configured");
@@ -83,7 +203,6 @@ async function deleteFromS3Key(key) {
 function deleteFileFromDisk(urlOrPath, uploadsDir = path.join(process.cwd(), "public", "uploads")) {
   try {
     if (!urlOrPath) return false;
-    // urlOrPath may be '/uploads/filename' or absolute path
     const basename = path.basename(String(urlOrPath));
     const filePath = path.join(uploadsDir, basename);
     if (fs.existsSync(filePath)) {
@@ -97,39 +216,44 @@ function deleteFileFromDisk(urlOrPath, uploadsDir = path.join(process.cwd(), "pu
   }
 }
 
+/**
+ * Delete a file from the best available storage backend.
+ * Priority: Cloudinary (if URL contains cloudinary) → S3 → Disk
+ */
 async function deleteFile(urlOrKey) {
   if (!urlOrKey) return false;
-  // If S3 is enabled and urlOrKey looks like an S3 key or URL, try S3
+  const str = String(urlOrKey);
+
+  // Cloudinary URLs
+  if (str.includes("cloudinary")) {
+    return deleteFromCloudinary(str);
+  }
+
+  // S3
   if (isS3Enabled()) {
     try {
-      // If it's a full S3 url, extract key after bucket
-      const str = String(urlOrKey);
       if (str.startsWith("http")) {
         const parts = str.split("/");
-        // key is everything after the bucket name
         const idx = parts.findIndex((p) => p.includes(process.env.S3_BUCKET));
         if (idx >= 0) {
           const key = parts.slice(idx + 1).join("/");
           await deleteFromS3Key(key);
           return true;
         }
-        // fallback: attempt to use full path after domain
         const possibleKey = parts.slice(3).join("/");
         await deleteFromS3Key(possibleKey);
         return true;
       } else {
-        // If string contains key prefix (uploads/...), use as key
         const key = String(urlOrKey).replace(/^\//, "");
         await deleteFromS3Key(key);
         return true;
       }
     } catch (err) {
       console.warn("S3 delete failed:", err.message);
-      // fallthrough to disk delete attempt
     }
   }
 
-  // Try disk delete
+  // Disk fallback
   return deleteFileFromDisk(urlOrKey);
 }
 

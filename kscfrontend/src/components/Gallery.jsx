@@ -53,7 +53,7 @@ export default function Gallery() {
             section.attachments.forEach((att) => {
               if (att && att.url) {
                 flat.push({ 
-                  url: absUrl(att.url), // Convert to absolute URL
+                  url: safePath(absUrl(att.url)), // Convert to absolute URL & encode spaces
                   originalName: att.title || att.originalName || section.title || "Gallery Image", 
                   description: att.description || section.body || "",
                   mimetype: att.mimetype

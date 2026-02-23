@@ -2,8 +2,7 @@ import express from "express";
 import multer from "multer";
 import Homework from "../models/Homework.js";
 import { requireAuth, requireRole } from "../middleware/requireAuth.js";
-import path from "path";
-import fs from "fs";
+import { uploadBuffer } from "../utils/storage.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -104,24 +103,16 @@ router.post("/", requireAuth, upload.array("attachments", 10), async (req, res) 
       return res.status(400).json({ error: "Missing required fields: title, subject, class" });
     }
 
-    // Process file uploads
+    // Process file uploads via unified storage (Cloudinary > S3 > Disk)
     const attachments = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
         try {
-          const uploadsDir = path.join(process.cwd(), "public", "uploads", "homework");
-          if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true });
-          }
-          
-          const safeName = `${Date.now()}-${file.originalname.replace(/\s+/g, "_")}`;
-          const dest = path.join(uploadsDir, safeName);
-          fs.writeFileSync(dest, file.buffer);
-          
+          const uploaded = await uploadBuffer(file.buffer, file.originalname, file.mimetype);
           attachments.push({
             originalName: file.originalname,
-            name: safeName,
-            url: `/uploads/homework/${safeName}`,
+            name: uploaded.filename || uploaded.public_id || file.originalname,
+            url: uploaded.url,
             mimetype: file.mimetype,
             size: file.size
           });
@@ -179,23 +170,15 @@ router.put("/:id", requireAuth, upload.array("attachments", 10), async (req, res
     if (dueDate !== undefined) homework.dueDate = dueDate || null;
     if (status) homework.status = status;
 
-    // Handle new file uploads
+    // Handle new file uploads via unified storage (Cloudinary > S3 > Disk)
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
         try {
-          const uploadsDir = path.join(process.cwd(), "public", "uploads", "homework");
-          if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true });
-          }
-          
-          const safeName = `${Date.now()}-${file.originalname.replace(/\s+/g, "_")}`;
-          const dest = path.join(uploadsDir, safeName);
-          fs.writeFileSync(dest, file.buffer);
-          
+          const uploaded = await uploadBuffer(file.buffer, file.originalname, file.mimetype);
           homework.attachments.push({
             originalName: file.originalname,
-            name: safeName,
-            url: `/uploads/homework/${safeName}`,
+            name: uploaded.filename || uploaded.public_id || file.originalname,
+            url: uploaded.url,
             mimetype: file.mimetype,
             size: file.size
           });

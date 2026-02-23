@@ -1,3 +1,7 @@
+// ⚠️ DEPRECATED — This file is NOT mounted in index.js.
+// The active gallery route is galleryAttachments.js
+// This file is kept for reference only. Do NOT import it.
+
 // routes/gallery.js (ESM)
 import express from "express";
 import multer from "multer";

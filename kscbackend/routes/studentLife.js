@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import StudentLife from "../models/StudentLife.js";
 import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 
@@ -17,6 +18,9 @@ function toAbsoluteUrl(req, relativePath) {
  */
 router.get("/", async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.json([]);
+    }
     const { category, featured } = req.query;
     const query = { active: true };
     

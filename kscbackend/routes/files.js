@@ -5,65 +5,51 @@ import path from "path";
 import fs from "fs";
 import mongoose from "mongoose";
 import File from "../models/File.js";
-import { isS3Enabled, uploadBufferToS3, saveBufferToDisk } from "../utils/storage.js";
+import { uploadBuffer } from "../utils/storage.js";
 import { requireRole } from "../middleware/requireAuth.js";
 // ========== MEDIA OPTIMIZATION ==========
 import { optimizeMedia, mediaFileFilter } from "../middleware/mediaOptimizer.js";
 
 const router = express.Router();
 
-// Ensure upload folder exists
+// Ensure upload folder exists (disk fallback)
 const uploadsDir = path.join(process.cwd(), "public", "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
-// Use memory storage so we can optionally push to S3 or write to disk
-// ========== UPDATED: Added file filter for validation ==========
 const upload = multer({ 
   storage: multer.memoryStorage(),
-  fileFilter: mediaFileFilter,  // Validate file types (images, videos, documents)
+  fileFilter: mediaFileFilter,
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB max (increased for videos)
+    fileSize: 100 * 1024 * 1024, // 100MB max
   }
 });
 
-// helper: build absolute url
+// helper: build absolute url (passes Cloudinary/S3 https URLs through unchanged)
 function toAbsoluteUrl(req, relativePath) {
-  // If already an absolute URL (S3), return as-is
   if (!relativePath) return relativePath;
   if (String(relativePath).startsWith("http")) return relativePath;
   const origin =
     process.env.PUBLIC_ORIGIN ||
-    `${req.protocol}://${req.get("host")}`; // e.g. http://
+    `${req.protocol}://${req.get("host")}`;
   return `${origin}${relativePath}`;
 }
 
-// ========== UPDATED: Added optimizeMedia() middleware after Multer ==========
-// ✅ POST: single file upload for magazine/general purposes
+// ✅ POST: single file upload (used by Events, StudentLife, Staff, News, Magazine admin panels)
 router.post("/upload", upload.single("file"), optimizeMedia(), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const useS3 = isS3Enabled();
-    let storedUrl;
-    let storedFilename = req.file.originalname;
-
-    if (useS3) {
-      const uploaded = await uploadBufferToS3(req.file.buffer, req.file.originalname, req.file.mimetype);
-      storedUrl = uploaded.url;
-      storedFilename = uploaded.key;
-    } else {
-      const saved = saveBufferToDisk(req.file.buffer, req.file.originalname, uploadsDir);
-      storedUrl = saved.url;
-      storedFilename = saved.filename;
-    }
+    // Unified upload: Cloudinary > S3 > Disk
+    const uploaded = await uploadBuffer(req.file.buffer, req.file.originalname, req.file.mimetype, uploadsDir);
+    const storedUrl = uploaded.url;
+    const storedFilename = uploaded.filename || uploaded.public_id || req.file.originalname;
 
     // Check if DB is available
     const dbUnavailable = mongoose.connection.readyState !== 1;
     
     if (dbUnavailable) {
-      // Return file info without saving to DB
       return res.json({
         id: `transient-${Date.now()}-${Math.floor(Math.random()*10000)}`,
         originalName: req.file.originalname,
@@ -100,35 +86,7 @@ router.post("/upload", upload.single("file"), optimizeMedia(), async (req, res) 
   }
 });
 
-// DEBUG endpoint to check what URL is being returned
-router.post("/test-upload", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-
-    const saved = saveBufferToDisk(req.file.buffer, req.file.originalname, uploadsDir);
-    const relativeUrl = saved.url; // /uploads/...
-    const absoluteUrl = toAbsoluteUrl(req, relativeUrl); // http://localhost:4000/uploads/...
-
-    console.log("\n🔍 DEBUG: Upload Test");
-    console.log(`   Relative URL from saveBufferToDisk: ${relativeUrl}`);
-    console.log(`   Absolute URL from toAbsoluteUrl: ${absoluteUrl}`);
-    console.log(`   Starts with http: ${absoluteUrl.startsWith("http")}`);
-
-    return res.json({
-      relativeUrl,
-      absoluteUrl,
-      shouldSendToFrontend: absoluteUrl
-    });
-  } catch (err) {
-    console.error("❌ Debug upload error:", err);
-    return res.status(500).json({ error: "Debug upload failed", details: err.message });
-  }
-});
-
-// ========== UPDATED: Added optimizeMedia() middleware after Multer ==========
-// ✅ POST: upload student homework
+// ✅ POST: upload student homework (multiple files)
 router.post("/", upload.array("attachments", 10), optimizeMedia(), async (req, res) => {
   try {
     const { level, subject, notes, studentEmail, studentRole } = req.body;
@@ -137,29 +95,16 @@ router.post("/", upload.array("attachments", 10), optimizeMedia(), async (req, r
       return res.status(400).json({ error: "No files uploaded" });
     }
 
-    const useS3 = isS3Enabled();
-
     const savedFiles = [];
-
-    // If DB is not connected, persist files to disk but do not create DB docs
     const dbUnavailable = mongoose.connection.readyState !== 1;
 
     for (const f of req.files) {
-      let storedUrl;
-      let storedFilename = f.originalname;
-
-      if (useS3) {
-        const uploaded = await uploadBufferToS3(f.buffer, f.originalname, f.mimetype);
-        storedUrl = uploaded.url; // absolute S3 url
-        storedFilename = uploaded.key;
-      } else {
-        const saved = saveBufferToDisk(f.buffer, f.originalname, uploadsDir);
-        storedUrl = saved.url; // relative url served by static middleware
-        storedFilename = saved.filename;
-      }
+      // Unified upload: Cloudinary > S3 > Disk
+      const uploaded = await uploadBuffer(f.buffer, f.originalname, f.mimetype, uploadsDir);
+      const storedUrl = uploaded.url;
+      const storedFilename = uploaded.filename || uploaded.public_id || f.originalname;
 
       if (dbUnavailable) {
-        // return transient object without saving to DB
         savedFiles.push({
           id: `transient-${Date.now()}-${Math.floor(Math.random()*10000)}`,
           originalName: f.originalname,
@@ -188,7 +133,6 @@ router.post("/", upload.array("attachments", 10), optimizeMedia(), async (req, r
       }
     }
 
-    // return absolute url so frontend can download
     const response = savedFiles.map((doc) => ({
       ...(doc.toObject ? doc.toObject() : doc),
       downloadUrl: toAbsoluteUrl(req, doc.url),

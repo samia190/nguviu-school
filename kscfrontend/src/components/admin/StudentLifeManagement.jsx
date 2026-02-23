@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { get, post, patch, del } from '../../utils/api';
+import { get, post, patch, del, upload } from '../../utils/api';
 import OptimizedImage from '../OptimizedImage';
 
 export default function StudentLifeManagement({ user }) {
@@ -16,6 +16,7 @@ export default function StudentLifeManagement({ user }) {
     displayOrder: 0
   });
   const [editingId, setEditingId] = useState(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const categories = ['sports', 'clubs', 'activities', 'traditions'];
 
@@ -57,14 +58,12 @@ export default function StudentLifeManagement({ user }) {
         return;
       }
       if (!formItem.imageUrl || formItem.imageUrl.trim().length === 0) {
-        setError('Image URL is required');
+        setError('Image is required — upload a file or enter a URL');
         return;
       }
-      // Basic URL validation
-      try {
-        new URL(formItem.imageUrl, window.location.origin);
-      } catch {
-        setError('Image URL must be a valid URL');
+      // Accept both relative paths (e.g. /uploads/...) and absolute URLs
+      if (!(formItem.imageUrl.startsWith('http') || formItem.imageUrl.startsWith('/'))) {
+        setError('Image URL must be a valid URL or start with /');
         return;
       }
       if (!categories.includes(formItem.category)) {
@@ -116,6 +115,41 @@ export default function StudentLifeManagement({ user }) {
     setEditingId(item._id);
   }
 
+  async function handleImageUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
+    if (!ALLOWED.includes(file.type)) {
+      setError('Invalid image type. Allowed: JPEG, PNG, WebP, GIF, SVG');
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      setError('Image too large (max 20MB)');
+      return;
+    }
+
+    try {
+      setImageUploading(true);
+      setError('');
+      const form = new FormData();
+      form.append('file', file);
+      const result = await upload('/api/files/upload', form);
+      // Prefer relative path so backend can construct absolute URL dynamically
+      const url = result?.path || result?.url || '';
+      if (url) {
+        setFormItem(prev => ({ ...prev, imageUrl: url }));
+      } else {
+        setError('Upload succeeded but no URL was returned');
+      }
+    } catch (err) {
+      setError('Image upload failed: ' + (err?.message || 'Unknown error'));
+      console.error(err);
+    } finally {
+      setImageUploading(false);
+    }
+  }
+
   if (loading) return <div style={{ padding: '20px' }}>Loading student life items...</div>;
 
   return (
@@ -160,14 +194,47 @@ export default function StudentLifeManagement({ user }) {
         </div>
 
         <div style={{ marginBottom: '12px' }}>
-          <label>Image URL *</label>
+          <label>Image *</label>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '6px' }}>
+            <label
+              style={{
+                display: 'inline-block',
+                padding: '8px 16px',
+                background: imageUploading ? '#ccc' : '#667eea',
+                color: 'white',
+                borderRadius: '4px',
+                cursor: imageUploading ? 'not-allowed' : 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              {imageUploading ? 'Uploading...' : '📁 Upload Image'}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={imageUploading}
+                style={{ display: 'none' }}
+              />
+            </label>
+            <span style={{ color: '#666', fontSize: '13px' }}>or enter URL below</span>
+          </div>
           <input
             type="text"
             value={formItem.imageUrl}
             onChange={(e) => setFormItem({ ...formItem, imageUrl: e.target.value })}
             style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-            placeholder="/images/student-activity.jpg"
+            placeholder="/uploads/student-activity.jpg or https://example.com/image.jpg"
           />
+          {formItem.imageUrl && (
+            <div style={{ marginTop: '6px' }}>
+              <img
+                src={formItem.imageUrl}
+                alt="Preview"
+                style={{ maxWidth: '200px', maxHeight: '120px', borderRadius: '4px', border: '1px solid #ddd' }}
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            </div>
+          )}
         </div>
 
         <div style={{ marginBottom: '12px' }}>

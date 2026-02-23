@@ -67,8 +67,8 @@ export default function GalleryManagement() {
   }
 
   /**
-   * NEW: Upload files via /api/files, then PATCH the gallery item
-   * with a new attachments array. No more /api/content/gallery/:id/attachments.
+   * Upload files directly to the gallery item's attachments endpoint.
+   * Uses POST /api/content/gallery/:id/attachments with multipart form data.
    */
   async function uploadAttachments(itemId, fileArray) {
     const files = Array.from(fileArray || []);
@@ -89,9 +89,6 @@ export default function GalleryManagement() {
       }
     }
 
-    const section = items.find((it) => String(it._id || it.id) === String(itemId));
-    const currentAttachments = section?.attachments || [];
-
     try {
       setError("");
       setUploading((s) => ({
@@ -100,32 +97,24 @@ export default function GalleryManagement() {
       }));
 
       const form = new FormData();
-      files.forEach((file) => form.append("files", file));
+      files.forEach((file) => form.append("attachments", file));
 
-      // Use your existing files upload endpoint.
-      // Adjust this path if your backend uses a different one (e.g. /api/upload).
-      const uploaded = await upload("/api/files", form);
-
-      const uploadedFiles = Array.isArray(uploaded)
-        ? uploaded
-        : Array.isArray(uploaded?.files)
-        ? uploaded.files
-        : [];
-
-      const newAttachments = [...currentAttachments, ...uploadedFiles];
-
-      // Save updated attachments on the gallery item
-      const updatedItem = await patch(`/api/content/gallery/${itemId}`, {
-        attachments: newAttachments,
+      // Upload directly to the gallery attachments endpoint.
+      // Backend handles file storage AND saves to the gallery item's attachments array.
+      const result = await upload(`/api/content/gallery/${itemId}/attachments`, form, {}, {
+        onProgress: (pct) => {
+          setUploading((s) => ({
+            ...s,
+            [itemId]: { uploading: true, progress: pct, message: `Uploading... ${pct}%` },
+          }));
+        }
       });
 
-      const clean = updatedItem?.updated || updatedItem || {
-        ...(section || {}),
-        attachments: newAttachments,
-      };
+      // Backend returns { added, item } with absolute URLs already applied
+      const updatedItem = result?.item || result;
 
       setItems((prev) =>
-        prev.map((it) => (String(it._id || it.id) === String(itemId) ? clean : it))
+        prev.map((it) => (String(it._id || it.id) === String(itemId) ? updatedItem : it))
       );
 
       setUploading((s) => ({
@@ -149,22 +138,19 @@ export default function GalleryManagement() {
   async function removeAttachment(itemId, attachmentId) {
     if (!window.confirm("Remove this attachment?")) return;
     try {
-      const section = items.find((it) => String(it._id || it.id) === String(itemId));
-      const current = section?.attachments || [];
-      const nextAttachments = current.filter((a) => String(a._id) !== String(attachmentId));
+      // Use the dedicated DELETE endpoint which also removes the file from disk
+      const result = await del(`/api/content/gallery/${itemId}/attachments/${attachmentId}`);
 
-      const updatedItem = await patch(`/api/content/gallery/${itemId}`, {
-        attachments: nextAttachments,
-      });
-
-      const clean = updatedItem?.updated || updatedItem || {
-        ...(section || {}),
-        attachments: nextAttachments,
-      };
-
-      setItems((prev) =>
-        prev.map((it) => (String(it._id || it.id) === String(itemId) ? clean : it))
-      );
+      // Backend returns { ok, removed, item } with absolute URLs
+      const updatedItem = result?.item;
+      if (updatedItem) {
+        setItems((prev) =>
+          prev.map((it) => (String(it._id || it.id) === String(itemId) ? updatedItem : it))
+        );
+      } else {
+        // Fallback: reload gallery data
+        await loadGallery();
+      }
     } catch (e) {
       console.error(e);
       alert("Failed to remove attachment.");

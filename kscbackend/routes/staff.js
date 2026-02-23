@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import Staff from "../models/Staff.js";
-import { isS3Enabled, uploadBufferToS3, saveBufferToDisk } from "../utils/storage.js";
+import { uploadBuffer } from "../utils/storage.js";
 import path from "path";
 import fs from "fs";
 
