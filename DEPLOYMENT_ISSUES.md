@@ -12,7 +12,7 @@
 
 #### 2. **Hardcoded Backend URL** ⚠️
 **File**: `kangaru girls-frontend/src/utils/api.js`
-**Problem**: Had hardcoded Render URL `https://kangaru girls-school.onrender.com`
+**Problem**: Had hardcoded Render URL `https://kangarugirlsschool.onrender.com`
 **Impact**: Would only work with that specific URL, not flexible for different deployments
 **Fixed**: ✅ Changed to use environment variable `VITE_API_URL` or empty string for relative URLs
 

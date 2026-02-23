@@ -16,7 +16,7 @@
 .\scripts\update-seo-domain.ps1 -Domain "your-app-name.onrender.com"
 
 # Example:
-.\scripts\update-seo-domain.ps1 -Domain "kangaru girls-school.onrender.com"
+.\scripts\update-seo-domain.ps1 -Domain "kangarugirlsschool.onrender.com"
 ```
 
 ### Step 2: Verify Files Are Accessible (1 minute)

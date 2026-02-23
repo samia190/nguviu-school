@@ -92,7 +92,7 @@ Your full-stack project has been **thoroughly reviewed and fixed** for Render de
 
 1. Go to [Render Dashboard](https://dashboard.render.com/)
 2. Click "New +" → "Blueprint"
-3. Connect GitHub repository: `samia190/kangaru girls-school`
+3. Connect GitHub repository: `samia190/kangarugirlsschool`
 4. Render will detect [render.yaml](render.yaml) and create both services automatically
 5. Set environment variables for each service (see RENDER.md)
 6. Deploy!
@@ -219,7 +219,7 @@ VITE_API_URL=https://your-backend.onrender.com
 
 All critical issues fixed and pushed to GitHub. You can now deploy to Render with confidence!
 
-**Repository**: https://github.com/samia190/kangaru girls-school.git
+**Repository**: https://github.com/samia190/kangarugirlsschool.git
 **Last Update**: Committed and pushed deployment fixes
 
 **Good luck with your deployment! 🚀**

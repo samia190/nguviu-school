@@ -48,11 +48,11 @@ Your KANGARU GIRLS school website is now fully equipped for Google Search Engine
 
 ### Step 1: Get Your Render URL ✅
 After deploying to Render, you'll get a URL like:
-- `https://kangaru girls-school.onrender.com`
+- `https://kangarugirlsschool.onrender.com`
 
 ### Step 2: Update Domain (2 minutes) ✅
 ```powershell
-.\scripts\update-seo-domain.ps1 -Domain "kangaru girls-school.onrender.com"
+.\scripts\update-seo-domain.ps1 -Domain "kangarugirlsschool.onrender.com"
 ```
 
 ### Step 3: Verify Files (1 minute) ✅
