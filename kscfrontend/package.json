@@ -17,7 +17,7 @@
     "build:render": "npm run convert:webp && npm run build"
   },
   "engines": {
-    "node": ">=18.18.0"
+    "node": "20.x"
   },
   "dependencies": {
     "jsbarcode": "^3.12.3",
