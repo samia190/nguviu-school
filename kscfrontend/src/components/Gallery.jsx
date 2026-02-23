@@ -4,8 +4,6 @@ import { get } from "../utils/api";
 import LazyImage from "./LazyImage";
 import OptimizedImage, { OptimizedBackgroundImage } from "./OptimizedImage";
 
-import OptimizedImage, { OptimizedBackgroundImage } from "./OptimizedImage";
-
 // Cloudinary base for optimized images
 const CLD = 'https://res.cloudinary.com/ddm1dgws8/image/upload';
 const thumb = (name) => `${CLD}/w_400,q_auto,f_auto/kangaru/${name}`;

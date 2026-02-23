@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { get, patch } from "../utils/api";
 import EditableHeading from "../components/EditableHeading";
 import EditableText from "../components/EditableText";
