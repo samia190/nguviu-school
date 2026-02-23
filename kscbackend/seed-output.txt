@@ -1,0 +1,66 @@
+﻿[dotenv@17.2.3] injecting env (23) from .env -- tip: ΓÜÖ∩╕Å  suppress all logs with { quiet: true }
+≡ƒôï Loaded 87 Cloudinary URLs from Phase 1
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+  Phase 2: Seed Database Records
+  Target: https://kangarugirlsschool.onrender.com
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+
+≡ƒîÉ Testing API connection...
+  Γ£à API is healthy: {"ok":true,"time":"2026-02-23T15:43:41.167Z"}
+
+≡ƒöÉ Logging into https://kangarugirlsschool.onrender.com...
+node :   ΓÜá∩╕Å  Login failed (500): {"error":"Login failed"}
+At line:1 char:68
++ ... \vrs 1.2.2 ksc copy\kscbackend"; node seed-phase2-db.mjs 2>&1 | Out-F ...
++                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (  ΓÜá∩╕Å  Login..."Login failed"} 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  ΓÜá∩╕Å  Will skip auth-required routes (events, student-life)
+
+≡ƒôè Seeding plan:
+   Hero:         5 slides
+   Events:       8 items (ΓÜá∩╕Å requires auth)
+   Student Life: 12 items (ΓÜá∩╕Å requires auth)
+   Gallery:      87 images
+
+≡ƒû╝∩╕Å  Seeding Hero Content...
+  ΓÜá∩╕Å  Could not fetch existing hero: GET /api/hero-content?page=home (500)
+  Γ¥î Slide 1 failed: {"error":"Failed to create hero content"}
+  Γ¥î Slide 2 failed: {"error":"Failed to create hero content"}
+  Γ¥î Slide 3 failed: {"error":"Failed to create hero content"}
+  Γ¥î Slide 4 failed: {"error":"Failed to create hero content"}
+  Γ¥î Slide 5 failed: {"error":"Failed to create hero content"}
+  Γ£à 5 hero slides created
+
+≡ƒôà ΓÅ¡∩╕Å  Skipping Events ΓÇö requires authentication
+≡ƒÄô ΓÅ¡∩╕Å  Skipping Student Life ΓÇö requires authentication
+
+≡ƒû╝∩╕Å  Seeding Gallery...
+  Γ¥î Section "School Facilities & Campus": POST /api/content/gallery (400): 
+{"error":"Failed to create gallery item"}
+  Γ¥î Section "Academic Activities": POST /api/content/gallery (400): 
+{"error":"Failed to create gallery item"}
+  Γ¥î Section "Sports & Athletics": POST /api/content/gallery (400): 
+{"error":"Failed to create gallery item"}
+  Γ¥î Section "Cultural Events & Celebrations": POST /api/content/gallery 
+(400): {"error":"Failed to create gallery item"}
+  Γ¥î Section "School Community": POST /api/content/gallery (400): 
+{"error":"Failed to create gallery item"}
+  Γ¥î Section "Co-curricular Activities": POST /api/content/gallery (400): 
+{"error":"Failed to create gallery item"}
+  Γ£à 6 gallery sections created
+
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+  Γ£à Phase 2 Partial ΓÇö Hero + Gallery seeded!
+  ΓÜá∩╕Å  Events + Student Life skipped (login failed)
+  ≡ƒÆí To seed them later, fix JWT_SECRET on Render,
+     then run: node seed-phase2-db.mjs
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+
+≡ƒôï Next steps:
+   1. Visit your site to verify images
+   2. Add CLOUDINARY_* env vars to Render dashboard
+   3. Push code to Git for deployment
+

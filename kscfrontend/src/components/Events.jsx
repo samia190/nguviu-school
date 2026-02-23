@@ -3,6 +3,16 @@ import { get } from "../utils/api";
 import OptimizedImage from "./OptimizedImage";
 import Loader from "./Loader";
 
+// Default events from public/images/ — shown when no API data is available
+const defaultEvents = [
+  { _id: 'ev-1', title: 'Open Day', date: '2025-02-15', location: 'School Campus', description: 'Visit our campus and learn about our programs, meet teachers, and experience Kangaru Girls School firsthand.', imageUrl: '/images/DSC_5443.jpg', featured: true },
+  { _id: 'ev-2', title: 'Science & Innovation Week', date: '2025-03-10', location: 'Science Block', description: 'A week dedicated to science experiments, innovation showcases, and hands-on STEM activities.', imageUrl: '/images/DSC_5447.jpg' },
+  { _id: 'ev-3', title: 'Inter-School Sports', date: '2025-04-05', location: 'Sports Ground', description: 'Competitive sports events with neighboring schools in athletics, volleyball, and more.', imageUrl: '/images/DSC_5462.jpg', featured: true },
+  { _id: 'ev-4', title: 'Career Day', date: '2025-05-20', location: 'School Hall', description: 'Professionals from various fields share career guidance and mentorship with students.', imageUrl: '/images/DSC_5489.jpg' },
+  { _id: 'ev-5', title: 'Music Festival', date: '2025-06-15', location: 'School Grounds', description: 'Annual music festival featuring student performances, choir competitions, and instrumental showcases.', imageUrl: '/images/DSC_5502.jpg' },
+  { _id: 'ev-6', title: 'Graduation Ceremony', date: '2025-11-28', location: 'Main Hall', description: 'Celebrating our graduating class achievements and welcoming them to the next chapter of their lives.', imageUrl: '/images/DSC_5515.jpg', featured: true },
+];
+
 
 const eventsWrapperStyle = {
   display: "flex",
@@ -37,11 +47,17 @@ export default function Events() {
         setError("");
         // Fetch from new /api/events endpoint
         const data = await get("/api/events?active=true");
-        const eventList = Array.isArray(data) ? data : (data.events || []);
+        let eventList = Array.isArray(data) ? data : (data.events || []);
+        
+        // Fallback: use default events if API returns empty
+        if (eventList.length === 0) {
+          eventList = defaultEvents;
+        }
         setEvents(eventList);
       } catch (err) {
         console.error("Events fetch error:", err);
-        setError("Failed to load events.");
+        // Fallback: use default events on error
+        setEvents(defaultEvents);
       } finally {
         setLoading(false);
       }
@@ -70,6 +86,56 @@ export default function Events() {
 
   return (
     <main className="page events-page" style={{ padding: "1rem 8px", textAlign: "left" }}>
+      {/* ================= HERO SECTION ================= */}
+      <div
+        className="events-hero"
+        style={{
+          position: "relative",
+          width: "100vw",
+          marginLeft: "50%",
+          transform: "translateX(-50%)",
+          minHeight: 380,
+          overflow: "hidden",
+          marginBottom: 30,
+          background: "url('/images/DSC_5454.jpg') center/cover no-repeat, linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.65))",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              maxWidth: 720,
+              width: "100%",
+              padding: "16px 20px",
+              borderRadius: 10,
+              backgroundColor: "rgba(0, 0, 0, 0.45)",
+              color: "#ffffff",
+              textAlign: "center",
+            }}
+          >
+            <h2 style={{ fontSize: "2rem", margin: "0 0 10px 0" }}>School Events</h2>
+            <p style={{ fontSize: "1.1rem", margin: 0 }}>
+              Discover our upcoming and recent events at Kangaru Girls Senior School
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div style={{ marginBottom: "1.5rem" }}>
         <h1 style={{ marginBottom: "0.5rem", textAlign: "left" }}>School Events</h1>
         <p style={{ margin: 0, textAlign: "left", color: "#666" }}>

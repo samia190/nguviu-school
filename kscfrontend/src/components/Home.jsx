@@ -8,6 +8,15 @@ import OptimizedImage from "./OptimizedImage";
 import OptimizedVideo from "./OptimizedVideo";
 import { useBatchImagePreload } from "../hooks/useImagePreload";
 
+// Default hero slides from public/images/ — shown when no API data is available
+const defaultHeroSlides = [
+  { _id: 'default-1', url: '/images/DSC_5353.jpg', title: 'Welcome to Kangaru Girls School', description: 'A center of excellence in education', active: true, type: 'slide' },
+  { _id: 'default-2', url: '/images/DSC_5400.jpg', title: 'Academic Excellence', description: 'Nurturing future leaders with knowledge and confidence', active: true, type: 'slide' },
+  { _id: 'default-3', url: '/images/DSC_5500.jpg', title: 'Student Life', description: 'Vibrant community and enriching experiences', active: true, type: 'slide' },
+  { _id: 'default-4', url: '/images/DSC_5613.jpg', title: 'Sports & Activities', description: 'Building character through sports and extracurricular activities', active: true, type: 'slide' },
+  { _id: 'default-5', url: '/images/DSC_5820.jpg', title: 'Our Campus', description: 'A beautiful and serene learning environment', active: true, type: 'slide' },
+];
+
 export default function Home({ user, setRoute }) {
   const [content, setContent] = useState({});
   const [error, setError] = useState("");
@@ -22,6 +31,7 @@ export default function Home({ user, setRoute }) {
     ])
       .then(([homeData, heroData]) => {
         setContent(homeData || {});
+        let heroSet = false;
         // Get active hero slides/images for home page
         if (heroData && Array.isArray(heroData)) {
           const activeHeros = heroData.filter(h => h.active !== false);
@@ -33,15 +43,26 @@ export default function Home({ user, setRoute }) {
             
             if (videoHero) {
               setHeroContent({ type: "video", data: videoHero });
+              heroSet = true;
             } else if (slideHeros.length > 0) {
               setHeroContent({ type: "slide", data: slideHeros });
+              heroSet = true;
             } else if (imageHero) {
               setHeroContent({ type: "image", data: imageHero });
+              heroSet = true;
             }
           }
         }
+        // Fallback: use default hero slides from public/images/
+        if (!heroSet) {
+          setHeroContent({ type: "slide", data: defaultHeroSlides });
+        }
       })
-      .catch(() => setError("Failed to load home page content."));
+      .catch(() => {
+        setError("Failed to load home page content.");
+        // Show default hero slides even on error
+        setHeroContent({ type: "slide", data: defaultHeroSlides });
+      });
 
     // fetch summaries for quick sections
     fetchSummaries();

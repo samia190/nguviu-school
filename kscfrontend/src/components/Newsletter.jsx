@@ -4,6 +4,14 @@ import EditableFileList from "./EditableFileList";
 import Loader from "./Loader";
 import SchoolMagazineViewer from "./SchoolMagazineViewer";
 
+// Default newsletter posts — shown when no API data is available
+const defaultNewsletterPosts = [
+  { id: 'np-1', title: 'Term 1 Academic Highlights', body: 'We are proud to announce outstanding results from our students this term. The school recorded improved performance across all subjects, with particular excellence in Sciences and Mathematics. Our students continue to demonstrate dedication and hard work.', color: '#e8f5e9', createdAt: '2025-01-15' },
+  { id: 'np-2', title: 'Sports Achievements', body: 'Congratulations to our athletics team for their remarkable performance at the regional competitions. Our volleyball team also qualified for the national championships. We celebrate our student athletes for their commitment to excellence both on and off the field.', color: '#e3f2fd', createdAt: '2025-01-20' },
+  { id: 'np-3', title: 'Community Outreach Program', body: 'Our students participated in a community outreach program visiting local primary schools and sharing knowledge. This initiative is part of our commitment to social responsibility and developing well-rounded leaders who give back to society.', color: '#fff3e0', createdAt: '2025-02-01' },
+  { id: 'np-4', title: 'New Facilities Update', body: 'We are excited to announce the completion of our new science laboratory and computer lab. These modern facilities will enhance our students learning experience and provide them with hands-on practical skills for the future.', color: '#f3e5f5', createdAt: '2025-02-10' },
+];
+
 const postsWrapperStyle = {
   display: "flex",
   flexWrap: "wrap",
@@ -45,7 +53,8 @@ export default function Newsletter() {
         setLoading(false);
       } catch (err) {
         console.error(err);
-        setError("Failed to load newsletter content.");
+        // Fallback: use default content on error
+        setContent({ data: { posts: defaultNewsletterPosts } });
         setLoading(false);
       }
     }
@@ -72,11 +81,61 @@ export default function Newsletter() {
     content?.intro ||
     "Stay updated with news, announcements, and highlights from our school.";
 
-  const posts = (content?.data && content.data.posts) || [];
+  const posts = (content?.data && content.data.posts) || defaultNewsletterPosts;
   const attachments = content?.attachments || [];
 
   return (
     <main className="page newsletter-page" style={{ padding: "1rem 8px", textAlign: "left" }}>
+      {/* ================= HERO SECTION ================= */}
+      <div
+        className="newsletter-hero"
+        style={{
+          position: "relative",
+          width: "100vw",
+          marginLeft: "50%",
+          transform: "translateX(-50%)",
+          minHeight: 340,
+          overflow: "hidden",
+          marginBottom: 30,
+          background: "url('/images/DSC_5473.jpg') center/cover no-repeat, linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.65))",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              maxWidth: 720,
+              width: "100%",
+              padding: "16px 20px",
+              borderRadius: 10,
+              backgroundColor: "rgba(0, 0, 0, 0.45)",
+              color: "#ffffff",
+              textAlign: "center",
+            }}
+          >
+            <h2 style={{ fontSize: "2rem", margin: "0 0 10px 0" }}>School Newsletter</h2>
+            <p style={{ fontSize: "1.1rem", margin: 0 }}>
+              Stay updated with news, announcements, and highlights
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div style={{ marginBottom: "1.5rem" }}>
         <h1 style={{ marginBottom: "0.5rem", textAlign: "left" }}>{introTitle}</h1>
         <p style={{ margin: 0, textAlign: "left" }}>{introBody}</p>

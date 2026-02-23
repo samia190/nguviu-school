@@ -4,6 +4,96 @@ import { get } from "../utils/api";
 import LazyImage from "./LazyImage";
 import OptimizedImage, { OptimizedBackgroundImage } from "./OptimizedImage";
 
+// Default gallery images from public/images/ — shown when no API data is available
+const defaultGalleryImages = [
+  { url: '/images/DSC_5353.jpg', originalName: 'School Life', description: 'Kangaru Girls School' },
+  { url: '/images/DSC_5364.jpg', originalName: 'Campus View', description: 'Our beautiful campus' },
+  { url: '/images/DSC_5372.jpg', originalName: 'Students', description: 'Our students' },
+  { url: '/images/DSC_5377.jpg', originalName: 'School Activities', description: 'Student activities' },
+  { url: '/images/DSC_5379.jpg', originalName: 'Learning', description: 'Academic excellence' },
+  { url: '/images/DSC_5384.jpg', originalName: 'School Grounds', description: 'School environment' },
+  { url: '/images/DSC_5389.jpg', originalName: 'Student Life', description: 'Life at Kangaru' },
+  { url: '/images/DSC_5391.jpg', originalName: 'Assembly', description: 'School assembly' },
+  { url: '/images/DSC_5392.jpg', originalName: 'Campus', description: 'Campus view' },
+  { url: '/images/DSC_5400.jpg', originalName: 'Academics', description: 'Academic programs' },
+  { url: '/images/DSC_5401.jpg', originalName: 'School Event', description: 'School events' },
+  { url: '/images/DSC_5402.jpg', originalName: 'Students Together', description: 'Student community' },
+  { url: '/images/DSC_5403.jpg', originalName: 'Learning Environment', description: 'Classroom activities' },
+  { url: '/images/DSC_5404.jpg', originalName: 'School Pride', description: 'Kangaru pride' },
+  { url: '/images/DSC_5406.jpg', originalName: 'Activities', description: 'Student activities' },
+  { url: '/images/DSC_5410.jpg', originalName: 'Sports', description: 'Sports activities' },
+  { url: '/images/DSC_5411.jpg', originalName: 'Athletics', description: 'Track and field' },
+  { url: '/images/DSC_5413.jpg', originalName: 'Team Work', description: 'Teamwork in action' },
+  { url: '/images/DSC_5415.jpg', originalName: 'Performance', description: 'Student performances' },
+  { url: '/images/DSC_5418.jpg', originalName: 'Arts', description: 'Creative arts' },
+  { url: '/images/DSC_5420.jpg', originalName: 'Science', description: 'Science activities' },
+  { url: '/images/DSC_5424.jpg', originalName: 'School Tour', description: 'Campus tour' },
+  { url: '/images/DSC_5427.jpg', originalName: 'Cultural Day', description: 'Cultural celebrations' },
+  { url: '/images/DSC_5428.jpg', originalName: 'Celebration', description: 'School celebration' },
+  { url: '/images/DSC_5432.jpg', originalName: 'Competition', description: 'School competitions' },
+  { url: '/images/DSC_5434.jpg', originalName: 'Field Day', description: 'Field activities' },
+  { url: '/images/DSC_5435.jpg', originalName: 'Students', description: 'Our students' },
+  { url: '/images/DSC_5440.jpg', originalName: 'Debate', description: 'Debate sessions' },
+  { url: '/images/DSC_5441.jpg', originalName: 'Classroom', description: 'In the classroom' },
+  { url: '/images/DSC_5443.jpg', originalName: 'Open Day', description: 'School open day' },
+  { url: '/images/DSC_5446.jpg', originalName: 'Leadership', description: 'Student leadership' },
+  { url: '/images/DSC_5447.jpg', originalName: 'Innovation', description: 'Innovation week' },
+  { url: '/images/DSC_5450.jpg', originalName: 'Community', description: 'Community outreach' },
+  { url: '/images/DSC_5454.jpg', originalName: 'School Life', description: 'Daily life' },
+  { url: '/images/DSC_5455.jpg', originalName: 'Friendship', description: 'Student friendships' },
+  { url: '/images/DSC_5456.jpg', originalName: 'Service', description: 'Community service' },
+  { url: '/images/DSC_5457.jpg', originalName: 'Achievement', description: 'Student achievements' },
+  { url: '/images/DSC_5458.jpg', originalName: 'Excellence', description: 'Pursuit of excellence' },
+  { url: '/images/DSC_5462.jpg', originalName: 'Inter-School', description: 'Inter-school events' },
+  { url: '/images/DSC_5463.jpg', originalName: 'Ceremony', description: 'School ceremony' },
+  { url: '/images/DSC_5472.jpg', originalName: 'Prize Giving', description: 'Prize giving day' },
+  { url: '/images/DSC_5473.jpg', originalName: 'Awards', description: 'Award ceremony' },
+  { url: '/images/DSC_5475.jpg', originalName: 'Recognition', description: 'Student recognition' },
+  { url: '/images/DSC_5489.jpg', originalName: 'Career Day', description: 'Career guidance' },
+  { url: '/images/DSC_5490.jpg', originalName: 'Mentorship', description: 'Mentorship programs' },
+  { url: '/images/DSC_5493.jpg', originalName: 'Workshop', description: 'Student workshops' },
+  { url: '/images/DSC_5500.jpg', originalName: 'Campus Life', description: 'Life on campus' },
+  { url: '/images/DSC_5501.jpg', originalName: 'Music', description: 'Music performances' },
+  { url: '/images/DSC_5502.jpg', originalName: 'Talent', description: 'Talent showcase' },
+  { url: '/images/DSC_5512.jpg', originalName: 'School Spirit', description: 'School spirit' },
+  { url: '/images/DSC_5515.jpg', originalName: 'Graduation', description: 'Graduation ceremony' },
+  { url: '/images/DSC_5533.jpg', originalName: 'Library', description: 'Library activities' },
+  { url: '/images/DSC_5534.jpg', originalName: 'Reading', description: 'Reading culture' },
+  { url: '/images/DSC_5535.jpg', originalName: 'Study', description: 'Study time' },
+  { url: '/images/DSC_5537.jpg', originalName: 'Learning', description: 'Active learning' },
+  { url: '/images/DSC_5541.jpg', originalName: 'Lab Work', description: 'Laboratory work' },
+  { url: '/images/DSC_5545.jpg', originalName: 'Experiment', description: 'Science experiments' },
+  { url: '/images/DSC_5548.jpg', originalName: 'Discovery', description: 'Scientific discovery' },
+  { url: '/images/DSC_5581.jpg', originalName: 'School Grounds', description: 'School grounds' },
+  { url: '/images/DSC_5613.jpg', originalName: 'Sports Field', description: 'Sports activities' },
+  { url: '/images/DSC_5614.jpg', originalName: 'Exercise', description: 'Physical education' },
+  { url: '/images/DSC_5615.jpg', originalName: 'Fitness', description: 'Fitness activities' },
+  { url: '/images/DSC_5625.jpg', originalName: 'Teamwork', description: 'Team activities' },
+  { url: '/images/DSC_5626.jpg', originalName: 'Cooperation', description: 'Working together' },
+  { url: '/images/DSC_5631.jpg', originalName: 'Unity', description: 'United in purpose' },
+  { url: '/images/DSC_5712.jpg', originalName: 'School Building', description: 'School architecture' },
+  { url: '/images/DSC_5721.jpg', originalName: 'Campus Beauty', description: 'Beautiful campus' },
+  { url: '/images/DSC_5725.jpg', originalName: 'Nature', description: 'Natural surroundings' },
+  { url: '/images/DSC_5726.jpg', originalName: 'Gardens', description: 'School gardens' },
+  { url: '/images/DSC_5728.jpg', originalName: 'Environment', description: 'Green environment' },
+  { url: '/images/DSC_5735.jpg', originalName: 'Walkways', description: 'Campus walkways' },
+  { url: '/images/DSC_5739.jpg', originalName: 'Scenery', description: 'Campus scenery' },
+  { url: '/images/DSC_5766.jpg', originalName: 'Infrastructure', description: 'School facilities' },
+  { url: '/images/DSC_5781.jpg', originalName: 'Facilities', description: 'Modern facilities' },
+  { url: '/images/DSC_5797.jpg', originalName: 'Resources', description: 'School resources' },
+  { url: '/images/DSC_5820.jpg', originalName: 'Panorama', description: 'Panoramic view' },
+  { url: '/images/DSC_5824.jpg', originalName: 'Administration', description: 'Admin block' },
+  { url: '/images/DSC_5830.jpg', originalName: 'Hall', description: 'School hall' },
+  { url: '/images/DSC_5833.jpg', originalName: 'Dining', description: 'Dining facilities' },
+  { url: '/images/DSC_5836.jpg', originalName: 'Dormitory', description: 'Student dormitories' },
+  { url: '/images/DSC_5837.jpg', originalName: 'Accommodation', description: 'Student accommodation' },
+  { url: '/images/DSC_5839.jpg', originalName: 'Evening', description: 'Evening at school' },
+  { url: '/images/DSC_5840.jpg', originalName: 'Sunset', description: 'Beautiful sunset' },
+  { url: '/images/DSC_5882.jpg', originalName: 'Memories', description: 'School memories' },
+  { url: '/images/DSC_5886.jpg', originalName: 'Moments', description: 'Precious moments' },
+  { url: '/images/DSC_5892.jpg', originalName: 'Legacy', description: 'Building a legacy' },
+];
+
 export default function Gallery() {
   const [items, setItems] = useState([]);
   const [error, setError] = useState("");
@@ -76,23 +166,31 @@ export default function Gallery() {
           });
           setLoading(false);
         } else {
-          // No data in database - show empty state
-          console.log('No gallery data available');
+          // No data in database — use default images from public/images/
+          console.log('Using default gallery images from public/images/');
+          const defaults = defaultGalleryImages;
+          setItems(defaults);
           setCategories({
-            all: [],
-            main: [],
-            arts: [],
-            events: [],
-            tours: []
+            all: defaults,
+            main: defaults.slice(0, Math.ceil(defaults.length / 4)),
+            arts: defaults.slice(Math.ceil(defaults.length / 4), Math.ceil(defaults.length / 4) * 2),
+            events: defaults.slice(Math.ceil(defaults.length / 4) * 2, Math.ceil(defaults.length / 4) * 3),
+            tours: defaults.slice(Math.ceil(defaults.length / 4) * 3),
           });
-          setItems([]);
-          setError('No images available yet. Please upload images through the admin dashboard.');
           setLoading(false);
         }
       } catch (err) {
         console.error('Gallery loading error:', err);
-        setItems([]);
-        setError(`Failed to load gallery: ${err.message || 'Unknown error'}`);
+        // Use default gallery images on error
+        const defaults = defaultGalleryImages;
+        setItems(defaults);
+        setCategories({
+          all: defaults,
+          main: defaults.slice(0, Math.ceil(defaults.length / 4)),
+          arts: defaults.slice(Math.ceil(defaults.length / 4), Math.ceil(defaults.length / 4) * 2),
+          events: defaults.slice(Math.ceil(defaults.length / 4) * 2, Math.ceil(defaults.length / 4) * 3),
+          tours: defaults.slice(Math.ceil(defaults.length / 4) * 3),
+        });
         setLoading(false);
       }
     }
@@ -172,7 +270,7 @@ export default function Gallery() {
           minHeight: 420,
           overflow: "hidden",
           marginBottom: 30,
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: "url('/images/DSC_5535.jpg') center/cover no-repeat, linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}

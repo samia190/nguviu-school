@@ -27,9 +27,15 @@ export default function About({ user }) {
         if (heroData && Array.isArray(heroData) && heroData.length > 0) {
           const activeHero = heroData.find(h => h.active) || heroData[0];
           setHeroContent(activeHero);
+        } else {
+          // Fallback hero image from public/images/
+          setHeroContent({ url: '/images/DSC_5392.jpg', title: 'About Kangaru Girls School' });
         }
       })
-      .catch(() => setError("Failed to load about page content."));
+      .catch(() => {
+        setError("Failed to load about page content.");
+        setHeroContent({ url: '/images/DSC_5392.jpg', title: 'About Kangaru Girls School' });
+      });
   }, []);
 
   useEffect(() => {
@@ -41,7 +47,19 @@ export default function About({ user }) {
       .then(([principals, deputies]) => {
         const principalList = Array.isArray(principals) ? principals : (principals.staff || []);
         const deputyList = Array.isArray(deputies) ? deputies : (deputies.staff || []);
-        const allStaff = [...principalList, ...deputyList];
+        let allStaff = [...principalList, ...deputyList];
+        
+        // Fallback: show default principal if none from API
+        if (!allStaff.some(s => s.type === 'principal')) {
+          allStaff.unshift({
+            _id: 'default-principal',
+            type: 'principal',
+            fullName: 'School Principal',
+            title: 'Principal - Kangaru Girls School',
+            photoUrl: '/images/Principal.png',
+            remarks: 'Welcome to Kangaru Girls School. We are dedicated to nurturing excellence and developing well-rounded young women who will be leaders of tomorrow.'
+          });
+        }
         setStaff(allStaff);
         
         // Prepare staff images for preloading

@@ -3,6 +3,22 @@ import { get } from "../utils/api";
 import OptimizedImage from "./OptimizedImage";
 import Loader from "./Loader";
 
+// Default student life items from public/images/ — shown when no API data is available
+const defaultStudentLifeItems = [
+  { _id: 'sl-1', title: 'Sports Day', category: 'sports', description: 'Annual sports day featuring athletics, swimming, and team sports competitions where students showcase their athletic abilities.', imageUrl: '/images/DSC_5410.jpg', featured: true },
+  { _id: 'sl-2', title: 'Drama Club', category: 'clubs', description: 'Students showcase their acting talents in plays and drama performances throughout the school year.', imageUrl: '/images/DSC_5415.jpg' },
+  { _id: 'sl-3', title: 'Science Fair', category: 'activities', description: 'Students present innovative science projects and experiments, pushing the boundaries of discovery.', imageUrl: '/images/DSC_5420.jpg' },
+  { _id: 'sl-4', title: 'Cultural Day', category: 'traditions', description: 'Celebrating our diverse cultures and traditions through music, dance, food, and vibrant performances.', imageUrl: '/images/DSC_5427.jpg', featured: true },
+  { _id: 'sl-5', title: 'Athletics', category: 'sports', description: 'Track and field events where students compete at inter-school and regional level.', imageUrl: '/images/DSC_5432.jpg' },
+  { _id: 'sl-6', title: 'Debate Club', category: 'clubs', description: 'Developing public speaking and critical thinking skills through competitive debate sessions.', imageUrl: '/images/DSC_5440.jpg' },
+  { _id: 'sl-7', title: 'Community Service', category: 'activities', description: 'Students give back to the community through various outreach programs and volunteer work.', imageUrl: '/images/DSC_5456.jpg' },
+  { _id: 'sl-8', title: 'Prize Giving Day', category: 'traditions', description: 'Annual ceremony recognizing academic and extracurricular achievements of our students.', imageUrl: '/images/DSC_5472.jpg' },
+  { _id: 'sl-9', title: 'Volleyball', category: 'sports', description: 'Competitive volleyball training and tournaments building teamwork and sportsmanship.', imageUrl: '/images/DSC_5614.jpg' },
+  { _id: 'sl-10', title: 'Music Club', category: 'clubs', description: 'Students explore musical talents through choir, instrumental music, and music festivals.', imageUrl: '/images/DSC_5501.jpg' },
+  { _id: 'sl-11', title: 'Environmental Club', category: 'activities', description: 'Promoting environmental awareness through tree planting, recycling, and conservation activities.', imageUrl: '/images/DSC_5728.jpg' },
+  { _id: 'sl-12', title: 'Founders Day', category: 'traditions', description: 'Commemorating the founding of our school with special ceremonies and celebrations.', imageUrl: '/images/DSC_5463.jpg' },
+];
+
 const categoryColors = {
   sports: "#ef4444",
   clubs: "#3b82f6",
@@ -52,7 +68,12 @@ export default function StudentLife() {
         setError("");
         // Fetch from /api/student-life endpoint
         const data = await get("/api/student-life");
-        const itemList = Array.isArray(data) ? data : (data.items || []);
+        let itemList = Array.isArray(data) ? data : (data.items || []);
+        
+        // Fallback: use default items if API returns empty
+        if (itemList.length === 0) {
+          itemList = defaultStudentLifeItems;
+        }
         
         // Organize by category
         const organized = {
@@ -67,7 +88,17 @@ export default function StudentLife() {
         setItems(itemList);
       } catch (err) {
         console.error("StudentLife fetch error:", err);
-        setError("Failed to load student life items.");
+        // Fallback: use default items on error
+        const itemList = defaultStudentLifeItems;
+        const organized = {
+          all: itemList,
+          sports: itemList.filter((item) => item.category === "sports"),
+          clubs: itemList.filter((item) => item.category === "clubs"),
+          activities: itemList.filter((item) => item.category === "activities"),
+          traditions: itemList.filter((item) => item.category === "traditions"),
+        };
+        setCategories(organized);
+        setItems(itemList);
       } finally {
         setLoading(false);
       }
@@ -98,6 +129,56 @@ export default function StudentLife() {
 
   return (
     <main className="page student-life-page" style={{ padding: "1rem 8px", textAlign: "left" }}>
+      {/* ================= HERO SECTION ================= */}
+      <div
+        className="student-life-hero"
+        style={{
+          position: "relative",
+          width: "100vw",
+          marginLeft: "50%",
+          transform: "translateX(-50%)",
+          minHeight: 380,
+          overflow: "hidden",
+          marginBottom: 30,
+          background: "url('/images/DSC_5384.jpg') center/cover no-repeat, linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.65))",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              maxWidth: 720,
+              width: "100%",
+              padding: "16px 20px",
+              borderRadius: 10,
+              backgroundColor: "rgba(0, 0, 0, 0.45)",
+              color: "#ffffff",
+              textAlign: "center",
+            }}
+          >
+            <h2 style={{ fontSize: "2rem", margin: "0 0 10px 0" }}>Student Life</h2>
+            <p style={{ fontSize: "1.1rem", margin: 0 }}>
+              Explore the vibrant life and activities at Kangaru Girls Senior School
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div style={{ marginBottom: "1.5rem" }}>
         <h1 style={{ marginBottom: "0.5rem", textAlign: "left" }}>Student Life</h1>
         <p style={{ margin: 0, textAlign: "left", color: "#666" }}>
