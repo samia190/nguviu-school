@@ -144,10 +144,11 @@ function saveBufferToDisk(buffer, filename, uploadsDir) {
 // ══════════════════════════════════════════════════════════════
 // Unified upload function: Cloudinary > S3 > Disk
 // All routes should use this for consistent behaviour
+// PRODUCTION CONSTRAINT: Cloudinary is required on Render (disk is ephemeral)
 // ══════════════════════════════════════════════════════════════
 /**
  * Upload a buffer to the best available storage backend.
- * Priority: Cloudinary → S3 → Disk
+ * Priority: Cloudinary → S3 → Disk (development only)
  * @param {Buffer} buffer
  * @param {string} filename - original filename
  * @param {string} mimetype
@@ -158,9 +159,27 @@ async function uploadBuffer(buffer, filename, mimetype, uploadsDir) {
   if (isCloudinaryEnabled()) {
     return uploadToCloudinary(buffer, filename, mimetype);
   }
+  
   if (isS3Enabled()) {
     return uploadBufferToS3(buffer, filename, mimetype);
   }
+
+  // PRODUCTION SAFETY: Render environment requires Cloudinary or S3
+  // Local disk storage is ephemeral on Render (deleted on dyno restart)
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "❌ FILE UPLOAD FAILED: Cloudinary or S3 not configured.\n" +
+      "On Render (production), file storage must use Cloudinary or S3.\n" +
+      "Local disk storage (/uploads/) is NOT persistent on Render.\n\n" +
+      "FIX: Set these environment variables in Render Dashboard:\n" +
+      "  CLOUDINARY_CLOUD_NAME\n" +
+      "  CLOUDINARY_API_KEY\n" +
+      "  CLOUDINARY_API_SECRET\n\n" +
+      "Get them from: https://console.cloudinary.com/settings/api"
+    );
+  }
+
+  // Development-only: fallback to disk
   const dir = uploadsDir || path.join(process.cwd(), "public", "uploads");
   return saveBufferToDisk(buffer, filename, dir);
 }
@@ -168,6 +187,7 @@ async function uploadBuffer(buffer, filename, mimetype, uploadsDir) {
 // ========== Helper to save video thumbnails ==========
 /**
  * Save a video thumbnail to storage (Cloudinary > S3 > Disk)
+ * Production uses Cloudinary or S3 only.
  * @param {Buffer} thumbnailBuffer
  * @param {string} thumbnailName
  * @param {string} uploadsDir
@@ -180,6 +200,15 @@ async function saveThumbnail(thumbnailBuffer, thumbnailName, uploadsDir) {
   if (isS3Enabled()) {
     return uploadBufferToS3(thumbnailBuffer, thumbnailName, "image/jpeg");
   }
+  
+  // Production safety check
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "❌ THUMBNAIL UPLOAD FAILED: Cloudinary or S3 not configured.\n" +
+      "Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in Render environment."
+    );
+  }
+  
   return saveBufferToDisk(thumbnailBuffer, thumbnailName, uploadsDir);
 }
 
