@@ -231,7 +231,7 @@ export default function StudentLifeManagement({ user }) {
                 src={formItem.imageUrl}
                 alt="Preview"
                 style={{ maxWidth: '200px', maxHeight: '120px', borderRadius: '4px', border: '1px solid #ddd' }}
-                onError={(e) => { e.target.style.display = 'none'; }}
+                onError={(e) => { if (e?.target) e.target.style.display = 'none'; }}
               />
             </div>
           )}

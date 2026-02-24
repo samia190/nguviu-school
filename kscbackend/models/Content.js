@@ -18,11 +18,23 @@ const attachmentSchema = new mongoose.Schema({
   // Relative URL (served by Express static middleware), e.g. "/uploads/file.pdf"
   url: { type: String, required: true },
 
-  // Full absolute URL, e.g. "http:///uploads/file.pdf"
+  // Full absolute URL, e.g. "https://kangarugirlsschool.onrender.com/uploads/file.pdf"
   downloadUrl: { type: String },
 
   // ========== ADDED: Video thumbnail URL ==========
   thumbnail: { type: String },
+  
+  // ========== ADDED: File extension for URL parsing ==========
+  extension: { 
+    type: String,
+    default: '',
+    validate: {
+      validator: function(v) {
+        // Extension should start with dot or be empty
+        return v === '' || /^\.[a-z0-9]+$/i.test(v);
+      }
+    }
+  },
 
   mimetype: { type: String },
   size: { type: Number },

@@ -127,14 +127,46 @@ export default function Gallery() {
   }, []);
 
   function absUrl(u) {
+    // ============================================================
+    // Convert relative/absolute URLs for gallery image display
+    // ============================================================
+    // 
+    // IMPORTANT: This function handles a database inconsistency
+    // where some gallery items were stored without file extensions.
+    // 
+    // Root cause: Database migration needed to add extensions
+    // Workaround: This function appends .jpg to URLs without extensions
+    // 
+    // TODO: After running migration scripts, this workaround
+    //       can be simplified to just return absUrl without extension logic
+    // ============================================================
+    
     if (!u) return "";
+    
+    // Already absolute URL (http/https), return as-is
     if (u.startsWith("http")) return u;
+    
     // Convert relative URLs to absolute URLs pointing to the backend
     const parsed = `${API_ORIGIN}${u.startsWith("/") ? u : "/" + u}`;
-    // Ensure URLs have file extensions for proper srcset parsing
-    if (!parsed.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i) && !parsed.includes('?')) {
+    
+    // ⚠️ WORKAROUND: Ensure URLs have file extensions for proper srcset parsing
+    // This is needed because some database items have URLs like:
+    // /uploads/gallery-1771837586892-DSC_5364 (missing .jpg)
+    // 
+    // The browser's srcset parser requires valid image extensions.
+    // If extension is missing, browser drops the image with warning:
+    // "Failed parsing 'srcset' attribute value"
+    // 
+    // Fix approach (in order of preference):
+    // 1. Run database migration to add extensions (recommended)
+    // 2. Update backend to include extensions when saving URLs
+    // 3. Use this frontend workaround (temporary - current state)
+    if (!parsed.match(/\.(jpg|jpeg|png|gif|webp|svg|mp4|webm|pdf)$/i) && !parsed.includes('?')) {
+      // Default to .jpg for media files without extensions
+      // This assumes most uploads are images; adjust as needed
       return `${parsed}.jpg`;
     }
+    
     return parsed;
   }
 

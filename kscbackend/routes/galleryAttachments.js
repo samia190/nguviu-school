@@ -157,10 +157,37 @@ router.post("/:id/attachments", upload.array("attachments", 100), optimizeMedia(
     const added = [];
     for (const f of req.files) {
       const uploaded = await uploadBuffer(f.buffer, f.originalname, f.mimetype, uploadsDir);
+      
+      // Extract file extension from original name or mimetype
+      let extension = '';
+      if (f.originalname && f.originalname.includes('.')) {
+        extension = '.' + f.originalname.split('.').pop().toLowerCase();
+      } else {
+        // Infer from mimetype if no extension in filename
+        const mimeToExt = {
+          'image/jpeg': '.jpg',
+          'image/png': '.png',
+          'image/gif': '.gif',
+          'image/webp': '.webp',
+          'image/svg+xml': '.svg',
+          'video/mp4': '.mp4',
+          'video/webm': '.webm',
+          'application/pdf': '.pdf'
+        };
+        extension = mimeToExt[f.mimetype] || '.bin';
+      }
+      
+      // Ensure URL has extension for proper srcset parsing
+      let url = uploaded.url;
+      if (!url.match(/\.(jpg|jpeg|png|gif|webp|svg|mp4|webm|pdf)(\?|$)/i)) {
+        url = url + extension;
+      }
+      
       const attachment = {
         originalName: f.originalname,
-        filename: uploaded.filename || uploaded.public_id || f.originalname,
-        url: uploaded.url,
+        filename: (uploaded.filename || uploaded.public_id || f.originalname) + extension,
+        url: url,
+        extension: extension,
         mimetype: f.mimetype,
         size: f.size || (f.buffer ? f.buffer.length : 0),
         uploadedAt: new Date(),

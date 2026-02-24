@@ -129,13 +129,13 @@ app.use("/uploads", cors(), express.static(uploadsDir, {
   etag: true,
   lastModified: true
 }));
-app.use("/downloads", express.static(downloadsDir, { 
+app.use("/downloads", cors(), express.static(downloadsDir, { 
   setHeaders: setStaticCacheHeaders,
   maxAge: '1w',
   etag: true,
   lastModified: true
 }));
-app.use("/images", express.static(imagesDir, { 
+app.use("/images", cors(), express.static(imagesDir, { 
   setHeaders: setStaticCacheHeaders,
   maxAge: '1y',
   etag: true,

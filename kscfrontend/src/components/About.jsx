@@ -57,7 +57,7 @@ export default function About({ user }) {
             type: 'principal',
             fullName: 'School Principal',
             title: 'Principal - Kangaru Girls School',
-            photoUrl: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/Principal.PNG',
+            photoUrl: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/Principal.jpg',
             remarks: 'Welcome to Kangaru Girls School. We are dedicated to nurturing excellence and developing well-rounded young women who will be leaders of tomorrow.'
           });
         }
@@ -66,7 +66,7 @@ export default function About({ user }) {
         // Prepare staff images for preloading
         const images = allStaff
           .map(person => ({
-            src: person.photoUrl || (person.type === 'principal' ? 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/Principal.PNG' : 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/DSC_5372.jpg')
+            src: person.photoUrl || (person.type === 'principal' ? 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/Principal.jpg' : 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/DSC_5372.jpg')
           }));
         setStaffImages(images);
       })
