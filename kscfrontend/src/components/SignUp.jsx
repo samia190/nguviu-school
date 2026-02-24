@@ -49,13 +49,13 @@ export default function SignUp({ onAuth }) {
     });
   };
 
-  // Preload images immediately
+  // Preload images immediately from Cloudinary
   useEffect(() => {
     const images = [
-      '/images/students/IMG_1641.JPG',
-      '/images/students/IMG_1651.JPG',
-      '/images/students/IMG_1424.JPG',
-      '/images/students/std 7.JPG'
+      'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/IMG_1641.JPG',
+      'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/IMG_1651.JPG',
+      'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/IMG_1424.JPG',
+      'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/student_7.JPG'
     ];
     images.forEach(src => {
       const img = new Image();
@@ -140,7 +140,7 @@ export default function SignUp({ onAuth }) {
         transition: 'opacity 1.5s ease-in-out'
       }}>
         <OptimizedImage 
-          src="/images/students/IMG_1641.JPG" 
+          src="https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/IMG_1641.JPG" 
           alt="Student" 
           priority={true}
           onLoad={handleImageLoad}

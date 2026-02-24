@@ -212,7 +212,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
               >
                 <OptimizedImage
-                  src="/header/MOF E.PNG"
+                  src="/header/MOF_E.PNG"
                   alt="Ministry of Education"
                   loading="lazy"
                   style={{ width: 80, height: 40, objectFit: "contain" }}
