@@ -865,8 +865,8 @@
       "mimetype": "image/jpg"
     },
     {
-      "originalName": "Principal.png",
-      "url": "https://res.cloudinary.com/ddm1dgws8/image/upload/v1771860105/kangaru/Principal.png",
+      "originalName": "Principal.PNG",
+      "url": "https://res.cloudinary.com/ddm1dgws8/image/upload/v1771860105/kangaru/Principal.PNG",
       "public_id": "kangaru/Principal",
       "width": 1024,
       "height": 1536,
@@ -994,7 +994,7 @@
       "https://res.cloudinary.com/ddm1dgws8/image/upload/v1771860078/kangaru/DSC_5882.jpg",
       "https://res.cloudinary.com/ddm1dgws8/image/upload/v1771860085/kangaru/DSC_5886.jpg",
       "https://res.cloudinary.com/ddm1dgws8/image/upload/v1771860099/kangaru/DSC_5892.jpg",
-      "https://res.cloudinary.com/ddm1dgws8/image/upload/v1771860105/kangaru/Principal.png"
+      "https://res.cloudinary.com/ddm1dgws8/image/upload/v1771860105/kangaru/Principal.PNG"
     ]
   }
 }

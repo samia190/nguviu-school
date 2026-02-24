@@ -22,7 +22,7 @@ if (-Not (Test-Path $frontendImages)) {
 }
 
 # Count images in backend
-$imageCount = (Get-ChildItem -Path $backendImages -Recurse -File -Include *.jpg,*.jpeg,*.png,*.gif,*.webp,*.svg).Count
+$imageCount = (Get-ChildItem -Path $backendImages -Recurse -File -Include *.jpg,*.jpeg,*.PNG,*.gif,*.webp,*.svg).Count
 Write-Host "Found $imageCount images in backend folder" -ForegroundColor Green
 
 if ($imageCount -eq 0) {
@@ -42,7 +42,7 @@ try {
 }
 
 # Verify copy
-$copiedCount = (Get-ChildItem -Path $frontendImages -Recurse -File -Include *.jpg,*.jpeg,*.png,*.gif,*.webp,*.svg).Count
+$copiedCount = (Get-ChildItem -Path $frontendImages -Recurse -File -Include *.jpg,*.jpeg,*.PNG,*.gif,*.webp,*.svg).Count
 Write-Host "✓ Verified: $copiedCount images in frontend folder" -ForegroundColor Green
 
 # Calculate total size

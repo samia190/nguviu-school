@@ -173,7 +173,7 @@ const optimizedSrc = getOptimizedImagePath('/images/students/IMG_1030.JPG');
 // Preload hero images on app mount:
 useEffect(() => {
   preloadCriticalImages([
-    '/images/Principal.png',
+    '/images/Principal.PNG',
     '/images/DSC_5372.jpg'
   ]);
 }, []);

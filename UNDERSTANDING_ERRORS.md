@@ -146,7 +146,7 @@ But if that's stored as absolute URL in database pointing to production→ same 
 Gallery: attachments[0].url = "https://kangarugirlsschool.onrender.com/uploads/file.jpg"
 StudentLife: imageUrl = "/images/old-file.jpg"
 Events: imageUrl = "https://kangarugirlsschool.onrender.com/uploads/file.jpg"
-Staff: photoUrl = "/images/staff/principal.png"
+Staff: photoUrl = "/images/staff/Principal.PNG"
 HomeNews: imageUrl = "https://kangarugirlsschool.onrender.com/uploads/file.jpg"
 ```
 
@@ -155,7 +155,7 @@ HomeNews: imageUrl = "https://kangarugirlsschool.onrender.com/uploads/file.jpg"
 Gallery: attachments[0].url = "/uploads/file.jpg"
 StudentLife: imageUrl = "/uploads/student-activity.jpg"
 Events: imageUrl = "/uploads/event-photo.jpg"
-Staff: photoUrl = "/uploads/staff/principal.png"
+Staff: photoUrl = "/uploads/staff/Principal.PNG"
 HomeNews: imageUrl = "/uploads/news-image.jpg"
 ```
 

@@ -184,13 +184,13 @@ BEFORE:
 Gallery.attachments[0].url = "https://kangarugirlsschool.onrender.com/uploads/file.jpg"
 StudentLife.imageUrl = "https://kangarugirlsschool.onrender.com/uploads/image.jpg"
 Events.imageUrl = "/images/event.jpg"
-Staff.photoUrl = "/images/staff/principal.png"
+Staff.photoUrl = "/images/staff/Principal.PNG"
 
 AFTER RUNNING NORMALIZATION SCRIPT:
 Gallery.attachments[0].url = "/uploads/file.jpg"
 StudentLife.imageUrl = "/uploads/image.jpg"
 Events.imageUrl = "/uploads/event.jpg"
-Staff.photoUrl = "/uploads/principal.png"
+Staff.photoUrl = "/uploads/Principal.PNG"
 
 (All relative, all pointing to same location)
 ```

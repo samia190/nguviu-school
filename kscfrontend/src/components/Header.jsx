@@ -93,7 +93,7 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
           )}
           <OptimizedImage
             alt="KANGARU GIRLS Logo"
-            src="/header/logo.png"
+            src="/header/logo.PNG"
             priority={true}
             style={{
               width: 50,

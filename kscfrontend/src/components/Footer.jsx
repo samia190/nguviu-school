@@ -159,7 +159,7 @@ export default function Footer() {
           >
             <OptimizedImage
               alt="kangaru girls logo"
-              src="/header/logo.png"
+              src="/header/logo.PNG"
               priority={true}
               style={{ width: 60, height: 60 }}
             />

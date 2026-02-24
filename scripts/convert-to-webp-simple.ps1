@@ -78,9 +78,9 @@ foreach ($dir in $directories) {
     Write-Host "-----------------------------------" -ForegroundColor Gray
     
     $files = if ($Recursive) {
-        Get-ChildItem -Path $dir -Recurse -Include *.jpg,*.jpeg,*.png,*.JPG,*.JPEG,*.PNG
+        Get-ChildItem -Path $dir -Recurse -Include *.jpg,*.jpeg,*.PNG,*.JPG,*.JPEG,*.PNG
     } else {
-        Get-ChildItem -Path $dir -Include *.jpg,*.jpeg,*.png,*.JPG,*.JPEG,*.PNG
+        Get-ChildItem -Path $dir -Include *.jpg,*.jpeg,*.PNG,*.JPG,*.JPEG,*.PNG
     }
     
     foreach ($file in $files) {

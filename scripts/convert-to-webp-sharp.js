@@ -12,7 +12,7 @@ const sharp = require('sharp');
 // Configuration
 const IMAGE_DIR = path.join(__dirname, '../kangaru girls-frontend/public/images');
 const WEBP_QUALITY = 85;
-const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG'];
+const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.PNG', '.JPG', '.JPEG', '.PNG'];
 
 let convertedCount = 0;
 let skippedCount = 0;

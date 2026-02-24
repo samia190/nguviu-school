@@ -56,7 +56,7 @@ async function processDirectory(dirPath) {
       const ext = path.extname(file.name).toLowerCase();
       
       // Only process JPG, JPEG, PNG files
-      if (['.jpg', '.jpeg', '.png'].includes(ext)) {
+      if (['.jpg', '.jpeg', '.PNG'].includes(ext)) {
         const webpPath = fullPath.replace(/\\.(jpg|jpeg|png)$/i, '.webp');
         
         // Skip if WebP already exists and is newer

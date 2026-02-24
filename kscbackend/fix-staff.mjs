@@ -17,7 +17,7 @@ async function fixStaff() {
       console.log(`Old photoUrl: ${staff.photoUrl}`);
       
       // Update to correct path
-      staff.photoUrl = "/uploads/staff/principal.png";
+      staff.photoUrl = "/uploads/staff/Principal.PNG";
       await staff.save();
       
       console.log(`New photoUrl: ${staff.photoUrl}`);

@@ -241,7 +241,7 @@ http://localhost:4000/uploads/news/1771763366596-DSC_5372.jpg
 http://localhost:4000/uploads/news/1771763684175-DSC_5364.jpg
 
 Staff images:
-http://localhost:4000/uploads/staff/1771766147928-ChatGPT_Image_Feb_20,_2026,_09_23_05_PM.png
+http://localhost:4000/uploads/staff/1771766147928-ChatGPT_Image_Feb_20,_2026,_09_23_05_PM.PNG
 
 Homework files:
 http://localhost:4000/uploads/homework/{filename}

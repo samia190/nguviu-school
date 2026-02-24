@@ -35,7 +35,7 @@ foreach ($dir in $imageDirectories) {
     Write-Host "----------------------------------------" -ForegroundColor Gray
     
     # Get all JPG and PNG files
-    $images = Get-ChildItem -Path $fullPath -Include *.jpg,*.JPG,*.jpeg,*.JPEG,*.png,*.PNG -Recurse
+    $images = Get-ChildItem -Path $fullPath -Include *.jpg,*.JPG,*.jpeg,*.JPEG,*.PNG,*.PNG -Recurse
     
     foreach ($image in $images) {
         $webpPath = [System.IO.Path]::ChangeExtension($image.FullName, ".webp")

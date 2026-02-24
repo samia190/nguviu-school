@@ -31,14 +31,14 @@ $publicPath = Join-Path $frontendPath "public"
 $imagesPath = Join-Path $publicPath "images"
 
 if (Test-Path $imagesPath) {
-    $imageCount = (Get-ChildItem -Path $imagesPath -Recurse -Include *.jpg,*.jpeg,*.png,*.JPG,*.JPEG,*.PNG | Measure-Object).Count
+    $imageCount = (Get-ChildItem -Path $imagesPath -Recurse -Include *.jpg,*.jpeg,*.PNG,*.JPG,*.JPEG,*.PNG | Measure-Object).Count
     Write-Host "Found $imageCount images to optimize" -ForegroundColor Cyan
     
     # Use squoosh to convert images
     Write-Host "Converting to WebP..." -ForegroundColor Yellow
     
     # Find all JPG/PNG files and convert them
-    Get-ChildItem -Path $imagesPath -Recurse -Include *.jpg,*.jpeg,*.png,*.JPG,*.JPEG,*.PNG | ForEach-Object {
+    Get-ChildItem -Path $imagesPath -Recurse -Include *.jpg,*.jpeg,*.PNG,*.JPG,*.JPEG,*.PNG | ForEach-Object {
         $webpPath = [System.IO.Path]::ChangeExtension($_.FullName, ".webp")
         
         if (-not (Test-Path $webpPath)) {

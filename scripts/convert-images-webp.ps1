@@ -19,7 +19,7 @@ $skippedCount = 0
 $errorCount = 0
 
 # Find all image files recursively
-$images = Get-ChildItem -Path $Path -Recurse -Include *.jpg,*.jpeg,*.png,*.JPG,*.JPEG,*.PNG
+$images = Get-ChildItem -Path $Path -Recurse -Include *.jpg,*.jpeg,*.PNG,*.JPG,*.JPEG,*.PNG
 
 Write-Host "Found $($images.Count) images to process" -ForegroundColor Yellow
 Write-Host ""

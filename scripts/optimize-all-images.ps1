@@ -49,7 +49,7 @@ foreach ($dir in $directories) {
     Write-Host "-----------------------------------" -ForegroundColor Gray
 
     # Find all image files
-    $imageFiles = Get-ChildItem -Path $dir -Recurse -Include *.jpg,*.jpeg,*.png,*.JPG,*.JPEG,*.PNG | 
+    $imageFiles = Get-ChildItem -Path $dir -Recurse -Include *.jpg,*.jpeg,*.PNG,*.JPG,*.JPEG,*.PNG | 
                   Where-Object { $_.Name -notlike "*.webp" }
 
     Write-Host "Found $($imageFiles.Count) images to process" -ForegroundColor Cyan

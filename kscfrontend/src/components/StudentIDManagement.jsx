@@ -128,7 +128,7 @@ export default function StudentIDManagement({ user }) {
 
   function downloadQRCode() {
     const link = document.createElement('a');
-    link.download = `${selectedStudent.admissionNumber}_QR.png`;
+    link.download = `${selectedStudent.admissionNumber}_QR.PNG`;
     link.href = qrCodeUrl;
     link.click();
   }

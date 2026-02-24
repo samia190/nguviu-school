@@ -77,8 +77,8 @@ kscbackend/public/uploads/
 
 **Files Saved (Verified):**
 ```
-✅ 1771766147928-ChatGPT_Image_Feb_20,_2026,_09_23_05_PM.png (2.3 MB) - 2/22/2026 4:15 PM
-✅ principal-margret-mbogo-1771766026860.png (2.3 MB) - 2/20/2026 9:23 PM
+✅ 1771766147928-ChatGPT_Image_Feb_20,_2026,_09_23_05_PM.PNG (2.3 MB) - 2/22/2026 4:15 PM
+✅ principal-margret-mbogo-1771766026860.PNG (2.3 MB) - 2/20/2026 9:23 PM
 ```
 
 **Display on Public Page:** ✅ YES

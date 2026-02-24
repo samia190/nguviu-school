@@ -2,7 +2,7 @@
 /**
  * Script to add Principal Ms Margret M. Mbogo to the database
  * Usage: npm run add:principal
- * Make sure principal image exists at: public/images/principal.jpg or principal.png
+ * Make sure principal image exists at: public/images/Principal.PNG or Principal.PNG
  */
 
 import mongoose from "mongoose";
@@ -51,8 +51,8 @@ async function addPrincipal() {
     // Look for principal image
     const backendPath = path.join(__dirname, "..");
     const imagePaths = [
-      path.join(backendPath, "public", "images", "principal.jpg"),
-      path.join(backendPath, "public", "images", "principal.png"),
+      path.join(backendPath, "public", "images", "Principal.PNG"),
+      path.join(backendPath, "public", "images", "Principal.PNG"),
       path.join(backendPath, "public", "images", "principal.jpeg"),
     ];
 
@@ -83,8 +83,8 @@ async function addPrincipal() {
       console.log(`✅ Image copied to: ${photoUrl}`);
     } else {
       console.log("⚠️  No principal image found. Add image at:");
-      console.log("   - public/images/principal.jpg");
-      console.log("   - public/images/principal.png");
+      console.log("   - public/images/Principal.PNG");
+      console.log("   - public/images/Principal.PNG");
       console.log("   - public/images/principal.jpeg");
       console.log("\n   Continuing without image...");
     }

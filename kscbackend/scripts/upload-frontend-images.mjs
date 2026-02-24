@@ -39,7 +39,7 @@ async function uploadFrontendImagesToGallery() {
 
     const imageFiles = fs.readdirSync(frontendImagesDir).filter(file => {
       const ext = path.extname(file).toLowerCase();
-      return ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext);
+      return ['.jpg', '.jpeg', '.PNG', '.webp', '.gif'].includes(ext);
     });
 
     console.log(`📸 Found ${imageFiles.length} images`);
@@ -121,7 +121,7 @@ function getMimeType(filename) {
   const mimeTypes = {
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
-    '.png': 'image/png',
+    '.PNG': 'image/png',
     '.webp': 'image/webp',
     '.gif': 'image/gif'
   };

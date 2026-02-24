@@ -1205,7 +1205,7 @@ function FileUploadField({ label, name, required, file, onChange }) {
         <input
           type="file"
           name={name}
-          accept=".pdf,.jpg,.jpeg,.png"
+          accept=".pdf,.jpg,.jpeg,.PNG"
           onChange={onChange}
           required={required}
           style={styles.fileInput}

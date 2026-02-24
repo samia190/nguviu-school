@@ -63,7 +63,7 @@ function copyImage(filename) {
     filename: safe,
     originalName: filename,
     size: fs.statSync(src).size,
-    mimetype: filename.endsWith(".png") ? "image/png" : "image/jpeg",
+    mimetype: filename.endsWith(".PNG") ? "image/png" : "image/jpeg",
   };
 }
 

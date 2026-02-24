@@ -17,7 +17,7 @@ const projectRoot = path.resolve(__dirname, "..");
 const publicDir = path.join(projectRoot, "public");
 const outBase = path.join(publicDir, ".optimized");
 
-const IMAGE_EXTS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
+const IMAGE_EXTS = new Set([".jpg", ".jpeg", ".PNG", ".webp"]);
 const VIDEO_EXTS = new Set([".mp4", ".webm", ".mov", ".mkv", ".avi"]);
 
 const env = {
@@ -126,9 +126,9 @@ async function optimizeImage(absPath) {
     await img
       .jpeg({ quality: env.imageQuality, mozjpeg: true })
       .toFile(destAbs);
-  } else if (ext === ".png") {
+  } else if (ext === ".PNG") {
     await img
-      .png({ compressionLevel: 9, adaptiveFiltering: true })
+      .PNG({ compressionLevel: 9, adaptiveFiltering: true })
       .toFile(destAbs);
   } else if (ext === ".webp") {
     // Preserve webp but recompress to configured quality
@@ -146,7 +146,7 @@ async function optimizeImage(absPath) {
 
 async function maybeTinifyBuffer(buffer, ext) {
   if (!env.tinifyKey) return null;
-  if (ext !== ".png" && ext !== ".jpg" && ext !== ".jpeg") return null;
+  if (ext !== ".PNG" && ext !== ".jpg" && ext !== ".jpeg") return null;
 
   // Lazy-load tinify only when needed (keeps local installs simpler)
   if (!_tinify) {

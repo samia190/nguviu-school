@@ -15,8 +15,8 @@ NEWS UPLOADS: kscbackend/public/uploads/news/
 └── 1771764027727-DSC_5353.jpg (1.5 MB) ✅ EXISTS
 
 STAFF UPLOADS: kscbackend/public/uploads/staff/
-├── 1771766147928-ChatGPT_Image_Feb_20,_2026,_09_23_05_PM.png (2.3 MB) ✅ EXISTS
-└── principal-margret-mbogo-1771766026860.png (2.3 MB) ✅ EXISTS
+├── 1771766147928-ChatGPT_Image_Feb_20,_2026,_09_23_05_PM.PNG (2.3 MB) ✅ EXISTS
+└── principal-margret-mbogo-1771766026860.PNG (2.3 MB) ✅ EXISTS
 
 HOMEWORK UPLOADS: kscbackend/public/uploads/homework/
 └── (Ready for uploads - tested route configured)
@@ -268,8 +268,8 @@ kscbackend/
 │       │   ├── 1771763734070-DSC_5364_(1).jpg ✅ (1.4 MB)
 │       │   └── 1771764027727-DSC_5353.jpg ✅ (1.5 MB)
 │       ├── staff/
-│       │   ├── 1771766147928-ChatGPT_Image_Feb_20,_2026,_09_23_05_PM.png ✅ (2.3 MB)
-│       │   └── principal-margret-mbogo-1771766026860.png ✅ (2.3 MB)
+│       │   ├── 1771766147928-ChatGPT_Image_Feb_20,_2026,_09_23_05_PM.PNG ✅ (2.3 MB)
+│       │   └── principal-margret-mbogo-1771766026860.PNG ✅ (2.3 MB)
 │       ├── students/        ← Ready (per-student subdirs)
 │       ├── homework/        ← Ready (11 files uploaded)
 │       └── student-life/    ← Ready (0 files, awaiting uploads)

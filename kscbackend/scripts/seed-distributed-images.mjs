@@ -98,7 +98,7 @@ const availableImages = [
   "DSC_5882.jpg",
   "DSC_5886.jpg",
   "DSC_5892.jpg",
-  "Principal.png"
+  "Principal.PNG"
 ];
 
 const eventTitles = [

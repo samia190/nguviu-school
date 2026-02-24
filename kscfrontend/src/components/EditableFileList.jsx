@@ -32,7 +32,7 @@ function getExtension(file) {
 
 function isImage(file) {
   const ext = getExtension(file);
-  return [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"].includes(ext);
+  return [".jpg", ".jpeg", ".PNG", ".gif", ".webp", ".bmp"].includes(ext);
 }
 
 function isVideo(file) {

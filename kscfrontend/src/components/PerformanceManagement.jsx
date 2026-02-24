@@ -267,7 +267,7 @@ export default function PerformanceManagement({ user }) {
       return;
     }
     if (!isValidUrl(newChart.url)) {
-      alert("Please enter a valid URL (e.g., https://example.com/chart.png or /files/chart.png)");
+      alert("Please enter a valid URL (e.g., https://example.com/chart.PNG or /files/chart.PNG)");
       return;
     }
     const item = { id: uid("chart"), ...newChart };

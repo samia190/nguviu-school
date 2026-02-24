@@ -8,7 +8,7 @@ function toWebp(src) {
   const query = qIndex >= 0 ? s.slice(qIndex) : "";
 
   const lower = base.toLowerCase();
-  if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png")) {
+  if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".PNG")) {
     return base.replace(/\.(jpe?g|png)$/i, ".webp") + query;
   }
   return null;
