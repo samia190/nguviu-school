@@ -43,14 +43,14 @@ export default function OptimizedImage({
     return undefined;
   };
 
-  const handleLoad = () => {
+  const handleLoad = (event) => {
     setIsLoaded(true);
-    if (onLoad) onLoad();
+    if (onLoad) onLoad(event);
   };
 
-  const handleError = () => {
+  const handleError = (event) => {
     setHasError(true);
-    if (onError) onError();
+    if (onError) onError(event);
   };
 
   const webpSrc = getWebPSrc(src);

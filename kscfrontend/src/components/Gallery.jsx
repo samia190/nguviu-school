@@ -130,7 +130,12 @@ export default function Gallery() {
     if (!u) return "";
     if (u.startsWith("http")) return u;
     // Convert relative URLs to absolute URLs pointing to the backend
-    return `${API_ORIGIN}${u.startsWith("/") ? u : "/" + u}`;
+    const parsed = `${API_ORIGIN}${u.startsWith("/") ? u : "/" + u}`;
+    // Ensure URLs have file extensions for proper srcset parsing
+    if (!parsed.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i) && !parsed.includes('?')) {
+      return `${parsed}.jpg`;
+    }
+    return parsed;
   }
 
   useEffect(() => {
