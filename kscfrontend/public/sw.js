@@ -74,7 +74,12 @@ self.addEventListener('fetch', (event) => {
         return cachedResponse;
       }
 
-      return fetch(request).then((response) => {
+      return fetch(request).catch((error) => {
+        // Handle CORS or network errors for cross-origin resources
+        console.warn('[SW] Fetch failed for:', request.url, error);
+        // Try to return cached version if available
+        return caches.match(request) || Promise.reject(error);
+      }).then((response) => {
         // Don't cache non-successful responses
         if (!response || response.status !== 200) {
           return response;

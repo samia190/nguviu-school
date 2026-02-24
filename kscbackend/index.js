@@ -123,7 +123,7 @@ const setStaticCacheHeaders = (res, path) => {
 };
 
 // Serve static folders with caching
-app.use("/uploads", express.static(uploadsDir, { 
+app.use("/uploads", cors(), express.static(uploadsDir, { 
   setHeaders: setStaticCacheHeaders,
   maxAge: '1y',
   etag: true,
