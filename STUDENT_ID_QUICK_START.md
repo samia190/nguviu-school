@@ -3,7 +3,7 @@
 ## ✅ What Was Created
 
 ### **Highly Secure Student ID System with QR Codes**
-
+j
 **Security Features:**
 - 🔐 Cryptographic HMAC-SHA256 signatures
 - ⏰ 2-minute expiration (prevents screenshots)
