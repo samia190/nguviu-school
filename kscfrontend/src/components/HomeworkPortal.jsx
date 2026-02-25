@@ -11,8 +11,17 @@ export default function HomeworkPortal() {
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [selectedContentType, setSelectedContentType] = useState("all");
 
-  const classes = ["Form 1", "Form 2", "Form 3", "Form 4"];
-  const subjects = ["Mathematics", "English", "Science", "History", "Geography", "Kiswahili", "Arts", "Physical Education"];
+  const classes = ["Grade 10", "Grade 11", "Grade 12", "Form 3", "Form 4"];
+  const subjects = [
+    "Mathematics", "English", "Kiswahili",
+    "Biology", "Physics", "Chemistry",
+    "History & Citizenship", "Geography",
+    "Computer Science", "Business Studies",
+    "Agriculture", "Home Science",
+    "Art & Design", "Music", "French", "German",
+    "CRE", "IRE", "Health Education",
+    "Physical Education & Sports", "Life Skills"
+  ];
   const contentTypes = [
     { value: "assignment", label: "📋 Assignment", color: "#FF6B6B" },
     { value: "exam", label: "📝 Exam", color: "#4ECDC4" },

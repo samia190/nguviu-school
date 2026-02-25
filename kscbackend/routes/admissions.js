@@ -3,28 +3,13 @@ import express from "express";
 import Admission from "../models/Admission.js";
 import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { uploadBuffer, deleteFile } from "../utils/storage.js";
 
 const router = express.Router();
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "admissions");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
-    cb(null, "adm-" + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({
-  storage: storage,
+// Configure multer for memory storage (Cloudinary upload)
+const mem = multer({
+  storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
     const allowedTypes = [
       'application/pdf',
@@ -43,7 +28,7 @@ const upload = multer({
 });
 
 // File fields for admission form
-const admissionUploadFields = upload.fields([
+const admissionUploadFields = mem.fields([
   { name: 'birthCertificate', maxCount: 1 },
   { name: 'medicalCertificate', maxCount: 1 },
   { name: 'leavingCertificate', maxCount: 1 },
@@ -62,18 +47,25 @@ router.post("/apply", admissionUploadFields, async (req, res) => {
   try {
     const data = req.body;
     
-    // Process uploaded files
+    // Process uploaded files — upload to Cloudinary
     const fileFields = [
       'birthCertificate', 'medicalCertificate', 'leavingCertificate',
       'baptismCertificate', 'passportPhoto1', 'passportPhoto2',
       'transferLetter', 'transcript', 'certificate'
     ];
     
-    fileFields.forEach(field => {
+    for (const field of fileFields) {
       if (req.files && req.files[field] && req.files[field][0]) {
-        data[field] = `/uploads/admissions/${req.files[field][0].filename}`;
+        const f = req.files[field][0];
+        try {
+          const result = await uploadBuffer(f.buffer, f.originalname, f.mimetype);
+          data[field] = result.url;
+        } catch (uploadErr) {
+          console.error(`Failed to upload ${field}:`, uploadErr);
+          // Continue — field will be empty
+        }
       }
-    });
+    }
     
     // Convert date string to Date object
     if (data.dateOfBirth) {
@@ -98,16 +90,9 @@ router.post("/apply", admissionUploadFields, async (req, res) => {
   } catch (err) {
     console.error("Admission application error:", err);
     
-    // Clean up uploaded files on error
-    if (req.files) {
-      Object.values(req.files).flat().forEach(file => {
-        try {
-          fs.unlinkSync(file.path);
-        } catch (e) {
-          console.error("Failed to delete file:", e);
-        }
-      });
-    }
+    // No local file cleanup needed — files are in Cloudinary
+    // Cloudinary uploads that succeeded before the error are orphaned
+    // but this is acceptable for admission documents
     
     return res.status(500).json({ 
       ok: false,
@@ -169,7 +154,7 @@ router.get("/", requireRole('admin'), async (req, res) => {
     
     const total = await Admission.countDocuments(query);
     
-    return res.json(admissions);
+    return res.json({ admissions, total });
     
   } catch (err) {
     console.error("Get admissions error:", err);
@@ -277,25 +262,22 @@ router.delete("/:id", requireRole('admin'), async (req, res) => {
       return res.status(404).json({ error: "Admission not found" });
     }
     
-    // Delete associated files
+    // Delete associated files from Cloudinary
     const fileFields = [
       'birthCertificate', 'medicalCertificate', 'leavingCertificate',
       'baptismCertificate', 'passportPhoto1', 'passportPhoto2',
       'transferLetter', 'transcript', 'certificate'
     ];
     
-    fileFields.forEach(field => {
+    for (const field of fileFields) {
       if (admission[field]) {
-        const filePath = path.join(process.cwd(), "public", admission[field]);
         try {
-          if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-          }
+          await deleteFile(admission[field]);
         } catch (e) {
-          console.error("Failed to delete file:", e);
+          console.error("Failed to delete file from cloud:", e);
         }
       }
-    });
+    }
     
     await Admission.findByIdAndDelete(req.params.id);
     

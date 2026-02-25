@@ -1,783 +1,702 @@
-import { useEffect, useMemo, useState } from "react";
-import { safePath } from "../utils/paths";
-import LazyImage from "../components/LazyImage";
-import { get, patch, upload } from "../utils/api";
+import { useEffect, useState } from "react";
+import { get, put } from "../utils/api";
 
-/**
- * This management page stores EVERYTHING inside /api/content/performance sections,
- * so you don't need new backend endpoints for CRUD records.
- *
- * Saved sections used:
- * - title, intro, resultsHeading, results (array)
- * - highlightsHeading, highlights
- * - reportsHeading, reports (array)
- * - chartsHeading, charts (array)
- *
- * Each result row: { id, year, meanGrade, topScore, passRate, visible }
- * Each report: { id, name, url, visible }
- * Each chart: { id, name, url, visible }
- */
+const CATEGORIES = [
+  "Academic Excellence",
+  "KCSE Results",
+  "National Rankings",
+  "Co-curricular",
+  "Competitions",
+  "University Admissions",
+  "Other",
+];
 
-const DEFAULTS = {
-  title: "School Performance",
-  intro:
-    "We are proud of our students' achievements and continually strive for academic excellence. Our performance reflects the dedication of our learners, teachers, and parents.",
-  resultsHeading: "Recent Exam Results",
-  results: [
-    {
-      id: "r-2024",
-      year: "2024",
-      meanGrade: "B+",
-      topScore: "A (84 points)",
-      passRate: "92%",
-      visible: true,
-    },
-    {
-      id: "r-2023",
-      year: "2023",
-      meanGrade: "B",
-      topScore: "A- (78 points)",
-      passRate: "88%",
-      visible: true,
-    },
-    {
-      id: "r-2022",
-      year: "2022",
-      meanGrade: "B-",
-      topScore: "B+ (72 points)",
-      passRate: "85%",
-      visible: true,
-    },
-  ],
-  highlightsHeading: "Progress Highlights",
-  highlights:
-    "• Consistent improvement in mean grade over the past 3 years\n• Over 90% of students qualify for university admission\n• Strong performance in STEM subjects and languages",
-  reportsHeading: "Downloadable Reports",
-  reports: [
-    { id: "rep-2021", name: "2021 Performance Report", url: "/files/downloads/Biology", visible: true },
-    { id: "rep-2023", name: "2023 Performance Report", url: "/files/performance-report-2023.pdf", visible: true },
-  ],
-  chartsHeading: "Charts / Images",
-  charts: [],
+const TERMS = ["Term 1", "Term 2", "Term 3", "Annual"];
+
+const tabStyle = (active) => ({
+  padding: "10px 20px",
+  border: "none",
+  borderBottom: active ? "3px solid #667eea" : "3px solid transparent",
+  background: active ? "#f0f4ff" : "transparent",
+  color: active ? "#667eea" : "#6b7280",
+  fontWeight: active ? "700" : "500",
+  cursor: "pointer",
+  fontSize: "14px",
+  transition: "all 0.2s",
+});
+
+const cardStyle = {
+  border: "1px solid #e5e7eb",
+  borderRadius: 8,
+  padding: 20,
+  marginBottom: 20,
 };
 
-function safeArray(val) {
-  return Array.isArray(val) ? val : [];
-}
+const inputStyle = {
+  width: "100%",
+  padding: "8px 12px",
+  border: "1px solid #d1d5db",
+  borderRadius: 6,
+  fontSize: 14,
+  marginTop: 4,
+};
 
-function isValidUrl(url) {
-  if (!url) return false;
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    // Check if it's a relative path
-    return url.startsWith('/');
-  }
-}
+const btnPrimary = {
+  padding: "8px 18px",
+  background: "#667eea",
+  color: "#fff",
+  border: "none",
+  borderRadius: 6,
+  cursor: "pointer",
+  fontWeight: 600,
+  fontSize: 14,
+};
 
-function uid(prefix = "id") {
-  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
+const btnDanger = {
+  padding: "6px 14px",
+  background: "#ef4444",
+  color: "#fff",
+  border: "none",
+  borderRadius: 6,
+  cursor: "pointer",
+  fontWeight: 600,
+  fontSize: 13,
+};
 
-function toCSV(rows) {
-  const header = ["Year", "KCSE Mean Grade", "Top Score", "Pass Rate", "Visible"];
-  const escape = (s) => `"${String(s ?? "").replace(/"/g, '""')}"`;
-  const body = rows.map((r) =>
-    [r.year, r.meanGrade, r.topScore, r.passRate, r.visible ? "Yes" : "No"].map(escape).join(",")
-  );
-  return [header.map(escape).join(","), ...body].join("\n");
-}
+const btnSuccess = {
+  padding: "8px 18px",
+  background: "#10b981",
+  color: "#fff",
+  border: "none",
+  borderRadius: 6,
+  cursor: "pointer",
+  fontWeight: 600,
+  fontSize: 14,
+};
 
-function downloadText(filename, text, mime = "text/plain") {
-  const blob = new Blob([text], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-export default function PerformanceManagement({ user }) {
-  // Admin check removed - this component is already inside admin-only dashboard
-
+export default function PerformanceManagement() {
+  const [tab, setTab] = useState("settings");
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const [content, setContent] = useState(DEFAULTS);
-
-  // Forms
-  const [newResult, setNewResult] = useState({
-    year: "",
-    meanGrade: "",
-    topScore: "",
-    passRate: "",
-    visible: true,
+  // KCSE form
+  const [newKcse, setNewKcse] = useState({ year: "", meanScore: "", meanGrade: "" });
+  // Achievement form
+  const [newAchievement, setNewAchievement] = useState({
+    year: new Date().getFullYear(),
+    term: "Annual",
+    category: "Other",
+    title: "",
+    description: "",
+    metric: "",
+    ranking: "",
+    published: true,
   });
-
-  const [newReport, setNewReport] = useState({ name: "", url: "", visible: true });
-  const [newChart, setNewChart] = useState({ name: "", url: "", visible: true });
+  // Report form
+  const [newReport, setNewReport] = useState({ name: "", url: "" });
 
   useEffect(() => {
-    let mounted = true;
-    setLoading(true);
-    get("/api/content/performance")
-      .then((data) => {
-        if (!mounted) return;
-
-        const merged = {
-          ...DEFAULTS,
-          ...(data || {}),
-          results: safeArray(data?.results).length ? data.results : DEFAULTS.results,
-          reports: safeArray(data?.reports).length ? data.reports : DEFAULTS.reports,
-          charts: safeArray(data?.charts),
-        };
-
-        // ensure each item has id + visible
-        merged.results = merged.results.map((r) => ({
-          id: r.id || uid("r"),
-          year: r.year ?? "",
-          meanGrade: r.meanGrade ?? "",
-          topScore: r.topScore ?? "",
-          passRate: r.passRate ?? "",
-          visible: typeof r.visible === "boolean" ? r.visible : true,
-        }));
-
-        merged.reports = merged.reports.map((f) => ({
-          id: f.id || uid("rep"),
-          name: f.name ?? "",
-          url: f.url ?? "",
-          visible: typeof f.visible === "boolean" ? f.visible : true,
-        }));
-
-        merged.charts = merged.charts.map((c) => ({
-          id: c.id || uid("chart"),
-          name: c.name ?? "",
-          url: c.url ?? "",
-          visible: typeof c.visible === "boolean" ? c.visible : true,
-        }));
-
-        setContent(merged);
-        setError("");
-      })
-      .catch((e) => {
-        console.error(e);
-        setError("Failed to load performance content.");
-      })
-      .finally(() => setLoading(false));
-
-    return () => {
-      mounted = false;
-    };
+    loadData();
   }, []);
 
-  async function saveSection(section, value) {
-    setSaving(true);
+  async function loadData() {
+    setLoading(true);
     try {
-      await patch(`/api/content/performance/${section}`, { value });
-      setContent((prev) => ({ ...prev, [section]: value }));
+      const result = await get("/api/performance-page/admin");
+      setData(result);
+      setError("");
     } catch (e) {
-      console.error("Save failed:", e);
-      alert("Failed to save content.");
+      console.error(e);
+      setError("Failed to load performance page data.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function saveAll(updates) {
+    setSaving(true);
+    setSuccess("");
+    try {
+      const result = await put("/api/performance-page", updates);
+      setData(result);
+      setSuccess("Saved successfully!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (e) {
+      console.error(e);
+      alert("Failed to save: " + (e.message || "Unknown error"));
     } finally {
       setSaving(false);
     }
   }
 
-  // ===== Results CRUD =====
-  async function addResult() {
-    if (!newResult.year.trim()) {
-      alert("Year is required.");
-      return;
-    }
-    // Validate year is numeric (2000-current year)
-    const year = parseInt(newResult.year);
-    if (isNaN(year) || year < 2000 || year > new Date().getFullYear() + 1) {
-      alert("Year must be between 2000 and next year");
-      return;
-    }
-    if (!newResult.meanGrade.trim()) {
-      alert("Mean grade is required");
-      return;
-    }
-    if (newResult.meanGrade.length > 10) {
-      alert("Mean grade too long");
-      return;
-    }
-    const row = { id: uid("r"), ...newResult };
-    const next = [...safeArray(content.results), row];
-    await saveSection("results", next);
-    setNewResult({ year: "", meanGrade: "", topScore: "", passRate: "", visible: true });
+  function updateField(field, value) {
+    setData((prev) => ({ ...prev, [field]: value }));
   }
 
-  async function updateResult(id, patchObj) {
-    const next = safeArray(content.results).map((r) => (r.id === id ? { ...r, ...patchObj } : r));
-    await saveSection("results", next);
+  // ===== KCSE CRUD =====
+  function addKcseResult() {
+    const year = parseInt(newKcse.year);
+    const meanScore = parseFloat(newKcse.meanScore);
+    if (!year || year < 2000 || year > new Date().getFullYear() + 1) {
+      alert("Enter a valid year (2000 - next year)");
+      return;
+    }
+    if (isNaN(meanScore) || meanScore < 0 || meanScore > 12) {
+      alert("Enter a valid mean score (0 - 12)");
+      return;
+    }
+    if (!newKcse.meanGrade.trim()) {
+      alert("Enter the mean grade (e.g. C+, B-)");
+      return;
+    }
+    // Check duplicate year
+    if ((data.kcseResults || []).some((r) => r.year === year)) {
+      alert("A record for year " + year + " already exists. Edit or delete it first.");
+      return;
+    }
+    const updated = [...(data.kcseResults || []), { year, meanScore, meanGrade: newKcse.meanGrade.trim() }];
+    updated.sort((a, b) => a.year - b.year);
+    saveAll({ kcseResults: updated });
+    setNewKcse({ year: "", meanScore: "", meanGrade: "" });
   }
 
-  async function deleteResult(id) {
-    if (!confirm("Delete this performance record?")) return;
-    const next = safeArray(content.results).filter((r) => r.id !== id);
-    await saveSection("results", next);
+  function deleteKcseResult(year) {
+    if (!confirm(`Delete KCSE record for ${year}?`)) return;
+    const updated = (data.kcseResults || []).filter((r) => r.year !== year);
+    saveAll({ kcseResults: updated });
+  }
+
+  function updateKcseResult(year, field, value) {
+    const updated = (data.kcseResults || []).map((r) =>
+      r.year === year ? { ...r, [field]: field === "meanScore" ? parseFloat(value) || 0 : value } : r
+    );
+    setData((prev) => ({ ...prev, kcseResults: updated }));
+  }
+
+  // ===== Achievements CRUD =====
+  function addAchievement() {
+    if (!newAchievement.title.trim()) {
+      alert("Title is required");
+      return;
+    }
+    const updated = [...(data.achievements || []), { ...newAchievement }];
+    saveAll({ achievements: updated });
+    setNewAchievement({
+      year: new Date().getFullYear(),
+      term: "Annual",
+      category: "Other",
+      title: "",
+      description: "",
+      metric: "",
+      ranking: "",
+      published: true,
+    });
+  }
+
+  function deleteAchievement(index) {
+    if (!confirm("Delete this achievement?")) return;
+    const updated = (data.achievements || []).filter((_, i) => i !== index);
+    saveAll({ achievements: updated });
+  }
+
+  function updateAchievement(index, field, value) {
+    const updated = (data.achievements || []).map((a, i) =>
+      i === index ? { ...a, [field]: value } : a
+    );
+    setData((prev) => ({ ...prev, achievements: updated }));
   }
 
   // ===== Reports CRUD =====
-  async function addReport() {
-    if (!newReport.name.trim()) {
-      alert("Report name is required");
+  function addReport() {
+    if (!newReport.name.trim() || !newReport.url.trim()) {
+      alert("Both name and URL are required");
       return;
     }
-    if (!newReport.url.trim()) {
-      alert("Report URL is required");
-      return;
-    }
-    if (!isValidUrl(newReport.url)) {
-      alert("Please enter a valid URL (e.g., https://example.com/report.pdf or /files/report.pdf)");
-      return;
-    }
-    const file = { id: uid("rep"), ...newReport };
-    const next = [...safeArray(content.reports), file];
-    await saveSection("reports", next);
-    setNewReport({ name: "", url: "", visible: true });
+    const updated = [...(data.reports || []), { ...newReport }];
+    saveAll({ reports: updated });
+    setNewReport({ name: "", url: "" });
   }
 
-  async function updateReport(id, patchObj) {
-    const next = safeArray(content.reports).map((f) => (f.id === id ? { ...f, ...patchObj } : f));
-    await saveSection("reports", next);
+  function deleteReport(index) {
+    if (!confirm("Delete this report?")) return;
+    const updated = (data.reports || []).filter((_, i) => i !== index);
+    saveAll({ reports: updated });
   }
 
-  async function deleteReport(id) {
-    if (!confirm("Delete this report link?")) return;
-    const next = safeArray(content.reports).filter((f) => f.id !== id);
-    await saveSection("reports", next);
-  }
-
-  // ===== Charts/Images CRUD =====
-  async function addChart() {
-    if (!newChart.name.trim()) {
-      alert("Chart name is required");
-      return;
-    }
-    if (!newChart.url.trim()) {
-      alert("Chart URL is required");
-      return;
-    }
-    if (!isValidUrl(newChart.url)) {
-      alert("Please enter a valid URL (e.g., https://example.com/chart.PNG or /files/chart.PNG)");
-      return;
-    }
-    const item = { id: uid("chart"), ...newChart };
-    const next = [...safeArray(content.charts), item];
-    await saveSection("charts", next);
-    setNewChart({ name: "", url: "", visible: true });
-  }
-
-  async function updateChart(id, patchObj) {
-    const next = safeArray(content.charts).map((c) => (c.id === id ? { ...c, ...patchObj } : c));
-    await saveSection("charts", next);
-  }
-
-  async function deleteChart(id) {
-    if (!confirm("Delete this chart/image item?")) return;
-    const next = safeArray(content.charts).filter((c) => c.id !== id);
-    await saveSection("charts", next);
-  }
-
-  // Optional upload attempt (only if your backend supports POST /api/upload)
-  async function uploadFileToServer(file) {
-    // This is safe: if endpoint doesn't exist, it will fail and we fallback to manual URL.
-    const form = new FormData();
-    form.append("file", file);
-    const data = await upload("/api/upload", form);
-    if (!data?.url) throw new Error("Upload response missing url");
-    return data.url;
-  }
-
-  async function handleChartFilePick(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    const validImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
-    if (!validImageTypes.includes(file.type)) {
-      alert("Please select a valid image file (JPG, PNG, WebP, GIF, or SVG)");
-      e.target.value = "";
-      return;
-    }
-
-    // Validate file size (max 10MB for images)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      alert("Image too large. Maximum size is 10MB");
-      e.target.value = "";
-      return;
-    }
-
-    try {
-      const url = await uploadFileToServer(file);
-      setNewChart((prev) => ({ ...prev, url, name: prev.name || file.name }));
-    } catch (err) {
-      console.warn(err);
-      alert(
-        "Upload endpoint not available (or failed). You can still paste a hosted image URL (e.g. from your server, Drive, or CDN)."
-      );
-    } finally {
-      e.target.value = "";
-    }
-  }
-
-  const visibleResults = useMemo(
-    () => safeArray(content.results).filter((r) => r.visible !== false),
-    [content.results]
-  );
-
-  function exportCSV() {
-    const csv = toCSV(safeArray(content.results));
-    downloadText("performance-results.csv", csv, "text/csv");
-  }
-
-  function printToPDF() {
-    // Browser print dialog -> user can "Save as PDF"
-    window.print();
-  }
+  if (loading) return <p style={{ padding: 20, color: "#666" }}>Loading performance data…</p>;
+  if (!data) return <p style={{ padding: 20, color: "red" }}>{error || "No data available"}</p>;
 
   return (
     <section style={{ padding: 20 }}>
-      <h2>Performance Management</h2>
-      <p>Manage all content, records, files, and charts for the Performance page.</p>
+      <h2 style={{ marginTop: 0 }}>📊 Performance Management</h2>
+      <p style={{ color: "#6b7280" }}>Manage public school performance page content.</p>
 
-      {loading && <p style={{ color: "#555" }}>Loading performance data…</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {saving && <p style={{ color: "#555" }}>Saving…</p>}
+      {success && (
+        <p style={{ color: "#10b981", fontWeight: 600, background: "#ecfdf5", padding: "8px 14px", borderRadius: 6 }}>
+          ✅ {success}
+        </p>
+      )}
+      {saving && <p style={{ color: "#667eea" }}>Saving…</p>}
 
-      {!loading && (
-        <>
-          {/* ===== Page Text Content ===== */}
-          <div style={{ border: "1px solid #e5e5e5", borderRadius: 8, padding: 16, marginBottom: 18 }}>
-            <h3>Page Content</h3>
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 0, borderBottom: "1px solid #e5e7eb", marginBottom: 20, flexWrap: "wrap" }}>
+        {[
+          { key: "settings", label: "Page Settings" },
+          { key: "kcse", label: "KCSE Records" },
+          { key: "achievements", label: "Achievements" },
+          { key: "highlights", label: "Highlights" },
+          { key: "reports", label: "Reports" },
+        ].map((t) => (
+          <button key={t.key} style={tabStyle(tab === t.key)} onClick={() => setTab(t.key)}>
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-            <label style={{ display: "block", marginTop: 10 }}>
-              <strong>Title</strong>
-              <input
-                value={content.title || ""}
-                onChange={(e) => setContent((p) => ({ ...p, title: e.target.value }))}
-                onBlur={() => saveSection("title", content.title || "")}
-                style={{ width: "100%", padding: 8, marginTop: 6, borderRadius: 4, border: "1px solid #ccc" }}
-              />
-            </label>
+      {/* ===== TAB: Page Settings ===== */}
+      {tab === "settings" && (
+        <div style={cardStyle}>
+          <h3 style={{ marginTop: 0 }}>Page Settings</h3>
 
-            <label style={{ display: "block", marginTop: 12 }}>
-              <strong>Intro</strong>
-              <textarea
-                value={content.intro || ""}
-                onChange={(e) => setContent((p) => ({ ...p, intro: e.target.value }))}
-                onBlur={() => saveSection("intro", content.intro || "")}
-                rows={4}
-                style={{ width: "100%", padding: 8, marginTop: 6, borderRadius: 4, border: "1px solid #ccc" }}
-              />
-            </label>
+          <label style={{ display: "block", marginBottom: 12 }}>
+            <strong>Page Title</strong>
+            <input
+              value={data.title || ""}
+              onChange={(e) => updateField("title", e.target.value)}
+              style={inputStyle}
+            />
+          </label>
 
-            <label style={{ display: "block", marginTop: 12 }}>
-              <strong>Results Heading</strong>
-              <input
-                value={content.resultsHeading || ""}
-                onChange={(e) => setContent((p) => ({ ...p, resultsHeading: e.target.value }))}
-                onBlur={() => saveSection("resultsHeading", content.resultsHeading || "")}
-                style={{ width: "100%", padding: 8, marginTop: 6, borderRadius: 4, border: "1px solid #ccc" }}
-              />
-            </label>
+          <label style={{ display: "block", marginBottom: 12 }}>
+            <strong>Introduction</strong>
+            <textarea
+              value={data.intro || ""}
+              onChange={(e) => updateField("intro", e.target.value)}
+              rows={3}
+              style={{ ...inputStyle, resize: "vertical" }}
+            />
+          </label>
 
-            <label style={{ display: "block", marginTop: 12 }}>
-              <strong>Highlights Heading</strong>
-              <input
-                value={content.highlightsHeading || ""}
-                onChange={(e) => setContent((p) => ({ ...p, highlightsHeading: e.target.value }))}
-                onBlur={() => saveSection("highlightsHeading", content.highlightsHeading || "")}
-                style={{ width: "100%", padding: 8, marginTop: 6, borderRadius: 4, border: "1px solid #ccc" }}
-              />
-            </label>
+          <label style={{ display: "block", marginBottom: 12 }}>
+            <strong>Results Section Heading</strong>
+            <input
+              value={data.resultsHeading || ""}
+              onChange={(e) => updateField("resultsHeading", e.target.value)}
+              style={inputStyle}
+            />
+          </label>
 
-            <label style={{ display: "block", marginTop: 12 }}>
-              <strong>Highlights (use new lines for bullets)</strong>
-              <textarea
-                value={content.highlights || ""}
-                onChange={(e) => setContent((p) => ({ ...p, highlights: e.target.value }))}
-                onBlur={() => saveSection("highlights", content.highlights || "")}
-                rows={4}
-                style={{ width: "100%", padding: 8, marginTop: 6, borderRadius: 4, border: "1px solid #ccc" }}
-              />
-            </label>
+          <label style={{ display: "block", marginBottom: 12 }}>
+            <strong>Achievements Section Heading</strong>
+            <input
+              value={data.achievementsHeading || ""}
+              onChange={(e) => updateField("achievementsHeading", e.target.value)}
+              style={inputStyle}
+            />
+          </label>
 
-            <label style={{ display: "block", marginTop: 12 }}>
-              <strong>Reports Heading</strong>
-              <input
-                value={content.reportsHeading || ""}
-                onChange={(e) => setContent((p) => ({ ...p, reportsHeading: e.target.value }))}
-                onBlur={() => saveSection("reportsHeading", content.reportsHeading || "")}
-                style={{ width: "100%", padding: 8, marginTop: 6, borderRadius: 4, border: "1px solid #ccc" }}
-              />
-            </label>
+          <label style={{ display: "block", marginBottom: 12 }}>
+            <strong>Highlights Section Heading</strong>
+            <input
+              value={data.highlightsHeading || ""}
+              onChange={(e) => updateField("highlightsHeading", e.target.value)}
+              style={inputStyle}
+            />
+          </label>
 
-            <label style={{ display: "block", marginTop: 12 }}>
-              <strong>Charts Heading</strong>
-              <input
-                value={content.chartsHeading || "Charts / Images"}
-                onChange={(e) => setContent((p) => ({ ...p, chartsHeading: e.target.value }))}
-                onBlur={() => saveSection("chartsHeading", content.chartsHeading || "Charts / Images")}
-                style={{ width: "100%", padding: 8, marginTop: 6, borderRadius: 4, border: "1px solid #ccc" }}
-              />
-            </label>
-          </div>
+          <label style={{ display: "block", marginBottom: 16 }}>
+            <strong>Reports Section Heading</strong>
+            <input
+              value={data.reportsHeading || ""}
+              onChange={(e) => updateField("reportsHeading", e.target.value)}
+              style={inputStyle}
+            />
+          </label>
 
-          {/* ===== Results Table CRUD ===== */}
-          <div style={{ border: "1px solid #e5e5e5", borderRadius: 8, padding: 16, marginBottom: 18 }}>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-              <h3 style={{ margin: 0 }}>Performance Records</h3>
-              <button
-                onClick={exportCSV}
-                style={{ padding: "8px 12px", borderRadius: 6, border: "1px solid #ccc", cursor: "pointer" }}
-              >
-                Export CSV/Excel
-              </button>
-              <button
-                onClick={printToPDF}
-                style={{ padding: "8px 12px", borderRadius: 6, border: "1px solid #ccc", cursor: "pointer" }}
-              >
-                Print to PDF
-              </button>
-            </div>
+          <button
+            style={btnPrimary}
+            onClick={() =>
+              saveAll({
+                title: data.title,
+                intro: data.intro,
+                resultsHeading: data.resultsHeading,
+                achievementsHeading: data.achievementsHeading,
+                highlightsHeading: data.highlightsHeading,
+                reportsHeading: data.reportsHeading,
+              })
+            }
+          >
+            Save Settings
+          </button>
+        </div>
+      )}
 
-            <div style={{ overflowX: "auto", marginTop: 12 }}>
-              <table className="table" style={{ width: "100%", minWidth: 760 }}>
-                <thead>
-                  <tr>
-                    <th>Visible</th>
-                    <th>Year</th>
-                    <th>KCSE Mean Grade</th>
-                    <th>Top Score</th>
-                    <th>Pass Rate</th>
-                    <th style={{ width: 140 }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {safeArray(content.results).map((r) => (
-                    <tr key={r.id}>
-                      <td>
+      {/* ===== TAB: KCSE Records ===== */}
+      {tab === "kcse" && (
+        <div style={cardStyle}>
+          <h3 style={{ marginTop: 0 }}>KCSE Performance Records</h3>
+          <p style={{ color: "#6b7280", fontSize: 13 }}>
+            Enter the actual KCSE mean scores (decimal) and letter grades for each year.
+          </p>
+
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 500 }}>
+              <thead>
+                <tr style={{ background: "#f9fafb", borderBottom: "2px solid #e5e7eb" }}>
+                  <th style={{ padding: 10, textAlign: "left" }}>Year</th>
+                  <th style={{ padding: 10, textAlign: "left" }}>Mean Score</th>
+                  <th style={{ padding: 10, textAlign: "left" }}>Mean Grade</th>
+                  <th style={{ padding: 10, width: 100 }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(data.kcseResults || [])
+                  .sort((a, b) => b.year - a.year)
+                  .map((r) => (
+                    <tr key={r.year} style={{ borderBottom: "1px solid #e5e7eb" }}>
+                      <td style={{ padding: 10, fontWeight: 600 }}>{r.year}</td>
+                      <td style={{ padding: 10 }}>
                         <input
-                          type="checkbox"
-                          checked={r.visible !== false}
-                          onChange={(e) => updateResult(r.id, { visible: e.target.checked })}
+                          type="number"
+                          step="0.0001"
+                          value={r.meanScore}
+                          onChange={(e) => updateKcseResult(r.year, "meanScore", e.target.value)}
+                          onBlur={() => saveAll({ kcseResults: data.kcseResults })}
+                          style={{ ...inputStyle, width: 140 }}
                         />
                       </td>
-                      <td>
-                        <input
-                          value={r.year}
-                          onChange={(e) => updateResult(r.id, { year: e.target.value })}
-                          style={{ width: 120, padding: 6 }}
-                        />
-                      </td>
-                      <td>
+                      <td style={{ padding: 10 }}>
                         <input
                           value={r.meanGrade}
-                          onChange={(e) => updateResult(r.id, { meanGrade: e.target.value })}
-                          style={{ width: 160, padding: 6 }}
+                          onChange={(e) => updateKcseResult(r.year, "meanGrade", e.target.value)}
+                          onBlur={() => saveAll({ kcseResults: data.kcseResults })}
+                          style={{ ...inputStyle, width: 100 }}
                         />
                       </td>
-                      <td>
-                        <input
-                          value={r.topScore}
-                          onChange={(e) => updateResult(r.id, { topScore: e.target.value })}
-                          style={{ width: 220, padding: 6 }}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          value={r.passRate}
-                          onChange={(e) => updateResult(r.id, { passRate: e.target.value })}
-                          style={{ width: 120, padding: 6 }}
-                        />
-                      </td>
-                      <td>
-                        <button
-                          onClick={() => deleteResult(r.id)}
-                          style={{
-                            padding: "6px 10px",
-                            borderRadius: 6,
-                            border: "1px solid #ccc",
-                            cursor: "pointer",
-                          }}
-                        >
+                      <td style={{ padding: 10, textAlign: "center" }}>
+                        <button style={btnDanger} onClick={() => deleteKcseResult(r.year)}>
                           Delete
                         </button>
                       </td>
                     </tr>
                   ))}
 
-                  <tr>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={newResult.visible}
-                        onChange={(e) => setNewResult((p) => ({ ...p, visible: e.target.checked }))}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        placeholder="Year"
-                        value={newResult.year}
-                        onChange={(e) => setNewResult((p) => ({ ...p, year: e.target.value }))}
-                        style={{ width: 120, padding: 6 }}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        placeholder="Mean Grade"
-                        value={newResult.meanGrade}
-                        onChange={(e) => setNewResult((p) => ({ ...p, meanGrade: e.target.value }))}
-                        style={{ width: 160, padding: 6 }}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        placeholder="Top Score"
-                        value={newResult.topScore}
-                        onChange={(e) => setNewResult((p) => ({ ...p, topScore: e.target.value }))}
-                        style={{ width: 220, padding: 6 }}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        placeholder="Pass Rate"
-                        value={newResult.passRate}
-                        onChange={(e) => setNewResult((p) => ({ ...p, passRate: e.target.value }))}
-                        style={{ width: 120, padding: 6 }}
-                      />
-                    </td>
-                    <td>
-                      <button
-                        onClick={addResult}
-                        style={{
-                          padding: "6px 10px",
-                          borderRadius: 6,
-                          border: "1px solid #ccc",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Add
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <p style={{ marginTop: 10, color: "#666" }}>
-              Visible rows: <strong>{visibleResults.length}</strong> / {safeArray(content.results).length}
-            </p>
+                {/* Add new row */}
+                <tr style={{ background: "#f0f9ff", borderTop: "2px solid #667eea" }}>
+                  <td style={{ padding: 10 }}>
+                    <input
+                      type="number"
+                      placeholder="Year"
+                      value={newKcse.year}
+                      onChange={(e) => setNewKcse((p) => ({ ...p, year: e.target.value }))}
+                      style={{ ...inputStyle, width: 100 }}
+                    />
+                  </td>
+                  <td style={{ padding: 10 }}>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      placeholder="e.g. 7.2993"
+                      value={newKcse.meanScore}
+                      onChange={(e) => setNewKcse((p) => ({ ...p, meanScore: e.target.value }))}
+                      style={{ ...inputStyle, width: 140 }}
+                    />
+                  </td>
+                  <td style={{ padding: 10 }}>
+                    <input
+                      placeholder="e.g. C+"
+                      value={newKcse.meanGrade}
+                      onChange={(e) => setNewKcse((p) => ({ ...p, meanGrade: e.target.value }))}
+                      style={{ ...inputStyle, width: 100 }}
+                    />
+                  </td>
+                  <td style={{ padding: 10, textAlign: "center" }}>
+                    <button style={btnSuccess} onClick={addKcseResult}>
+                      + Add
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
-          {/* ===== Reports CRUD ===== */}
-          <div style={{ border: "1px solid #e5e5e5", borderRadius: 8, padding: 16, marginBottom: 18 }}>
-            <h3>Reports / Downloads</h3>
+          <p style={{ marginTop: 10, color: "#6b7280", fontSize: 13 }}>
+            Total records: <strong>{(data.kcseResults || []).length}</strong>
+          </p>
+        </div>
+      )}
 
-            <div style={{ overflowX: "auto" }}>
-              <table className="table" style={{ width: "100%", minWidth: 700 }}>
-                <thead>
-                  <tr>
-                    <th>Visible</th>
-                    <th>Name</th>
-                    <th>URL</th>
-                    <th style={{ width: 140 }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {safeArray(content.reports).map((f) => (
-                    <tr key={f.id}>
-                      <td>
-                        <input
-                          type="checkbox"
-                          checked={f.visible !== false}
-                          onChange={(e) => updateReport(f.id, { visible: e.target.checked })}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          value={f.name}
-                          onChange={(e) => updateReport(f.id, { name: e.target.value })}
-                          style={{ width: "100%", padding: 6 }}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          value={f.url}
-                          onChange={(e) => updateReport(f.id, { url: e.target.value })}
-                          style={{ width: "100%", padding: 6 }}
-                        />
-                      </td>
-                      <td>
-                        <button
-                          onClick={() => deleteReport(f.id)}
-                          style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", cursor: "pointer" }}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
+      {/* ===== TAB: Achievements ===== */}
+      {tab === "achievements" && (
+        <div style={cardStyle}>
+          <h3 style={{ marginTop: 0 }}>School Achievements</h3>
+          <p style={{ color: "#6b7280", fontSize: 13 }}>
+            Competitions, rankings, awards, co-curricular achievements.
+          </p>
+
+          {/* Add new achievement form */}
+          <div
+            style={{
+              background: "#f0f9ff",
+              borderRadius: 8,
+              padding: 16,
+              marginBottom: 20,
+              border: "1px solid #bfdbfe",
+            }}
+          >
+            <h4 style={{ marginTop: 0 }}>Add Achievement</h4>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+              <label>
+                <strong>Year</strong>
+                <input
+                  type="number"
+                  value={newAchievement.year}
+                  onChange={(e) => setNewAchievement((p) => ({ ...p, year: parseInt(e.target.value) || "" }))}
+                  style={inputStyle}
+                />
+              </label>
+              <label>
+                <strong>Term</strong>
+                <select
+                  value={newAchievement.term}
+                  onChange={(e) => setNewAchievement((p) => ({ ...p, term: e.target.value }))}
+                  style={inputStyle}
+                >
+                  {TERMS.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
                   ))}
-
-                  <tr>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={newReport.visible}
-                        onChange={(e) => setNewReport((p) => ({ ...p, visible: e.target.checked }))}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        placeholder="Report name"
-                        value={newReport.name}
-                        onChange={(e) => setNewReport((p) => ({ ...p, name: e.target.value }))}
-                        style={{ width: "100%", padding: 6 }}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        placeholder="https://... or /files/..."
-                        value={newReport.url}
-                        onChange={(e) => setNewReport((p) => ({ ...p, url: e.target.value }))}
-                        style={{ width: "100%", padding: 6 }}
-                      />
-                    </td>
-                    <td>
-                      <button
-                        onClick={addReport}
-                        style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", cursor: "pointer" }}
-                      >
-                        Add
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                </select>
+              </label>
+              <label>
+                <strong>Category</strong>
+                <select
+                  value={newAchievement.category}
+                  onChange={(e) => setNewAchievement((p) => ({ ...p, category: e.target.value }))}
+                  style={inputStyle}
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
+
+            <label style={{ display: "block", marginTop: 10 }}>
+              <strong>Title *</strong>
+              <input
+                value={newAchievement.title}
+                onChange={(e) => setNewAchievement((p) => ({ ...p, title: e.target.value }))}
+                placeholder="e.g. National Science Congress 1st Place"
+                style={inputStyle}
+              />
+            </label>
+
+            <label style={{ display: "block", marginTop: 10 }}>
+              <strong>Description</strong>
+              <textarea
+                value={newAchievement.description}
+                onChange={(e) => setNewAchievement((p) => ({ ...p, description: e.target.value }))}
+                placeholder="Details about the achievement"
+                rows={2}
+                style={{ ...inputStyle, resize: "vertical" }}
+              />
+            </label>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 10 }}>
+              <label>
+                <strong>Metric</strong>
+                <input
+                  value={newAchievement.metric}
+                  onChange={(e) => setNewAchievement((p) => ({ ...p, metric: e.target.value }))}
+                  placeholder="e.g. 95%, 1st Place"
+                  style={inputStyle}
+                />
+              </label>
+              <label>
+                <strong>Level</strong>
+                <input
+                  value={newAchievement.ranking}
+                  onChange={(e) => setNewAchievement((p) => ({ ...p, ranking: e.target.value }))}
+                  placeholder="e.g. National, County"
+                  style={inputStyle}
+                />
+              </label>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 20 }}>
+                <input
+                  type="checkbox"
+                  checked={newAchievement.published}
+                  onChange={(e) => setNewAchievement((p) => ({ ...p, published: e.target.checked }))}
+                />
+                <strong>Published</strong>
+              </label>
+            </div>
+
+            <button style={{ ...btnSuccess, marginTop: 14 }} onClick={addAchievement}>
+              + Add Achievement
+            </button>
           </div>
 
-          {/* ===== Charts/Images CRUD ===== */}
-          <div style={{ border: "1px solid #e5e5e5", borderRadius: 8, padding: 16 }}>
-            <h3>Charts / Images</h3>
-
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
-              <input type="file" accept="image/*" onChange={handleChartFilePick} />
-              <span style={{ color: "#666" }}>
-                If upload fails, just paste a hosted image URL in the field below.
-              </span>
-            </div>
-
-            <div style={{ overflowX: "auto" }}>
-              <table className="table" style={{ width: "100%", minWidth: 700 }}>
-                <thead>
-                  <tr>
-                    <th>Visible</th>
-                    <th>Name</th>
-                    <th>Image/Chart URL</th>
-                    <th style={{ width: 140 }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {safeArray(content.charts).map((c) => (
-                    <tr key={c.id}>
-                      <td>
-                        <input
-                          type="checkbox"
-                          checked={c.visible !== false}
-                          onChange={(e) => updateChart(c.id, { visible: e.target.checked })}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          value={c.name}
-                          onChange={(e) => updateChart(c.id, { name: e.target.value })}
-                          style={{ width: "100%", padding: 6 }}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          value={c.url}
-                          onChange={(e) => updateChart(c.id, { url: e.target.value })}
-                          style={{ width: "100%", padding: 6 }}
-                        />
-                      </td>
-                      <td>
-                        <button
-                          onClick={() => deleteChart(c.id)}
-                          style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", cursor: "pointer" }}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-
-                  <tr>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={newChart.visible}
-                        onChange={(e) => setNewChart((p) => ({ ...p, visible: e.target.checked }))}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        placeholder="Chart name"
-                        value={newChart.name}
-                        onChange={(e) => setNewChart((p) => ({ ...p, name: e.target.value }))}
-                        style={{ width: "100%", padding: 6 }}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        placeholder="https://... or /files/..."
-                        value={newChart.url}
-                        onChange={(e) => setNewChart((p) => ({ ...p, url: e.target.value }))}
-                        style={{ width: "100%", padding: 6 }}
-                      />
-                    </td>
-                    <td>
-                      <button
-                        onClick={addChart}
-                        style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", cursor: "pointer" }}
-                      >
-                        Add
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            {safeArray(content.charts).length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginTop: 12 }}>
-                {safeArray(content.charts)
-                  .filter((c) => c.visible !== false)
-                  .map((c) => (
-                    <div key={c.id} style={{ border: "1px solid #eee", borderRadius: 10, padding: 10 }}>
-                      <div style={{ fontWeight: 600, marginBottom: 6 }}>{c.name}</div>
-                      {c.url ? (
-                        <LazyImage src={safePath(c.url)} alt={c.name} style={{ width: "100%", borderRadius: 8, display: "block" }} />
-                      ) : (
-                        <div style={{ color: "#777" }}>No URL</div>
-                      )}
+          {/* Existing achievements */}
+          {(data.achievements || []).length === 0 ? (
+            <p style={{ color: "#9ca3af", fontStyle: "italic" }}>No achievements added yet.</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {(data.achievements || []).map((a, i) => (
+                <div
+                  key={a._id || i}
+                  style={{
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 8,
+                    padding: 14,
+                    background: a.published ? "#fff" : "#fef2f2",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    gap: 12,
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: 15 }}>{a.title}</div>
+                    <div style={{ fontSize: 13, color: "#6b7280", marginTop: 2 }}>
+                      {a.year} · {a.term} · {a.category}
+                      {a.metric && ` · ${a.metric}`}
+                      {a.ranking && ` · ${a.ranking}`}
+                      {!a.published && " · 🔒 Draft"}
                     </div>
-                  ))}
-              </div>
-            )}
+                    {a.description && (
+                      <div style={{ fontSize: 13, color: "#4b5563", marginTop: 4 }}>{a.description}</div>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                    <button
+                      style={{
+                        padding: "4px 10px",
+                        background: a.published ? "#fef2f2" : "#ecfdf5",
+                        color: a.published ? "#991b1b" : "#065f46",
+                        border: "1px solid " + (a.published ? "#fecaca" : "#a7f3d0"),
+                        borderRadius: 4,
+                        cursor: "pointer",
+                        fontSize: 12,
+                        fontWeight: 600,
+                      }}
+                      onClick={() => {
+                        const updated = (data.achievements || []).map((item, idx) =>
+                          idx === i ? { ...item, published: !item.published } : item
+                        );
+                        saveAll({ achievements: updated });
+                      }}
+                    >
+                      {a.published ? "Unpublish" : "Publish"}
+                    </button>
+                    <button style={btnDanger} onClick={() => deleteAchievement(i)}>
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <p style={{ marginTop: 12, color: "#6b7280", fontSize: 13 }}>
+            Total: <strong>{(data.achievements || []).length}</strong> (
+            {(data.achievements || []).filter((a) => a.published).length} published)
+          </p>
+        </div>
+      )}
+
+      {/* ===== TAB: Highlights ===== */}
+      {tab === "highlights" && (
+        <div style={cardStyle}>
+          <h3 style={{ marginTop: 0 }}>Progress Highlights</h3>
+          <p style={{ color: "#6b7280", fontSize: 13 }}>
+            Editable text shown on the public page. Use bullet points (•) for a list.
+          </p>
+
+          <textarea
+            value={data.highlights || ""}
+            onChange={(e) => updateField("highlights", e.target.value)}
+            rows={8}
+            style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.7 }}
+          />
+
+          <button
+            style={{ ...btnPrimary, marginTop: 12 }}
+            onClick={() => saveAll({ highlights: data.highlights })}
+          >
+            Save Highlights
+          </button>
+        </div>
+      )}
+
+      {/* ===== TAB: Reports ===== */}
+      {tab === "reports" && (
+        <div style={cardStyle}>
+          <h3 style={{ marginTop: 0 }}>Downloadable Reports</h3>
+          <p style={{ color: "#6b7280", fontSize: 13 }}>
+            Add links to downloadable performance reports (PDFs, documents).
+          </p>
+
+          <div style={{ overflowX: "auto", marginBottom: 16 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 400 }}>
+              <thead>
+                <tr style={{ background: "#f9fafb", borderBottom: "2px solid #e5e7eb" }}>
+                  <th style={{ padding: 10, textAlign: "left" }}>Report Name</th>
+                  <th style={{ padding: 10, textAlign: "left" }}>URL</th>
+                  <th style={{ padding: 10, width: 80 }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(data.reports || []).map((r, i) => (
+                  <tr key={r._id || i} style={{ borderBottom: "1px solid #e5e7eb" }}>
+                    <td style={{ padding: 10, fontWeight: 600 }}>{r.name}</td>
+                    <td style={{ padding: 10 }}>
+                      <a href={r.url} target="_blank" rel="noreferrer" style={{ color: "#667eea", fontSize: 13 }}>
+                        {r.url.length > 50 ? r.url.substring(0, 50) + "…" : r.url}
+                      </a>
+                    </td>
+                    <td style={{ padding: 10, textAlign: "center" }}>
+                      <button style={btnDanger} onClick={() => deleteReport(i)}>
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+
+                <tr style={{ background: "#f0f9ff", borderTop: "2px solid #667eea" }}>
+                  <td style={{ padding: 10 }}>
+                    <input
+                      placeholder="Report name"
+                      value={newReport.name}
+                      onChange={(e) => setNewReport((p) => ({ ...p, name: e.target.value }))}
+                      style={{ ...inputStyle, width: "100%" }}
+                    />
+                  </td>
+                  <td style={{ padding: 10 }}>
+                    <input
+                      placeholder="https://example.com/report.pdf"
+                      value={newReport.url}
+                      onChange={(e) => setNewReport((p) => ({ ...p, url: e.target.value }))}
+                      style={{ ...inputStyle, width: "100%" }}
+                    />
+                  </td>
+                  <td style={{ padding: 10, textAlign: "center" }}>
+                    <button style={btnSuccess} onClick={addReport}>
+                      + Add
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </>
+        </div>
       )}
     </section>
   );

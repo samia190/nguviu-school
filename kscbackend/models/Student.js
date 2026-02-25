@@ -52,10 +52,7 @@ const StudentSchema = new mongoose.Schema(
     verificationCount: { type: Number, default: 0 },
     
     // Status
-    status: { type: String, enum: ["Active", "Suspended", "Graduated", "Transferred"], default: "Active" },
-    
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    status: { type: String, enum: ["Active", "Suspended", "Graduated", "Transferred"], default: "Active" }
   },
   {
     timestamps: true

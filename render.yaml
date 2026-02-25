@@ -55,7 +55,7 @@ services:
   # ── Frontend (Static Site) ─────────────────────────────────
   - type: web
     name: kangarugirlsschool-sc-ke
-    runtime: static
+    env: static
     region: oregon
     plan: free
     rootDir: kscfrontend

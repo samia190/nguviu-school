@@ -16,14 +16,23 @@ export default function HomeworkManagement({ user }) {
     title: "",
     description: "",
     subject: "",
-    class: "Form 1",
+    class: "Grade 10",
     contentType: "assignment",
     dueDate: "",
     status: "published"
   });
 
-  const classes = ["Form 1", "Form 2", "Form 3", "Form 4"];
-  const subjects = ["Mathematics", "English", "Science", "History", "Geography", "Kiswahili", "Arts", "Physical Education"];
+  const classes = ["Grade 10", "Grade 11", "Grade 12", "Form 3", "Form 4"];
+  const subjects = [
+    "Mathematics", "English", "Kiswahili",
+    "Biology", "Physics", "Chemistry",
+    "History & Citizenship", "Geography",
+    "Computer Science", "Business Studies",
+    "Agriculture", "Home Science",
+    "Art & Design", "Music", "French", "German",
+    "CRE", "IRE", "Health Education",
+    "Physical Education & Sports", "Life Skills"
+  ];
   const contentTypes = [
     { value: "assignment", label: "📋 Assignment" },
     { value: "exam", label: "📝 Exam" },
@@ -64,53 +73,44 @@ export default function HomeworkManagement({ user }) {
     setSuccess("");
 
     try {
-      // Upload attachments first if provided
-      let attachmentUrls = [];
-      if (attachmentFiles.length > 0) {
-        for (const file of attachmentFiles) {
-          const fd = new FormData();
-          fd.append("file", file);
-          try {
-            const uploadedFile = await upload("/api/files/upload", fd);
-            attachmentUrls.push({
-              url: uploadedFile.url || uploadedFile.downloadUrl,
-              originalName: file.name,
-              size: file.size,
-              mimetype: file.type
-            });
-          } catch (uploadErr) {
-            setError("Failed to upload file " + file.name + ": " + (uploadErr.message || "Unknown error"));
-            setSaving(false);
-            return;
-          }
-        }
-      }
-
-      // Prepare JSON data
-      const data = {
-        title: form.title,
-        description: form.description,
-        subject: form.subject,
-        class: form.class,
-        contentType: form.contentType,
-        dueDate: form.dueDate,
-        status: form.status
-      };
-
-      if (attachmentUrls.length > 0) {
-        data.attachments = attachmentUrls;
-      }
-
-      // Send as JSON
       if (editingId) {
-        await put(`/api/homework/${editingId}`, data);
+        // Update: send JSON for metadata
+        const data = {
+          title: form.title,
+          description: form.description,
+          subject: form.subject,
+          class: form.class,
+          contentType: form.contentType,
+          dueDate: form.dueDate,
+          status: form.status
+        };
+
+        // If new files, send as FormData via PUT
+        if (attachmentFiles.length > 0) {
+          const fd = new FormData();
+          Object.entries(data).forEach(([k, v]) => { if (v) fd.append(k, v); });
+          attachmentFiles.forEach(file => fd.append("attachments", file));
+          await upload(`/api/homework/${editingId}`, fd, { method: "PUT" });
+        } else {
+          await put(`/api/homework/${editingId}`, data);
+        }
         setSuccess("Homework updated!");
       } else {
-        await post("/api/homework", data);
+        // Create: always use FormData so multer can process attachments
+        const fd = new FormData();
+        fd.append("title", form.title);
+        fd.append("description", form.description);
+        fd.append("subject", form.subject);
+        fd.append("class", form.class);
+        fd.append("contentType", form.contentType);
+        if (form.dueDate) fd.append("dueDate", form.dueDate);
+        fd.append("status", form.status);
+        attachmentFiles.forEach(file => fd.append("attachments", file));
+        await upload("/api/homework", fd);
         setSuccess("Homework added!");
       }
 
-      setForm({ title: "", description: "", subject: "", class: "Form 1", contentType: "assignment", dueDate: "", status: "published" });
+      setForm({ title: "", description: "", subject: "", class: "Grade 10", contentType: "assignment", dueDate: "", status: "published" });
       setAttachmentFiles([]);
       setShowForm(false);
       setEditingId(null);

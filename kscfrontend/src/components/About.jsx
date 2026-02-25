@@ -1,111 +1,42 @@
 import { useEffect, useState } from "react";
-import { get, patch } from "../utils/api";
+import { get } from "../utils/api";
 import { cachedGet } from "../utils/apiCache";
-import EditableText from "../components/EditableText";
-import EditableHeading from "../components/EditableHeading";
-import EditableSubheading from "../components/EditableSubheading";
-import { safePath } from "../utils/paths";
-import LazyImage from "./LazyImage";
 import OptimizedImage from "./OptimizedImage";
-import { useBatchImagePreload } from "../hooks/useImagePreload";
+
+const defaultHero = {
+  imageUrl: "https://res.cloudinary.com/ddm1dgws8/image/upload/w_1200,q_auto,f_auto/kangaru/DSC_5392.jpg",
+  title: "Welcome to KANGARU GIRLS SCHOOL",
+  subtitle: "A nurturing environment where young girls grow into confident, responsible leaders."
+};
 
 export default function About({ user }) {
-  const [content, setContent] = useState({});
-  const [staff, setStaff] = useState([]);
+  const [aboutData, setAboutData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [loadingStaff, setLoadingStaff] = useState(true);
-  const [staffImages, setStaffImages] = useState([]);
-  const [heroContent, setHeroContent] = useState(null);
 
   useEffect(() => {
-    Promise.all([
-      cachedGet("/api/content/about", get).catch(() => ({})),
-      cachedGet("/api/hero-content?page=about&type=image", get).catch(() => null)
-    ])
-      .then(([aboutData, heroData]) => {
-        setContent(aboutData || {});
-        // Get first active hero image for the about page
-        if (heroData && Array.isArray(heroData) && heroData.length > 0) {
-          const activeHero = heroData.find(h => h.active) || heroData[0];
-          setHeroContent(activeHero);
-        } else {
-          // Fallback hero image from Cloudinary
-          setHeroContent({ url: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_1200,q_auto,f_auto/kangaru/DSC_5392.jpg', title: 'About Kangaru Girls School' });
-        }
+    setLoading(true);
+    cachedGet("/api/about", get)
+      .then((data) => {
+        setAboutData(data || {});
+        setError("");
       })
-      .catch(() => {
-        setError("Failed to load about page content.");
-        setHeroContent({ url: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_1200,q_auto,f_auto/kangaru/DSC_5392.jpg', title: 'About Kangaru Girls School' });
-      });
-  }, []);
-
-  useEffect(() => {
-    // Fetch both principal and deputy principal staff
-    Promise.all([
-      cachedGet("/api/staff?type=principal", get).catch(() => []),
-      cachedGet("/api/staff?type=deputy_principal", get).catch(() => [])
-    ])
-      .then(([principals, deputies]) => {
-        const principalList = Array.isArray(principals) ? principals : (principals.staff || []);
-        const deputyList = Array.isArray(deputies) ? deputies : (deputies.staff || []);
-        let allStaff = [...principalList, ...deputyList];
-        
-        // Fallback: show default principal if none from API
-        if (!allStaff.some(s => s.type === 'principal')) {
-          allStaff.unshift({
-            _id: 'default-principal',
-            type: 'principal',
-            fullName: 'School Principal',
-            title: 'Principal - Kangaru Girls School',
-            photoUrl: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/Principal.jpg',
-            remarks: 'Welcome to Kangaru Girls School. We are dedicated to nurturing excellence and developing well-rounded young women who will be leaders of tomorrow.'
-          });
-        }
-        setStaff(allStaff);
-        
-        // Prepare staff images for preloading
-        const images = allStaff
-          .map(person => ({
-            src: person.photoUrl || (person.type === 'principal' ? 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/Principal.jpg' : 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/DSC_5372.jpg')
-          }));
-        setStaffImages(images);
-      })
-      .catch(() => setStaff([]))
-      .finally(() => setLoadingStaff(false));
-  }, []);
-
-  // Preload staff photos
-  useBatchImagePreload(staffImages);
-
-  function updateSection(section, value) {
-    patch(`/api/content/about/${section}`, { value })
-      .then(() =>
-        setContent((prev) => ({
-          ...prev,
-          [section]: value
-        }))
-      )
       .catch((err) => {
-        console.error("Failed to save:", err);
-        alert("Failed to save content.");
-      });
+        console.error("Failed to load about page:", err);
+        setError("Failed to load about page");
+        setAboutData({});
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const hero = aboutData?.heroContent || defaultHero;
+  const principal = aboutData?.leadership?.principal;
+  const deputies = aboutData?.leadership?.deputies || [];
+  const coreValues = (aboutData?.coreValues || []).sort((a, b) => a.order - b.order);
+
+  if (loading) {
+    return <section style={{ padding: 20 }}><p>Loading...</p></section>;
   }
-
-  // ✅ Convert core values (entered one per line) into a list
-  const coreValues = (content.coreValues || "")
-    .split("\n")
-    .filter(Boolean);
-
-  // Normalize image paths coming from content or defaults.
-  const resolvePath = (p) => {
-    if (!p) return p;
-    // If someone saved a `public/...` path, convert to root-served path
-    if (p.startsWith("public/")) return "/" + p.slice("public/".length);
-    // If already an absolute path, return as-is
-    if (p.startsWith("/")) return p;
-    // Otherwise prefix with leading slash
-    return "/" + p;
-  };
 
   return (
     <section style={{ padding: 20 }} className="about-page">
@@ -113,14 +44,14 @@ export default function About({ user }) {
       <div
         className="about-hero"
         style={{
-            position: "relative",
-    width: "100vw",
-    marginLeft: "50%",
-    transform: "translateX(-50%)",
-    maxHeight: 1000,
-    overflow: "hidden",
-    height: window.innerWidth <= 480 ? 300 : 500,
-          backgroundImage: heroContent?.url ? `url(${encodeURI(heroContent.url)})` : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          position: "relative",
+          width: "100vw",
+          marginLeft: "50%",
+          transform: "translateX(-50%)",
+          maxHeight: 1000,
+          overflow: "hidden",
+          height: window.innerWidth <= 480 ? 300 : 500,
+          backgroundImage: hero?.imageUrl ? `url(${encodeURI(hero.imageUrl)})` : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat"
@@ -131,12 +62,11 @@ export default function About({ user }) {
           style={{
             position: "absolute",
             inset: 0,
-            background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.45), rgba(0,0,0,0.65))"
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.45), rgba(0,0,0,0.65))"
           }}
         />
 
-        {/* Text container on top of hero (with transparent / semi-transparent box) */}
+        {/* Text container on top of hero */}
         <div
           style={{
             position: "relative",
@@ -154,223 +84,117 @@ export default function About({ user }) {
               width: "100%",
               padding: "16px 20px",
               borderRadius: 10,
-              backgroundColor: "rgba(0, 0, 0, 0.45)", // transparent container
-              color: "blue",
+              backgroundColor: "rgba(0, 0, 0, 0.45)",
+              color: "white",
               textAlign: "center"
             }}
           >
-            <EditableHeading
-              value={content.heroTitle || "WELCOME TO KANGARU GIRLS SCHOOL"}
-              onSave={(val) => updateSection("heroTitle", val)}
-              isAdmin={user?.role === "admin"}
-              level={2}
-            />
-
-            <EditableText
-              value={content.heroSubtitle || "A nurturing environment where young girls grow into confident, responsible leaders."}
-              onSave={(val) => updateSection("heroSubtitle", val)}
-              isAdmin={user?.role === "admin"}
-            />
+            <h2 style={{ marginBottom: "10px", fontSize: "2rem" }}>{hero?.title || defaultHero.title}</h2>
+            <p style={{ fontSize: "1.1rem" }}>{hero?.subtitle || defaultHero.subtitle}</p>
           </div>
         </div>
       </div>
 
       {/* ================= MAIN ABOUT CONTENT ================= */}
-
       <div className="about-content">
-      {/* TITLE */}
-      <EditableHeading
-        value={content.title || "About KANGARU GIRLS' SCHOOL"}
-        onSave={(val) => updateSection("title", val)}
-        isAdmin={user?.role === "admin"}
-        level={2}
-      />
+        {/* TITLE */}
+        <h2 style={{ marginTop: "30px", marginBottom: "20px", color: "#2c3e50", fontSize: "2rem" }}>
+          {aboutData?.title || "About KANGARU GIRLS' SCHOOL"}
+        </h2>
 
-      {/* INTRO */}
-      <EditableText
-        value={
-          content.intro ||
-          "KANGARU GIRLS' SCHOOL is a center of excellence dedicated to nurturing young girls' into confident, capable leaders."
-        }
-        onSave={(val) => updateSection("intro", val)}
-        isAdmin={user?.role === "admin"}
-      />
+        {/* INTRO */}
+        <p style={{ color: "#34495e", fontSize: "1.05rem", lineHeight: "1.8", marginBottom: "30px" }}>
+          {aboutData?.intro || "KANGARU GIRLS' SCHOOL is a center of excellence dedicated to nurturing young girls into confident, capable leaders."}
+        </p>
 
-      {/* MOTTO */}
-      <div style={{ marginTop: "30px", marginBottom: "20px", textAlign: "left" }}>
-        <EditableSubheading
-          value={content.mottoHeading || "MOTTO"}
-          onSave={(val) => updateSection("mottoHeading", val)}
-          isAdmin={user?.role === "admin"}
-          level={3}
-          style={{ color: "#2c3e50", fontWeight: "bold", textAlign: "left" }}
-        />
-        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px", textAlign: "left" }}>
-          <EditableText
-            value={content.motto || "Grow in Grace"}
-            onSave={(val) => updateSection("motto", val)}
-            isAdmin={user?.role === "admin"}
-          />
-        </div>
-      </div>
-
-      {/* VISION */}
-      <div style={{ marginTop: "30px", marginBottom: "20px", textAlign: "left" }}>
-        <EditableSubheading
-          value={content.visionHeading || "VISION"}
-          onSave={(val) => updateSection("visionHeading", val)}
-          isAdmin={user?.role === "admin"}
-          level={3}
-          style={{ color: "#2c3e50", fontWeight: "bold", textAlign: "left" }}
-        />
-        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px", textAlign: "left" }}>
-          <EditableText
-            value={
-              content.vision ||
-              "Holistically Developed Person"
-            }
-            onSave={(val) => updateSection("vision", val)}
-            isAdmin={user?.role === "admin"}
-          />
-        </div>
-      </div>
-
-      {/* MISSION */}
-      <div style={{ marginTop: "30px", marginBottom: "20px", textAlign: "left" }}>
-        <EditableSubheading
-          value={content.missionHeading || "MISSION"}
-          onSave={(val) => updateSection("missionHeading", val)}
-          isAdmin={user?.role === "admin"}
-          level={3}
-          style={{ color: "#2c3e50", fontWeight: "bold", textAlign: "left" }}
-        />
-        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px", textAlign: "left" }}>
-          <EditableText
-            value={
-              content.mission ||
-              "Nurture excellence in a well-integrated person in line with Vision 2030"
-            }
-            onSave={(val) => updateSection("mission", val)}
-            isAdmin={user?.role === "admin"}
-          />
-        </div>
-      </div>
-
-      {/* CORE VALUES */}
-      <div style={{ marginTop: "30px", marginBottom: "20px", textAlign: "left" }}>
-        <h3 style={{ color: "#2c3e50", fontWeight: "bold", fontSize: "1.3rem", marginBottom: "15px", textAlign: "left" }}>
-          CORE VALUES
-        </h3>
-        <ul className="about-core-values" style={{
-          listStyleType: "disc",
-          paddingLeft: "40px",
-          color: "#34495e",
-          fontSize: "1.05rem",
-          lineHeight: "2",
-          textAlign: "left"
-        }}>
-          <li>Responsibility</li>
-          <li>Accountability & Transparency</li>
-          <li>Honesty</li>
-          <li>Integrity</li>
-          <li>Respect</li>
-          <li>Team Work</li>
-          <li>Humility</li>
-          <li>Professionalism</li>
-          <li>Self & Emotional Awareness</li>
-          <li>Creativity & Innovation</li>
-        </ul>
-      </div>
-
-      {/* PROMISE */}
-      <div style={{ marginTop: "30px", marginBottom: "20px", textAlign: "left" }}>
-        <EditableSubheading
-          value={content.promiseHeading || "Our Promise"}
-          onSave={(val) => updateSection("promiseHeading", val)}
-          isAdmin={user?.role === "admin"}
-          level={3}
-          style={{ color: "#2c3e50", fontWeight: "bold", textAlign: "left" }}
-        />
-        <div style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px", textAlign: "left" }}>
-          <EditableText
-            value={content.promise || "Excellence, Our Choice"}
-            onSave={(val) => updateSection("promise", val)}
-            isAdmin={user?.role === "admin"}
-          />
-        </div>
-      </div>
-      </div>
-
-      {/* ================= PRINCIPAL AND DEPUTY SECTION ================= */}
-      {!loadingStaff && (
-      <div
-        className="about-leadership"
-        style={{
-          marginTop: 40,
-          paddingTop: 20,
-          borderTop: "1px solid #eee",
-        }}
-      >
-        {staff.filter(s => s.type === "principal").map(principal => (
-          <div
-            key={principal._id}
-            className="about-leader-card about-principal"
-            style={{
-              textAlign: "center",
-              margin: "0 auto 30px auto",
-              maxWidth: 500,
-            }}
-          >
-            <div
-              style={{
-                width: 180,
-                height: 180,
-                borderRadius: "50%",
-                overflow: "hidden",
-                marginBottom: 16,
-                margin: "0 auto 16px auto",
-                border: "3px solid #ddd",
-              }}
-            >
-              <OptimizedImage
-                src={principal.photoUrl || "https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/Principal.PNG"}
-                alt={principal.fullName}
-                priority={true}
-                fetchPriority="high"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover"
-                }}
-              />
-            </div>
-
-            <h3>Principal's Remarks</h3>
-            <p style={{ fontWeight: "bold" }}>{principal.fullName}</p>
-            <p style={{ color: "#34495e", fontSize: "0.95rem", marginBottom: "15px" }}>{principal.title}</p>
-            <p style={{ color: "#34495e", lineHeight: "1.6" }}>{principal.remarks || "Welcome to Kangaru Girls School"}</p>
+        {/* MOTTO */}
+        {aboutData?.motto && (
+          <div style={{ marginTop: "30px", marginBottom: "20px", textAlign: "left" }}>
+            <h3 style={{ color: "#2c3e50", fontWeight: "bold", textAlign: "left" }}>
+              {aboutData.motto.heading || "MOTTO"}
+            </h3>
+            <p style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px", textAlign: "left" }}>
+              {aboutData.motto.text || ""}
+            </p>
           </div>
-        ))}
+        )}
 
-        {/* DEPUTY PRINCIPALS - TWO COLUMNS BELOW */}
+        {/* VISION */}
+        {aboutData?.vision && (
+          <div style={{ marginTop: "30px", marginBottom: "20px", textAlign: "left" }}>
+            <h3 style={{ color: "#2c3e50", fontWeight: "bold", textAlign: "left" }}>
+              {aboutData.vision.heading || "VISION"}
+            </h3>
+            <p style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px", textAlign: "left" }}>
+              {aboutData.vision.text || ""}
+            </p>
+          </div>
+        )}
+
+        {/* MISSION */}
+        {aboutData?.mission && (
+          <div style={{ marginTop: "30px", marginBottom: "20px", textAlign: "left" }}>
+            <h3 style={{ color: "#2c3e50", fontWeight: "bold", textAlign: "left" }}>
+              {aboutData.mission.heading || "MISSION"}
+            </h3>
+            <p style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px", textAlign: "left" }}>
+              {aboutData.mission.text || ""}
+            </p>
+          </div>
+        )}
+
+        {/* CORE VALUES */}
+        {coreValues.length > 0 && (
+          <div style={{ marginTop: "30px", marginBottom: "20px", textAlign: "left" }}>
+            <h3 style={{ color: "#2c3e50", fontWeight: "bold", fontSize: "1.3rem", marginBottom: "15px" }}>
+              CORE VALUES
+            </h3>
+            <ul style={{
+              listStyleType: "disc",
+              paddingLeft: "40px",
+              color: "#34495e",
+              fontSize: "1.05rem",
+              lineHeight: "2",
+              textAlign: "left"
+            }}>
+              {coreValues.map((cv, idx) => (
+                <li key={idx}>{cv.value}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* PROMISE */}
+        {aboutData?.promise && (
+          <div style={{ marginTop: "30px", marginBottom: "20px", textAlign: "left" }}>
+            <h3 style={{ color: "#2c3e50", fontWeight: "bold", textAlign: "left" }}>
+              {aboutData.promise.heading || "Our Promise"}
+            </h3>
+            <p style={{ color: "#34495e", fontSize: "1.1rem", marginTop: "8px", textAlign: "left" }}>
+              {aboutData.promise.text || ""}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* ================= PRINCIPAL AND DEPUTIES SECTION ================= */}
+      {(principal || deputies.length > 0) && (
         <div
-          className="about-deputies"
+          className="about-leadership"
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: "20px",
-            flexWrap: "wrap"
+            marginTop: 40,
+            paddingTop: 20,
+            borderTop: "1px solid #eee",
           }}
         >
-          {staff.filter(s => s.type === "deputy_principal").map((deputy, idx) => (
+          {/* PRINCIPAL */}
+          {principal && (
             <div
-              key={deputy._id}
-              className="about-leader-card"
+              className="about-principal"
               style={{
-                flex: 1,
                 textAlign: "center",
+                margin: "0 auto 30px auto",
                 maxWidth: 500,
-                minWidth: window.innerWidth <= 768 ? "100%" : "48%"
               }}
             >
               <div
@@ -379,16 +203,15 @@ export default function About({ user }) {
                   height: 180,
                   borderRadius: "50%",
                   overflow: "hidden",
-                  marginBottom: 16,
                   margin: "0 auto 16px auto",
                   border: "3px solid #ddd",
                 }}
               >
                 <OptimizedImage
-                  src={deputy.photoUrl || "https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/DSC_5372.jpg"}
-                  alt={deputy.fullName}
-                  priority={idx === 0}
-                  fetchPriority={idx === 0 ? "high" : "auto"}
+                  src={principal.photoUrl}
+                  alt={principal.fullName}
+                  priority={true}
+                  fetchPriority="high"
                   style={{
                     width: "100%",
                     height: "100%",
@@ -396,18 +219,68 @@ export default function About({ user }) {
                   }}
                 />
               </div>
-
-              <h3>{deputy.title}</h3>
-              <p style={{ fontWeight: "bold" }}>{deputy.fullName}</p>
-              <p style={{ color: "#34495e", lineHeight: "1.6" }}>{deputy.remarks || "Dedicated to student success"}</p>
+              <h3>Principal's Remarks</h3>
+              <p style={{ fontWeight: "bold" }}>{principal.fullName}</p>
+              <p style={{ color: "#34495e", lineHeight: "1.6" }}>{principal.remarks}</p>
             </div>
-          ))}
+          )}
+
+          {/* DEPUTIES */}
+          {deputies.length > 0 && (
+            <div
+              className="about-deputies"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: "20px",
+                flexWrap: "wrap"
+              }}
+            >
+              {deputies.map((deputy, idx) => (
+                <div
+                  key={idx}
+                  className="about-deputy"
+                  style={{
+                    flex: 1,
+                    textAlign: "center",
+                    maxWidth: 500,
+                    minWidth: window.innerWidth <= 768 ? "100%" : "48%"
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 180,
+                      height: 180,
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                      margin: "0 auto 16px auto",
+                      border: "3px solid #ddd",
+                    }}
+                  >
+                    <OptimizedImage
+                      src={deputy.photoUrl}
+                      alt={deputy.fullName}
+                      priority={idx === 0}
+                      fetchPriority={idx === 0 ? "high" : "auto"}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover"
+                      }}
+                    />
+                  </div>
+                  <h3>{deputy.fullName}</h3>
+                  <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "10px" }}>{deputy.department}</p>
+                  <p style={{ color: "#34495e", lineHeight: "1.6" }}>{deputy.remarks}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      </div>
       )}
 
       {/* ERROR */}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p style={{ color: "red", marginTop: "20px" }}>{error}</p>}
     </section>
   );
 }

@@ -1,367 +1,552 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { get } from "../utils/api";
 import { cachedGet } from "../utils/apiCache";
 import OptimizedImage from "./OptimizedImage";
-import Loader from "./Loader";
 
-// Cloudinary base for optimized images
-const CLD = 'https://res.cloudinary.com/ddm1dgws8/image/upload';
-
-// Default student life items — shown when no API data is available
-const defaultStudentLifeItems = [
-  { _id: 'sl-1', title: 'Sports Day', category: 'sports', description: 'Annual sports day featuring athletics, swimming, and team sports competitions where students showcase their athletic abilities.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5410.jpg`, featured: true },
-  { _id: 'sl-2', title: 'Drama Club', category: 'clubs', description: 'Students showcase their acting talents in plays and drama performances throughout the school year.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5415.jpg` },
-  { _id: 'sl-3', title: 'Science Fair', category: 'activities', description: 'Students present innovative science projects and experiments, pushing the boundaries of discovery.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5420.jpg` },
-  { _id: 'sl-4', title: 'Cultural Day', category: 'traditions', description: 'Celebrating our diverse cultures and traditions through music, dance, food, and vibrant performances.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5427.jpg`, featured: true },
-  { _id: 'sl-5', title: 'Athletics', category: 'sports', description: 'Track and field events where students compete at inter-school and regional level.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5432.jpg` },
-  { _id: 'sl-6', title: 'Debate Club', category: 'clubs', description: 'Developing public speaking and critical thinking skills through competitive debate sessions.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5440.jpg` },
-  { _id: 'sl-7', title: 'Community Service', category: 'activities', description: 'Students give back to the community through various outreach programs and volunteer work.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5456.jpg` },
-  { _id: 'sl-8', title: 'Prize Giving Day', category: 'traditions', description: 'Annual ceremony recognizing academic and extracurricular achievements of our students.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5472.jpg` },
-  { _id: 'sl-9', title: 'Volleyball', category: 'sports', description: 'Competitive volleyball training and tournaments building teamwork and sportsmanship.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5614.jpg` },
-  { _id: 'sl-10', title: 'Music Club', category: 'clubs', description: 'Students explore musical talents through choir, instrumental music, and music festivals.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5501.jpg` },
-  { _id: 'sl-11', title: 'Environmental Club', category: 'activities', description: 'Promoting environmental awareness through tree planting, recycling, and conservation activities.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5728.jpg` },
-  { _id: 'sl-12', title: 'Founders Day', category: 'traditions', description: 'Commemorating the founding of our school with special ceremonies and celebrations.', imageUrl: `${CLD}/w_600,q_auto,f_auto/kangaru/DSC_5463.jpg` },
+const CATEGORIES = [
+  { value: "sports", label: "Sports", color: "#ef4444" },
+  { value: "clubs", label: "Clubs", color: "#3b82f6" },
+  { value: "activities", label: "Activities", color: "#f59e0b" },
+  { value: "traditions", label: "Traditions", color: "#8b5cf6" },
+  { value: "academics", label: "Academics", color: "#10b981" },
+  { value: "community", label: "Community", color: "#ec4899" },
 ];
 
-const categoryColors = {
-  sports: "#ef4444",
-  clubs: "#3b82f6",
-  activities: "#f59e0b",
-  traditions: "#8b5cf6",
-};
-
-const itemsWrapperStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  gap: "1.5rem",
-  alignItems: "stretch",
-  marginTop: "1rem",
-};
-
-const itemCardBaseStyle = {
-  flex: "1 1 280px",
-  maxWidth: "380px",
-  borderRadius: "12px",
-  padding: "1.25rem",
-  boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-  boxSizing: "border-box",
-  backgroundColor: "#fff",
-  border: "1px solid #e5e7eb",
-  display: "flex",
-  flexDirection: "column",
-  transition: "transform 0.2s ease, box-shadow 0.2s ease",
-};
-
 export default function StudentLife() {
-  const [items, setItems] = useState([]);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
-  const [categories, setCategories] = useState({
-    all: [],
-    sports: [],
-    clubs: [],
-    activities: [],
-    traditions: [],
-  });
+  const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    async function fetchStudentLife() {
-      try {
-        setLoading(true);
-        setError("");
-        // Fetch from /api/student-life endpoint
-        const data = await cachedGet("/api/student-life", get);
-        let itemList = Array.isArray(data) ? data : (data.items || []);
-        
-        // Fallback: use default items if API returns empty
-        if (itemList.length === 0) {
-          itemList = defaultStudentLifeItems;
-        }
-        
-        // Organize by category
-        const organized = {
-          all: itemList,
-          sports: itemList.filter((item) => item.category === "sports"),
-          clubs: itemList.filter((item) => item.category === "clubs"),
-          activities: itemList.filter((item) => item.category === "activities"),
-          traditions: itemList.filter((item) => item.category === "traditions"),
-        };
-
-        setCategories(organized);
-        setItems(itemList);
-      } catch (err) {
-        console.error("StudentLife fetch error:", err);
-        // Fallback: use default items on error
-        const itemList = defaultStudentLifeItems;
-        const organized = {
-          all: itemList,
-          sports: itemList.filter((item) => item.category === "sports"),
-          clubs: itemList.filter((item) => item.category === "clubs"),
-          activities: itemList.filter((item) => item.category === "activities"),
-          traditions: itemList.filter((item) => item.category === "traditions"),
-        };
-        setCategories(organized);
-        setItems(itemList);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchStudentLife();
+    cachedGet("/api/student-life-page", get)
+      .then((d) => setData(d))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  const filteredItems = filter === "all" ? items : (categories[filter] || []);
+  // Close modal on Escape
+  useEffect(() => {
+    if (!selected) return;
+    const handler = (e) => {
+      if (e.key === "Escape") setSelected(null);
+    };
+    document.addEventListener("keydown", handler);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handler);
+      document.body.style.overflow = "";
+    };
+  }, [selected]);
+
+  const activities = data?.activities || [];
+  const filtered =
+    filter === "all"
+      ? activities
+      : activities.filter((a) => a.category === filter);
+
+  // Get unique categories that have activities
+  const activeCats = CATEGORIES.filter((c) =>
+    activities.some((a) => a.category === c.value)
+  );
+
+  const featuredActivities = activities.filter((a) => a.featured);
 
   if (loading) {
     return (
-      <main className="page student-life-page">
-        <h1>Student Life</h1>
-        <Loader message="Loading student life activities…" />
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="page student-life-page" style={{ padding: "1rem 8px" }}>
-        <h1>Student Life</h1>
-        <p style={{ color: "red" }}>{error}</p>
-      </main>
+      <div style={styles.loaderWrap}>
+        <div style={styles.loader} />
+      </div>
     );
   }
 
   return (
-    <main className="page student-life-page" style={{ padding: "1rem 8px", textAlign: "left" }}>
-      {/* ================= HERO SECTION ================= */}
-      <div
-        className="student-life-hero"
-        style={{
-          position: "relative",
-          width: "100vw",
-          marginLeft: "50%",
-          transform: "translateX(-50%)",
-          minHeight: 380,
-          overflow: "hidden",
-          marginBottom: 30,
-          background: `url('${CLD}/w_1200,q_auto,f_auto/kangaru/DSC_5384.jpg') center/cover no-repeat, linear-gradient(135deg, #667eea 0%, #764ba2 100%)`,
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.65))",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
-          }}
-        >
-          <div
-            style={{
-              maxWidth: 720,
-              width: "100%",
-              padding: "16px 20px",
-              borderRadius: 10,
-              backgroundColor: "rgba(0, 0, 0, 0.45)",
-              color: "#ffffff",
-              textAlign: "center",
-            }}
-          >
-            <h2 style={{ fontSize: "2rem", margin: "0 0 10px 0" }}>Student Life</h2>
-            <p style={{ fontSize: "1.1rem", margin: 0 }}>
-              Explore the vibrant life and activities at Kangaru Girls Senior School
-            </p>
+    <div style={styles.page}>
+      {/* ─── HERO ─────────────────────────────────────────────────────── */}
+      <section style={styles.hero}>
+        {data?.heroImage && (
+          <img
+            src={data.heroImage}
+            alt={data.title || "Student Life"}
+            style={styles.heroImg}
+          />
+        )}
+        <div style={styles.heroOverlay}>
+          <h1 style={styles.heroTitle}>
+            {data?.heroOverlayText || data?.title || "Student Life"}
+          </h1>
+          {data?.subtitle && (
+            <p style={styles.heroSubtitle}>{data.subtitle}</p>
+          )}
+        </div>
+      </section>
+
+      {/* ─── FEATURED ACTIVITIES ──────────────────────────────────────── */}
+      {featuredActivities.length > 0 && (
+        <section style={styles.featuredSection}>
+          <div style={styles.container}>
+            <h2 style={styles.sectionTitle}>Featured Activities</h2>
+            <div style={styles.featuredGrid}>
+              {featuredActivities.map((a, i) => {
+                const cat = CATEGORIES.find((c) => c.value === a.category);
+                return (
+                  <div
+                    key={i}
+                    style={styles.featuredCard}
+                    onClick={() => setSelected(a)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && setSelected(a)
+                    }
+                  >
+                    {a.imageUrl && (
+                      <OptimizedImage
+                        src={a.imageUrl}
+                        alt={a.imageAlt || a.title}
+                        style={styles.featuredImg}
+                      />
+                    )}
+                    <div style={styles.featuredContent}>
+                      <span
+                        style={{
+                          ...styles.badge,
+                          background: cat?.color || "#6b7280",
+                        }}
+                      >
+                        {cat?.label || a.category}
+                      </span>
+                      <h3 style={styles.featuredTitle}>{a.title}</h3>
+                      <p style={styles.featuredDesc}>
+                        {a.description?.slice(0, 120)}
+                        {a.description?.length > 120 ? "..." : ""}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </div>
-
-      <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ marginBottom: "0.5rem", textAlign: "left" }}>Student Life</h1>
-        <p style={{ margin: 0, textAlign: "left", color: "#666" }}>
-          Explore the vibrant life and activities at Kangaru Girls Senior School
-        </p>
-      </div>
-
-      {/* Category Filter */}
-      {Object.keys(categories).length > 1 && (
-        <div
-          style={{
-            display: "flex",
-            gap: "0.75rem",
-            marginBottom: "2rem",
-            flexWrap: "wrap",
-          }}
-        >
-          {Object.entries(categories).map(([cat, items]) => (
-            <button
-              key={cat}
-              onClick={() => setFilter(cat)}
-              style={{
-                padding: "0.5rem 1rem",
-                borderRadius: "6px",
-                border: filter === cat ? "2px solid #667eea" : "1px solid #ddd",
-                backgroundColor: filter === cat ? "#667eea" : "#fff",
-                color: filter === cat ? "#fff" : "#333",
-                cursor: "pointer",
-                fontSize: "0.9rem",
-                fontWeight: filter === cat ? "600" : "normal",
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                if (filter !== cat) {
-                  e.currentTarget.style.borderColor = "#667eea";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (filter !== cat) {
-                  e.currentTarget.style.borderColor = "#ddd";
-                }
-              }}
-            >
-              {cat.charAt(0).toUpperCase() + cat.slice(1)} ({items.length})
-            </button>
-          ))}
-        </div>
+        </section>
       )}
 
-      {/* Items Grid */}
-      {filteredItems.length > 0 ? (
-        <section style={{ marginTop: "1.5rem" }}>
-          <h2>
-            {filter === "all"
-              ? "All Activities"
-              : `${filter.charAt(0).toUpperCase() + filter.slice(1)}`}
-          </h2>
-          <div style={itemsWrapperStyle}>
-            {filteredItems.map((item) => {
-              const categoryColor = categoryColors[item.category] || "#667eea";
+      {/* ─── ALL ACTIVITIES ───────────────────────────────────────────── */}
+      <section style={styles.allSection}>
+        <div style={styles.container}>
+          <h2 style={styles.sectionTitle}>All Activities</h2>
 
-              return (
-                <article
-                  key={item._id}
-                  style={itemCardBaseStyle}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-4px)";
-                    e.currentTarget.style.boxShadow =
-                      "0 8px 12px rgba(0,0,0,0.15)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow =
-                      "0 4px 6px rgba(0,0,0,0.1)";
+          {/* Category filter pills */}
+          {activeCats.length > 1 && (
+            <div style={styles.filterWrap}>
+              <button
+                onClick={() => setFilter("all")}
+                style={{
+                  ...styles.filterPill,
+                  background: filter === "all" ? "#1f2937" : "#f3f4f6",
+                  color: filter === "all" ? "#fff" : "#374151",
+                }}
+              >
+                All
+              </button>
+              {activeCats.map((c) => (
+                <button
+                  key={c.value}
+                  onClick={() => setFilter(c.value)}
+                  style={{
+                    ...styles.filterPill,
+                    background:
+                      filter === c.value ? c.color : "#f3f4f6",
+                    color: filter === c.value ? "#fff" : "#374151",
                   }}
                 >
-                  {/* Item Image */}
-                  {item.imageUrl && (
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "220px",
-                        borderRadius: "8px",
-                        overflow: "hidden",
-                        marginBottom: "1rem",
-                        backgroundColor: "#f0f0f0",
-                        flexShrink: 0,
-                      }}
-                    >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Activity grid */}
+          <div style={styles.grid}>
+            {filtered.map((a, i) => {
+              const cat = CATEGORIES.find((c) => c.value === a.category);
+              return (
+                <div
+                  key={i}
+                  style={styles.card}
+                  onClick={() => setSelected(a)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && setSelected(a)
+                  }
+                  className="sl-card"
+                >
+                  <div style={styles.cardImgWrap}>
+                    {a.imageUrl ? (
                       <OptimizedImage
-                        src={item.imageUrl}
-                        alt={item.title}
-                        priority={false}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          display: "block",
-                        }}
+                        src={a.imageUrl}
+                        alt={a.imageAlt || a.title}
+                        style={styles.cardImg}
                       />
-                    </div>
-                  )}
-
-                  {/* Category Badge */}
-                  <div
-                    style={{
-                      display: "inline-block",
-                      marginBottom: "0.75rem",
-                      padding: "0.35rem 0.85rem",
-                      backgroundColor: categoryColor,
-                      color: "#fff",
-                      borderRadius: "20px",
-                      fontSize: "0.75rem",
-                      fontWeight: "600",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      width: "fit-content",
-                    }}
-                  >
-                    {item.category}
+                    ) : (
+                      <div style={styles.cardPlaceholder}>🎓</div>
+                    )}
+                    <span
+                      style={{
+                        ...styles.cardBadge,
+                        background: cat?.color || "#6b7280",
+                      }}
+                    >
+                      {cat?.label || a.category}
+                    </span>
+                    {a.featured && (
+                      <span style={styles.featuredBadge}>⭐</span>
+                    )}
                   </div>
-
-                  {/* Item Title */}
-                  <h3 style={{ marginTop: 0, marginBottom: "0.75rem", color: "#1f2937" }}>
-                    {item.title}
-                  </h3>
-
-                  {/* Item Description */}
-                  {item.description && (
-                    <p
-                      style={{
-                        fontSize: "0.95rem",
-                        margin: "0 0 1rem 0",
-                        lineHeight: "1.6",
-                        color: "#4b5563",
-                        flex: 1,
-                      }}
-                    >
-                      {item.description}
+                  <div style={styles.cardBody}>
+                    <h3 style={styles.cardTitle}>{a.title}</h3>
+                    <p style={styles.cardDesc}>
+                      {a.description?.slice(0, 100)}
+                      {a.description?.length > 100 ? "..." : ""}
                     </p>
-                  )}
-
-                  {/* Featured Badge */}
-                  {item.featured && (
-                    <div
-                      style={{
-                        display: "inline-block",
-                        padding: "0.35rem 0.75rem",
-                        backgroundColor: "#fef3c7",
-                        color: "#b45309",
-                        borderRadius: "4px",
-                        fontSize: "0.8rem",
-                        fontWeight: "600",
-                        marginTop: "auto",
-                        width: "fit-content",
-                      }}
-                    >
-                      ⭐ Featured
-                    </div>
-                  )}
-                </article>
+                    <span style={styles.viewMore}>Click to view →</span>
+                  </div>
+                </div>
               );
             })}
           </div>
-        </section>
-      ) : (
+
+          {filtered.length === 0 && (
+            <p style={styles.empty}>No activities found in this category.</p>
+          )}
+        </div>
+      </section>
+
+      {/* ─── MODAL ────────────────────────────────────────────────────── */}
+      {selected && (
         <div
-          style={{
-            padding: "2rem",
-            textAlign: "center",
-            background: "#f5f5f5",
-            borderRadius: "8px",
-          }}
+          style={styles.modalOverlay}
+          onClick={() => setSelected(null)}
         >
-          <p style={{ color: "#999" }}>
-            No {filter === "all" ? "" : filter} activities available at this time.
-          </p>
+          <div
+            style={styles.modal}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelected(null)}
+              style={styles.modalClose}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+
+            {selected.imageUrl && (
+              <img
+                src={selected.imageUrl.replace(
+                  /w_\d+/,
+                  "w_1200"
+                )}
+                alt={selected.imageAlt || selected.title}
+                style={styles.modalImg}
+              />
+            )}
+
+            <div style={styles.modalBody}>
+              {(() => {
+                const cat = CATEGORIES.find(
+                  (c) => c.value === selected.category
+                );
+                return (
+                  <span
+                    style={{
+                      ...styles.badge,
+                      background: cat?.color || "#6b7280",
+                      marginBottom: 12,
+                      display: "inline-block",
+                    }}
+                  >
+                    {cat?.label || selected.category}
+                  </span>
+                );
+              })()}
+              <h2 style={styles.modalTitle}>{selected.title}</h2>
+              <p style={styles.modalDesc}>{selected.description}</p>
+            </div>
+          </div>
         </div>
       )}
-    </main>
+
+      {/* ─── INLINE STYLES (hover effects) ────────────────────────────── */}
+      <style>{`
+        .sl-card {
+          transition: transform 0.2s, box-shadow 0.2s;
+          cursor: pointer;
+        }
+        .sl-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+        }
+        @keyframes slFadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </div>
   );
 }
+
+// ─── Styles ─────────────────────────────────────────────────────────────────
+const styles = {
+  page: { minHeight: "100vh", background: "#fff" },
+
+  // Loader
+  loaderWrap: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "60vh",
+  },
+  loader: {
+    width: 40,
+    height: 40,
+    border: "4px solid #e5e7eb",
+    borderTopColor: "#059669",
+    borderRadius: "50%",
+    animation: "spin 0.8s linear infinite",
+  },
+
+  // Hero
+  hero: {
+    position: "relative",
+    height: "50vh",
+    minHeight: 340,
+    overflow: "hidden",
+  },
+  heroImg: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
+  heroOverlay: {
+    position: "absolute",
+    inset: 0,
+    background: "linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.2))",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "flex-end",
+    padding: "40px 5%",
+  },
+  heroTitle: {
+    color: "#fff",
+    fontSize: "clamp(28px, 5vw, 48px)",
+    fontWeight: 800,
+    margin: 0,
+    textShadow: "0 2px 8px rgba(0,0,0,0.4)",
+  },
+  heroSubtitle: {
+    color: "rgba(255,255,255,0.9)",
+    fontSize: "clamp(14px, 2vw, 20px)",
+    marginTop: 8,
+    maxWidth: 680,
+  },
+
+  // Container
+  container: { maxWidth: 1200, margin: "0 auto", padding: "0 20px" },
+
+  // Section titles
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: 700,
+    color: "#1f2937",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+
+  // Featured section
+  featuredSection: {
+    padding: "48px 0 32px",
+    background: "#f9fafb",
+  },
+  featuredGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+    gap: 24,
+  },
+  featuredCard: {
+    display: "flex",
+    borderRadius: 16,
+    overflow: "hidden",
+    background: "#fff",
+    boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+    cursor: "pointer",
+    transition: "transform 0.2s, box-shadow 0.2s",
+  },
+  featuredImg: {
+    width: 200,
+    minHeight: 180,
+    objectFit: "cover",
+    flexShrink: 0,
+  },
+  featuredContent: { padding: 20, flex: 1 },
+  featuredTitle: {
+    fontSize: 18,
+    fontWeight: 700,
+    color: "#1f2937",
+    margin: "8px 0 6px",
+  },
+  featuredDesc: { fontSize: 14, color: "#6b7280", margin: 0, lineHeight: 1.5 },
+
+  // All section
+  allSection: { padding: "48px 0 64px" },
+
+  // Filters
+  filterWrap: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "center",
+    marginBottom: 28,
+  },
+  filterPill: {
+    padding: "6px 18px",
+    borderRadius: 20,
+    border: "none",
+    cursor: "pointer",
+    fontWeight: 500,
+    fontSize: 14,
+    transition: "background 0.2s, color 0.2s",
+  },
+
+  // Grid cards
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+    gap: 24,
+  },
+  card: {
+    borderRadius: 16,
+    overflow: "hidden",
+    background: "#fff",
+    boxShadow: "0 1px 8px rgba(0,0,0,0.06)",
+    border: "1px solid #f3f4f6",
+  },
+  cardImgWrap: { position: "relative", height: 200 },
+  cardImg: { width: "100%", height: "100%", objectFit: "cover" },
+  cardPlaceholder: {
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 48,
+    background: "#f3f4f6",
+  },
+  cardBadge: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: 600,
+    padding: "3px 10px",
+    borderRadius: 12,
+  },
+  featuredBadge: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    fontSize: 18,
+  },
+  cardBody: { padding: 16 },
+  cardTitle: {
+    fontSize: 17,
+    fontWeight: 700,
+    color: "#1f2937",
+    margin: "0 0 6px",
+  },
+  cardDesc: {
+    fontSize: 14,
+    color: "#6b7280",
+    margin: "0 0 10px",
+    lineHeight: 1.5,
+  },
+  viewMore: {
+    fontSize: 13,
+    color: "#059669",
+    fontWeight: 600,
+  },
+
+  // Badge
+  badge: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: 600,
+    padding: "3px 12px",
+    borderRadius: 12,
+  },
+
+  // Empty state
+  empty: {
+    textAlign: "center",
+    color: "#9ca3af",
+    padding: 48,
+    fontSize: 16,
+  },
+
+  // Modal
+  modalOverlay: {
+    position: "fixed",
+    inset: 0,
+    zIndex: 9999,
+    background: "rgba(0,0,0,0.7)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+    animation: "slFadeIn 0.25s ease-out",
+  },
+  modal: {
+    background: "#fff",
+    borderRadius: 16,
+    maxWidth: 720,
+    width: "100%",
+    maxHeight: "90vh",
+    overflow: "auto",
+    position: "relative",
+  },
+  modalClose: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    zIndex: 10,
+    background: "rgba(0,0,0,0.5)",
+    color: "#fff",
+    border: "none",
+    borderRadius: "50%",
+    width: 36,
+    height: 36,
+    fontSize: 18,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalImg: {
+    width: "100%",
+    maxHeight: 400,
+    objectFit: "cover",
+  },
+  modalBody: { padding: 24 },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 700,
+    color: "#1f2937",
+    margin: "8px 0 12px",
+  },
+  modalDesc: {
+    fontSize: 16,
+    color: "#4b5563",
+    lineHeight: 1.7,
+    whiteSpace: "pre-wrap",
+  },
+};

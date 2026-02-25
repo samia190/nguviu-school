@@ -1,123 +1,161 @@
-import React, { useEffect, useState } from "react";
-import EditableFileList from "./EditableFileList";
-import AdmissionForm from "./AdmissionForm";
+// src/components/Admissions.jsx
+import { useEffect, useState } from "react";
 import { get } from "../utils/api";
+import { cachedGet } from "../utils/apiCache";
+import OptimizedImage from "./OptimizedImage";
+import AdmissionForm from "./AdmissionForm";
 import Loader from "./Loader";
 
-export default function Admissions({ user }) {
-  const [content, setContent] = useState(null);
+export default function Admissions() {
+  const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    async function fetchContent() {
-      try {
-        setLoading(true);
-        setError("");
-        const data = await get("/api/content/admissions");
-        setContent(data || {});
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load admissions information.");
-        setLoading(false);
-      }
-    }
-    fetchContent();
+    setLoading(true);
+    cachedGet("/api/admissions-page", () => get("/api/admissions-page"))
+      .then((data) => setPage(data))
+      .catch(() => setError("Failed to load admissions information."))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return (
-      <section style={{ padding: 20 }}>
-        <h1>Admissions</h1>
-        <Loader message="Loading admissions information…" />
-      </section>
-    );
-  }
+  if (loading) return <Loader text="Loading admissions..." />;
+  if (error) return <div className="page-error">{error}</div>;
+  if (!page) return null;
 
-  if (!content) {
-    return (
-      <section style={{ padding: 20 }}>
-        <h1>Admissions</h1>
-        <p>No admissions information available yet.</p>
-      </section>
-    );
-  }
-
-  const title = content.title || "Admissions";
-  const overview =
-    content.overview ||
-    content.body ||
-    "We welcome applications from girls across Kenya who are passionate about learning and growth.";
-
-  const process =
-    content.process ||
-    "Our admissions process is transparent, student–centered, and guided by the Ministry of Education regulations.";
-
-  const requirements =
-    content.requirements ||
-    "Applicants should attach recent report forms, birth certificate, and any supporting documents requested.";
-
-  const importantDates =
-    content.importantDates ||
-    "Key dates such as interview days and reporting dates will be communicated through this page.";
-
-  const contactInfo =
-    content.contactInfo ||
-    "For any question on admissions, kindly reach the school office through the official contacts on the Contact page.";
-
-  const downloadsHeading =
-    content.downloadsHeading ||
-    "Downloads – application forms and related documents";
-
-  const attachments = content.attachments || [];
+  const downloads = page.downloads || [];
 
   return (
-    <section style={{ padding: "20px 8px", textAlign: "left" }}>
-      <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ marginBottom: "0.5rem", textAlign: "left" }}>{title}</h1>
-        <p style={{ fontSize: "0.98rem", color: "black", fontStyle: "italic", margin: 0, textAlign: "left" }}>{overview}</p>
-      </div>
+    <div className="page admissions-page" style={{ maxWidth: 960, margin: "0 auto", padding: "24px 16px" }}>
+      {/* Hero */}
+      {page.heroImage && (
+        <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 28 }}>
+          <OptimizedImage
+            src={page.heroImage}
+            alt={page.title}
+            style={{ width: "100%", maxHeight: 300, objectFit: "cover" }}
+          />
+        </div>
+      )}
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      <section style={{ marginTop: "1rem" }}>
-        <h2>Admissions Process</h2>
-        <p style={{ whiteSpace: "pre-wrap" }}>{process}</p>
-      </section>
-
-      <section style={{ marginTop: "1rem" }}>
-        <h2>Requirements</h2>
-        <p style={{ whiteSpace: "pre-wrap" }}>{requirements}</p>
-      </section>
-
-      <section style={{ marginTop: "1rem" }}>
-        <h2>Important Dates</h2>
-        <p style={{ whiteSpace: "pre-wrap" }}>{importantDates}</p>
-      </section>
-
-      <section style={{ marginTop: "1rem" }}>
-        <h2>Contact for Admissions</h2>
-        <p style={{ whiteSpace: "pre-wrap" }}>{contactInfo}</p>
-      </section>
-
-      <section style={{ marginTop: "1.5rem" }}>
-        <h2>{downloadsHeading}</h2>
-        {attachments.length === 0 && (
-          <p>
-            No downloadable documents have been uploaded yet. Please check back
-            later or contact the school office.
+      {/* Title & Subtitle */}
+      <header style={{ marginBottom: 28 }}>
+        <h1 style={{ fontSize: "clamp(1.6rem, 4vw, 2.4rem)", fontWeight: 800, margin: 0 }}>
+          {page.title}
+        </h1>
+        {page.subtitle && (
+          <p style={{ fontSize: "1rem", color: "#4b5563", fontStyle: "italic", margin: "8px 0 0" }}>
+            {page.subtitle}
           </p>
         )}
-        {attachments.length > 0 && (
-          <EditableFileList files={attachments} isAdmin={false} />
-        )}
-      </section>
+      </header>
 
-      {/* Embedded admission submission form */}
-      <section style={{ marginTop: "2rem" }}>
-        <AdmissionForm />
-      </section>
-    </section>
+      {/* Overview */}
+      {page.overview && (
+        <section style={{ marginBottom: 24 }}>
+          <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, color: "#1f2937" }}>{page.overview}</p>
+        </section>
+      )}
+
+      {/* Process */}
+      {page.process && (
+        <section style={{ marginBottom: 24 }}>
+          <h2 style={sectionHead}>Admissions Process</h2>
+          <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, color: "#374151" }}>{page.process}</p>
+        </section>
+      )}
+
+      {/* Requirements */}
+      {page.requirements && (
+        <section style={{ marginBottom: 24 }}>
+          <h2 style={sectionHead}>Requirements</h2>
+          <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, color: "#374151" }}>{page.requirements}</p>
+        </section>
+      )}
+
+      {/* Important Dates */}
+      {page.importantDates && (
+        <section style={{ marginBottom: 24 }}>
+          <h2 style={sectionHead}>Important Dates</h2>
+          <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, color: "#374151" }}>{page.importantDates}</p>
+        </section>
+      )}
+
+      {/* Contact */}
+      {page.contactInfo && (
+        <section style={{ marginBottom: 24 }}>
+          <h2 style={sectionHead}>Contact for Admissions</h2>
+          <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, color: "#374151" }}>{page.contactInfo}</p>
+        </section>
+      )}
+
+      {/* Downloads */}
+      {downloads.length > 0 && (
+        <section style={{ marginBottom: 32 }}>
+          <h2 style={sectionHead}>{page.downloadsHeading || "Downloads"}</h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
+            {downloads.map((dl, i) => (
+              <a
+                key={dl.url || i}
+                href={dl.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "14px 16px",
+                  background: "#f0f4ff",
+                  borderRadius: 10,
+                  textDecoration: "none",
+                  color: "#1e40af",
+                  border: "1px solid #dbeafe",
+                  transition: "background .2s",
+                }}
+              >
+                <span style={{ fontSize: 24 }}>📄</span>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: "0.95rem" }}>{dl.name || "Download"}</div>
+                  {dl.description && (
+                    <div style={{ fontSize: "0.8rem", color: "#6b7280", marginTop: 2 }}>{dl.description}</div>
+                  )}
+                  {dl.size > 0 && (
+                    <div style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: 2 }}>
+                      {dl.size > 1024 * 1024
+                        ? (dl.size / (1024 * 1024)).toFixed(1) + " MB"
+                        : (dl.size / 1024).toFixed(1) + " KB"}
+                    </div>
+                  )}
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Embedded Admission Application Form */}
+      {page.formEnabled && (
+        <section style={{ marginTop: 32 }}>
+          <AdmissionForm
+            year={page.admissionYear}
+            formTitle={page.formTitle}
+            downloads={downloads}
+            formSteps={page.formSteps}
+            formDeclarations={page.formDeclarations}
+            formInstructions={page.formInstructions}
+            formDisclaimer={page.formDisclaimer}
+          />
+        </section>
+      )}
+    </div>
   );
 }
+
+const sectionHead = {
+  fontSize: "1.3rem",
+  fontWeight: 700,
+  color: "#111827",
+  marginBottom: 10,
+  paddingBottom: 6,
+  borderBottom: "2px solid #e5e7eb",
+};

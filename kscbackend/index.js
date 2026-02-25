@@ -14,17 +14,21 @@ import { connectToDatabase, isDbConnected as getDbConnected } from "./services/d
 import footerLinksRoutes from "./routes/footerLinks.js";
 import authRoutes from "./routes/auth.js";
 import contentRoutes from "./routes/content.js";
+import homePageRoutes from "./routes/home.js";
 import homeRoutes from "./routes/contentHome.js";
+import aboutPageRoutes from "./routes/about.js";
 import aboutRoutes from "./routes/contentAbout.js";
 import filesRoutes from "./routes/files.js";
 import downloadRoutes from "./routes/downloads.js";
 import galleryRoutes from "./routes/galleryAttachments.js";
+import galleryPageRoutes from "./routes/gallery-page.js";
 import adminRoutes from "./routes/admin.js";
 import submissionsRoutes from "./routes/submissions.js";
 import submitFormRoutes from "./routes/submitForm.js";
 import studentVerificationRoutes from "./routes/studentVerification.js";
 import resultsRoutes from "./routes/results.js";
 import performanceRoutes from "./routes/performance.js";
+import performancePageRoutes from "./routes/performance-page.js";
 import schoolMagazineRoutes from "./routes/schoolMagazine.js";
 import admissionsRoutes from "./routes/admissions.js";
 import staffRoutes from "./routes/staff.js";
@@ -32,7 +36,11 @@ import heroContentRoutes from "./routes/heroContent.js";
 import homeNewsRoutes from "./routes/homeNews.js";
 import adminStudentsRoutes from "./routes/adminStudents.js";
 import eventsRoutes from "./routes/events.js";
-import studentLifeRoutes from "./routes/studentLife.js";
+import eventsPageRoutes from "./routes/events-page.js";
+import studentLifePageRoutes from "./routes/student-life-page.js";
+import studentPageRoutes from "./routes/student-page.js";
+import curriculumPageRoutes from "./routes/curriculum-page.js";
+import admissionsPageRoutes from "./routes/admissions-page.js";
 import homeworkRoutes from "./routes/homework.js";
 
 // Initialize the Express app
@@ -144,9 +152,14 @@ app.use("/images", cors(), express.static(imagesDir, {
 
 // Mount routes
 app.use("/api/auth", authRoutes);
+// Mount new unified home routes FIRST (highest priority)
+app.use("/api/home", homePageRoutes);
+// Mount new unified about routes (highest priority for about)
+app.use("/api/about", aboutPageRoutes);
 // Mount dedicated content routes BEFORE the generic content router so they take precedence
 app.use("/api/content/home", homeRoutes);
 app.use("/api/content/about", aboutRoutes);
+app.use("/api/gallery-page", galleryPageRoutes);
 app.use("/api/content/gallery", galleryRoutes);
 app.use("/api/content", contentRoutes);
 app.use("/api/files", filesRoutes);
@@ -158,6 +171,7 @@ app.use("/api/submit-form", submitFormRoutes);
 app.use("/api/footer-links", footerLinksRoutes);
 app.use("/api/student-verification", studentVerificationRoutes);
 app.use("/api/results", resultsRoutes);
+app.use("/api/performance-page", performancePageRoutes);
 app.use("/api/performance", performanceRoutes);
 app.use("/api/school-magazine", schoolMagazineRoutes);
 app.use("/api/admissions", admissionsRoutes);
@@ -165,8 +179,12 @@ app.use("/api/staff", staffRoutes);
 app.use("/api/hero-content", heroContentRoutes);
 app.use("/api/home-news", homeNewsRoutes);
 app.use("/api/admin/students", adminStudentsRoutes);
+app.use("/api/events-page", eventsPageRoutes);
 app.use("/api/events", eventsRoutes);
-app.use("/api/student-life", studentLifeRoutes);
+app.use("/api/student-life-page", studentLifePageRoutes);
+app.use("/api/student-page", studentPageRoutes);
+app.use("/api/curriculum-page", curriculumPageRoutes);
+app.use("/api/admissions-page", admissionsPageRoutes);
 app.use("/api/homework", homeworkRoutes);
 
 // ==========================================

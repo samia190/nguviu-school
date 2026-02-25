@@ -31,22 +31,14 @@ const TeacherHomework = lazy(() => import("./components/TeacherHomework"));
 const StudentVerification = lazy(() => import("./components/StudentVerification"));
 const StudentResults = lazy(() => import("./components/StudentResults"));
 const ResultsManagement = lazy(() => import("./components/ResultsManagement"));
-const SchoolPerformance = lazy(() => import("./components/SchoolPerformance"));
-const SchoolPerformanceAdmin = lazy(() => import("./components/SchoolPerformanceAdmin"));
+// SchoolPerformance and SchoolPerformanceAdmin removed — absorbed into unified Performance page
 
-const CurriculumOverview = lazy(() => import("./components/subpages/CurriculumOverview.jsx"));
-const CurriculumPrimary = lazy(() => import("./components/subpages/CurriculumPrimary.jsx"));
-const CurriculumSecondary = lazy(() => import("./components/subpages/CurriculumSecondary.jsx"));
-const CurriculumSyllabus = lazy(() => import("./components/subpages/CurriculumSyllabus.jsx"));
-const CurriculumExtracurricular = lazy(() => import("./components/subpages/CurriculumExtracurricular.jsx"));
-const CurriculumAssessment = lazy(() => import("./components/subpages/CurriculumAssessment.jsx"));
-const CurriculumDynamicSection = lazy(() => import("./components/subpages/CurriculumDynamicSection.jsx"));
-const StudentAdmissionsGuide = lazy(() => import("./components/subpages/StudentAdmissionsGuide.jsx"));
+
 const StudentFees = lazy(() => import("./components/subpages/StudentFees.jsx"));
 const StudentExams = lazy(() => import("./components/subpages/StudentExams.jsx"));
 const StudentClubs = lazy(() => import("./components/subpages/StudentClubs.jsx"));
 const StudentSupportServices = lazy(() => import("./components/subpages/StudentSupportServices.jsx"));
-const CurriculumCareers = lazy(() => import("./components/subpages/CurriculumCareers.jsx"));
+
 const PageBackgroundManagement = lazy(() => import("./components/PageBackgroundManagement"));
 
 function MenuButton({ route, setRoute, setLoading, user }) {
@@ -73,7 +65,6 @@ function MenuButton({ route, setRoute, setLoading, user }) {
     { key: "student-life", label: "Student Life", icon: "🎓" },
     { key: "feestructure", label: "Fee Structure", icon: "💰" },
     { key: "curriculum", label: "Curriculum", icon: "📖" },
-    { key: "curriculum/careers", label: "Curriculum Careers", icon: "💼" },
     { key: "performance", label: "Performance", icon: "📊" },
     { key: "policies", label: "Policies", icon: "📋" },
     { key: "parents", label: "Parents", icon: "👨‍👩‍👧" },
@@ -82,7 +73,10 @@ function MenuButton({ route, setRoute, setLoading, user }) {
     { key: "legal", label: "Legal", icon: "⚖️" },
     { key: "newsletter", label: "Newsletter", icon: "📰" },
     { key: "contact", label: "Contact", icon: "📞" },
-    { key: "portal/homework", label: "Homework Portal", icon: "📚" },
+    // Homework portal: only visible to students, teachers, and admins
+    ...(user && (user.role === "student" || user.role === "teacher" || user.role === "admin") ? [
+      { key: "portal/homework", label: "Homework Portal", icon: "📚" }
+    ] : []),
   ];
 
   const handleClick = (key) => {
@@ -404,37 +398,11 @@ export default function App() {
             case "admissions":
               return <Admissions user={user} />;
 
-            case "curriculum": {
-            const parts = route.split("/");
-            const subRoute = parts[1]; // "overview", "primary", "careers", etc.
-
-  switch (subRoute) {
-    case undefined:
-      return <Curriculum user={user} />;
-    case "overview":
-      return <CurriculumOverview user={user} />;
-    case "primary":
-      return <CurriculumPrimary user={user} />;
-    case "secondary":
-      return <CurriculumSecondary user={user} />;
-    case "syllabus":
-      return <CurriculumSyllabus user={user} />;
-    case "extracurricular":
-      return <CurriculumExtracurricular user={user} />;
-    case "assessment":
-      return <CurriculumAssessment user={user} />;
-    case "careers":
-      // if you want the static Careers component:
-      return <CurriculumCareers user={user} />;
-
-    default:
-      // any other slug -> dynamic admin-created subpage
-      return <CurriculumDynamicSection slug={subRoute} />;
-  }
-}
+            case "curriculum":
+              return <Curriculum />;
 
             case "performance":
-              return <Performance user={user} />;
+              return <Performance />;
 
             case "policies":
               return <Policies user={user} />;
@@ -458,9 +426,18 @@ export default function App() {
               return <Student user={user} subRoute={subRoute} setRoute={setRoute} />;
 
             case "portal":
-              // ✅ Homework portal route handled here
+              // ✅ Homework portal — restricted to students, teachers, admins
               if (subRoute === "homework") {
-                return <HomeworkPortal user={user} />;
+                if (user && (user.role === "student" || user.role === "teacher" || user.role === "admin")) {
+                  return <HomeworkPortal user={user} />;
+                }
+                return (
+                  <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                    <h2>🔒 Access Restricted</h2>
+                    <p>The Homework Portal is only available to registered students, teachers, and administrators.</p>
+                    <button onClick={() => setRoute("login")} style={{ padding: "10px 24px", background: "#667eea", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "16px", marginTop: "16px" }}>Log In</button>
+                  </div>
+                );
               }
               // fallback if someone navigates to just "portal"
               return <Home user={user} setRoute={setRoute} />;
@@ -515,10 +492,8 @@ export default function App() {
               return <div>Access denied — admin only</div>;
 
             case "performance-management":
-              // Admin-only route for managing school performance
-              if (user?.role === "admin")
-                return <SchoolPerformanceAdmin user={user} />;
-              return <div>Access denied — admin only</div>;
+              // Redirect to admin dashboard performance tab
+              return <AdminDashboard user={user} />;
 
             case "admin":
               if (user?.role === "admin")

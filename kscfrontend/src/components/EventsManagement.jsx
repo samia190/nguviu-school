@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { get, put, upload, del, post } from "../utils/api";
+import { get, put, upload } from "../utils/api";
 
-
-function fileHref(file) {
-  return file?.downloadUrl || file?.url || "";
-}
+const CATEGORIES = [
+  { value: "academic", label: "Academic", color: "#3b82f6" },
+  { value: "sports", label: "Sports", color: "#10b981" },
+  { value: "cultural", label: "Cultural", color: "#f59e0b" },
+  { value: "religious", label: "Religious", color: "#8b5cf6" },
+  { value: "administrative", label: "Administrative", color: "#6366f1" },
+  { value: "social", label: "Social", color: "#ec4899" },
+  { value: "other", label: "Other", color: "#6b7280" },
+];
 
 const COLOR_OPTIONS = [
   { value: "#f3f4f6", label: "Light Grey" },
@@ -12,898 +17,382 @@ const COLOR_OPTIONS = [
   { value: "#dcfce7", label: "Light Green" },
   { value: "#fef3c7", label: "Light Yellow" },
   { value: "#fee2e2", label: "Light Red" },
+  { value: "#f3e8ff", label: "Light Purple" },
 ];
 
+const emptyEvent = {
+  title: "",
+  description: "",
+  date: "",
+  endDate: "",
+  location: "",
+  category: "other",
+  imageUrl: "",
+  imageAlt: "",
+  featured: false,
+  active: true,
+  displayOrder: 0,
+  color: "#f3f4f6",
+  linkUrl: "",
+};
+
 export default function EventsManagement() {
-  const [content, setContent] = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [tab, setTab] = useState("settings");
+  const [saving, setSaving] = useState(false);
 
-  // Intro form
-  const [textForm, setTextForm] = useState({ title: "", body: "" });
-  const [savingText, setSavingText] = useState(false);
+  // Page settings form
+  const [settings, setSettings] = useState({ title: "", intro: "", heroImage: "", heroOverlayText: "" });
 
-  // Upload files
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [uploading, setUploading] = useState(false);
-
-  // Attachments
-  const attachments = content?.attachments || [];
-
-  // Events list
+  // Events
   const [events, setEvents] = useState([]);
-  const [eventForm, setEventForm] = useState({
-    title: "",
-    description: "",
-    date: "",
-    location: "",
-    color: COLOR_OPTIONS[0].value,
-    linkUrl: "",
-  });
-  const [savingEvents, setSavingEvents] = useState(false);
+  const [editEvent, setEditEvent] = useState(null); // null = adding new, or index
+  const [eventForm, setEventForm] = useState({ ...emptyEvent });
+  const [imageUploading, setImageUploading] = useState(false);
+  const [heroUploading, setHeroUploading] = useState(false);
 
-  useEffect(() => {
-    fetchContent();
-  }, []);
+  // Filters
+  const [filterCategory, setFilterCategory] = useState("all");
 
-  async function fetchContent() {
+  useEffect(() => { fetchData(); }, []);
+
+  async function fetchData() {
     setLoading(true);
     setError("");
     try {
-      const data = await get("/api/content/events");
-      const safe = data || {};
-      setContent(safe);
-      setTextForm({
-        title: safe.title || "School Events",
-        body:
-          safe.body ||
-          safe.intro ||
-          "Manage upcoming and past events, activities, and key dates.",
+      const d = await get("/api/events-page/admin");
+      setData(d);
+      setSettings({
+        title: d.title || "School Events",
+        intro: d.intro || "",
+        heroImage: d.heroImage || "",
+        heroOverlayText: d.heroOverlayText || "",
       });
-      const existingEvents =
-        (safe.data && Array.isArray(safe.data.events) && safe.data.events) || [];
-      setEvents(existingEvents);
-      setLoading(false);
+      setEvents(d.events || []);
     } catch (err) {
-      console.error(err);
-      setError(err.message || "Error loading events content");
-      setLoading(false);
-    }
-  }
-
-  // -------- Intro text --------
-  function handleTextChange(e) {
-    const { name, value } = e.target;
-    setTextForm((prev) => ({ ...prev, [name]: value }));
-  }
-
-  async function handleSaveText(e) {
-    e.preventDefault();
-    setSavingText(true);
-    setError("");
-    setSuccess("");
-
-    // Validation
-    if (textForm.title.length > 255) {
-      setError("Title must be 255 characters or less");
-      setSavingText(false);
-      return;
-    }
-    if (textForm.body.length > 5000) {
-      setError("Body must be 5000 characters or less");
-      setSavingText(false);
-      return;
-    }
-
-    try {
-      // If content exists, update it; otherwise create it
-      if (content?._id) {
-        await put(`/api/content/${content._id}`, {
-          title: textForm.title,
-          body: textForm.body,
-        });
-      } else {
-        await post("/api/content", {
-          type: "events",
-          title: textForm.title,
-          body: textForm.body,
-        });
-      }
-      setSuccess("Events intro text saved.");
-      await fetchContent();
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Error saving intro text");
+      setError(err.message || "Failed to load events page");
     } finally {
-      setSavingText(false);
+      setLoading(false);
     }
   }
 
-  // -------- File uploads --------
-  function handleFileChange(e) {
-    const files = Array.from(e.target.files || []);
-    setSelectedFiles(files);
-  }
+  function flash(msg) { setSuccess(msg); setTimeout(() => setSuccess(""), 3000); }
 
-  async function handleUploadFiles(e) {
-    e.preventDefault();
-    if (!selectedFiles.length) {
-      setError("Please choose one or more files to upload.");
-      return;
-    }
-    setUploading(true);
+  async function save(updates) {
+    setSaving(true);
     setError("");
-    setSuccess("");
+    try {
+      const d = await put("/api/events-page", updates);
+      setData(d);
+      setSettings({
+        title: d.title || "",
+        intro: d.intro || "",
+        heroImage: d.heroImage || "",
+        heroOverlayText: d.heroOverlayText || "",
+      });
+      setEvents(d.events || []);
+      flash("Saved successfully!");
+    } catch (err) {
+      setError(err.message || "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleUploadImage(file, onUrl) {
+    if (!file) return;
+    const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!ALLOWED.includes(file.type)) { setError("Only JPEG, PNG, WebP, GIF allowed"); return; }
+    if (file.size > 20 * 1024 * 1024) { setError("Image too large (max 20 MB)"); return; }
     try {
       const fd = new FormData();
-      fd.append("type", "events");
-      selectedFiles.forEach((file) => {
-        fd.append("files", file);
-      });
-
-      await upload("/api/admin/content", fd);
-      setSuccess("Event files uploaded successfully.");
-      setSelectedFiles([]);
-      await fetchContent();
+      fd.append("file", file);
+      const result = await upload("/api/events-page/upload", fd);
+      if (result?.url) onUrl(result.url);
+      else setError("Upload succeeded but no URL returned");
     } catch (err) {
-      console.error(err);
-      setError(err.message || "Error uploading files");
-    } finally {
-      setUploading(false);
+      setError("Upload failed: " + (err.message || "Unknown error"));
     }
   }
 
-  // -------- Media meta (title / description for each attachment) --------
-  function handleMediaMetaChange(index, field, value) {
-    setContent((prev) => {
-      if (!prev) return prev;
-      const nextAttachments = [...(prev.attachments || [])];
-      nextAttachments[index] = { ...nextAttachments[index], [field]: value };
-      return { ...prev, attachments: nextAttachments };
-    });
-  }
-
-  async function handleSaveMediaDetails() {
-    if (!content?._id) {
-      setError("Cannot save media details: missing content ID.");
-      return;
-    }
-    setError("");
-    setSuccess("");
-    try {
-      const updated = await put(`/api/content/${content._id}`, {
-        attachments: content.attachments || [],
-      });
-      setContent(updated);
-      setSuccess("Media titles and descriptions saved.");
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Error saving media details");
-    }
-  }
-  async function handleDeleteMedia(mediaId) {
-  if (!content?._id) {
-    setError("Cannot delete media: please save/upload at least one file first.");
-    return;
-  }
-
-  if (!window.confirm("Delete this file permanently?")) return;
-
-  try {
-    await del(`/api/admin/content/${content._id}/media/${encodeURIComponent(mediaId)}`);
-    setSuccess("Media deleted.");
-    await fetchContent();
-  } catch (err) {
-    setError(err.message || "Failed to delete media");
-  }
-}
-
-async function handleReplaceMedia(mediaId, newFile) {
-  if (!content?._id) {
-    setError("Cannot replace media: please save/upload at least one file first.");
-    return;
-  }
-
-  // Validate file type and size
-  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml', 'video/mp4', 'video/webm', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-  const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
-
-  if (!ALLOWED_TYPES.includes(newFile.type)) {
-    setError(`Invalid file type: ${newFile.name}. Allowed: Images, Videos, PDFs, Word docs`);
-    return;
-  }
-  if (newFile.size > MAX_FILE_SIZE) {
-    setError(`File size must be 100MB or less. Received: ${(newFile.size / 1024 / 1024).toFixed(2)}MB`);
-    return;
-  }
-
-  const fd = new FormData();
-  fd.append("file", newFile);
-
-  try {
-    await upload(
-      `/api/admin/content/${content._id}/media/${encodeURIComponent(mediaId)}`,
-      fd,
-      {},
-      { method: "PUT" }
-    );
-    setSuccess("Media replaced.");
-    await fetchContent();
-  } catch (err) {
-    setError(err.message || "Failed to replace media");
-  }
-}
-
-
-  // -------- Events list --------
-  function handleEventFormChange(e) {
-    const { name, value } = e.target;
-    setEventForm((prev) => ({ ...prev, [name]: value }));
-  }
-
-  async function handleAddEvent(e) {
-    e.preventDefault();
-    if (!content?._id) {
-      setError(
-        "Please save the events intro text or upload a file once before adding events."
-      );
-      return;
-    }
-    if (!eventForm.title.trim() && !eventForm.description.trim()) {
-      setError("Please provide at least a title or description for the event.");
-      return;
-    }
-
-    // Validation
-    if (eventForm.title.length > 255) {
-      setError("Event title must be 255 characters or less");
-      return;
-    }
-    if (eventForm.description.length > 2000) {
-      setError("Event description must be 2000 characters or less");
-      return;
-    }
-    if (eventForm.location.length > 500) {
-      setError("Event location must be 500 characters or less");
-      return;
-    }
-    if (eventForm.linkUrl && eventForm.linkUrl.trim().length > 0) {
-      // Basic URL validation
-      try {
-        new URL(eventForm.linkUrl, window.location.origin);
-      } catch {
-        setError("Invalid URL format for event link");
-        return;
-      }
-    }
-
-    setSavingEvents(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const newEvent = {
-        id: Date.now().toString(),
-        title: eventForm.title,
-        description: eventForm.description,
-        date: eventForm.date || null,
-        location: eventForm.location || "",
-        color: eventForm.color || COLOR_OPTIONS[0].value,
-        linkUrl: eventForm.linkUrl || "",
-        createdAt: new Date().toISOString(),
-      };
-
-      const updatedEvents = [newEvent, ...(events || [])];
-
-      const updated = await put(`/api/content/${content._id}`, {
-        data: {
-          ...(content.data || {}),
-          events: updatedEvents,
-        },
-      });
-      if (!updated) throw new Error("Failed to save events");
-      setContent(updated);
-      const freshEvents =
-        (updated.data && Array.isArray(updated.data.events) && updated.data.events) ||
-        [];
-      setEvents(freshEvents);
-      setEventForm({
-        title: "",
-        description: "",
-        date: "",
-        location: "",
-        color: eventForm.color,
-        linkUrl: "",
-      });
-      setSuccess("Event added.");
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Error adding event");
-    } finally {
-      setSavingEvents(false);
-    }
-  }
-
-  function handleEventChange(index, field, value) {
-    setEvents((prev) => {
-      const copy = [...prev];
-      copy[index] = { ...copy[index], [field]: value };
-      return copy;
-    });
-  }
-
-  async function handleSaveAllEvents() {
-    if (!content?._id) {
-      setError("Cannot save events: missing content ID.");
-      return;
-    }
-    setSavingEvents(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const updated = await put(`/api/content/${content._id}`, {
-        data: {
-          ...(content.data || {}),
-          events,
-        },
-      });
-      if (!updated) throw new Error("Failed to save events");
-      setContent(updated);
-      const freshEvents =
-        (updated.data && Array.isArray(updated.data.events) && updated.data.events) ||
-        [];
-      setEvents(freshEvents);
-      setSuccess("All events saved.");
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Error saving events");
-    } finally {
-      setSavingEvents(false);
-    }
-  }
-
-  function handleDeleteEvent(index) {
-    setEvents((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  if (loading) {
+  // ─── Page Settings ──────────────────────────────────────────
+  function renderSettings() {
     return (
-      <section>
-        <h2>Events Management</h2>
-        <p>Loading...</p>
-      </section>
+      <div style={{ maxWidth: 700 }}>
+        <h3 style={{ marginTop: 0 }}>Page Settings</h3>
+
+        <label style={labelStyle}>Page Title</label>
+        <input style={inputStyle} value={settings.title} onChange={(e) => setSettings({ ...settings, title: e.target.value })} />
+
+        <label style={labelStyle}>Intro Text</label>
+        <textarea style={{ ...inputStyle, minHeight: 80 }} value={settings.intro} onChange={(e) => setSettings({ ...settings, intro: e.target.value })} />
+
+        <label style={labelStyle}>Hero Overlay Text</label>
+        <input style={inputStyle} value={settings.heroOverlayText} onChange={(e) => setSettings({ ...settings, heroOverlayText: e.target.value })} />
+
+        <label style={labelStyle}>Hero Image</label>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
+          <label style={{ ...btnStyle, background: heroUploading ? "#ccc" : "#667eea", cursor: heroUploading ? "not-allowed" : "pointer" }}>
+            {heroUploading ? "Uploading…" : "📁 Upload Hero Image"}
+            <input type="file" accept="image/*" hidden disabled={heroUploading} onChange={async (e) => {
+              setHeroUploading(true);
+              await handleUploadImage(e.target.files?.[0], (url) => setSettings({ ...settings, heroImage: url }));
+              setHeroUploading(false);
+            }} />
+          </label>
+        </div>
+        <input style={inputStyle} value={settings.heroImage} onChange={(e) => setSettings({ ...settings, heroImage: e.target.value })} placeholder="https://..." />
+        {settings.heroImage && <img src={settings.heroImage} alt="Hero preview" style={{ maxWidth: 400, maxHeight: 160, borderRadius: 6, marginTop: 6, border: "1px solid #ddd" }} onError={(e) => { e.target.style.display = "none"; }} />}
+
+        <div style={{ marginTop: 20 }}>
+          <button style={{ ...btnStyle, background: "#667eea" }} disabled={saving} onClick={() => save({ title: settings.title, intro: settings.intro, heroImage: settings.heroImage, heroOverlayText: settings.heroOverlayText })}>
+            {saving ? "Saving…" : "Save Settings"}
+          </button>
+        </div>
+      </div>
     );
   }
 
-  return (
-    <section>
-      <h2>Events Management</h2>
+  // ─── Events CRUD ────────────────────────────────────────────
+  function openNewEvent() {
+    setEditEvent("new");
+    setEventForm({ ...emptyEvent, displayOrder: events.length + 1 });
+  }
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>{success}</p>}
+  function openEditEvent(idx) {
+    const ev = events[idx];
+    setEditEvent(idx);
+    setEventForm({
+      ...emptyEvent,
+      ...ev,
+      date: ev.date ? new Date(ev.date).toISOString().slice(0, 16) : "",
+      endDate: ev.endDate ? new Date(ev.endDate).toISOString().slice(0, 16) : "",
+    });
+  }
 
-      {/* Intro text */}
-      <div style={{ marginBottom: "1.5rem" }}>
-        <h3>Events Intro Text</h3>
-        <form onSubmit={handleSaveText}>
-          <div style={{ marginBottom: "0.5rem" }}>
-            <label style={{ display: "block", fontWeight: "bold" }}>Title</label>
-            <input
-              type="text"
-              name="title"
-              value={textForm.title}
-              onChange={handleTextChange}
-              style={{ width: "100%", padding: "6px" }}
-            />
+  function cancelEdit() { setEditEvent(null); setEventForm({ ...emptyEvent }); }
+
+  async function saveEvent() {
+    if (!eventForm.title.trim()) { setError("Event title is required"); return; }
+
+    const entry = {
+      ...eventForm,
+      date: eventForm.date ? new Date(eventForm.date).toISOString() : null,
+      endDate: eventForm.endDate ? new Date(eventForm.endDate).toISOString() : null,
+    };
+
+    let updated;
+    if (editEvent === "new") {
+      updated = [...events, entry];
+    } else {
+      updated = events.map((e, i) => (i === editEvent ? { ...e, ...entry } : e));
+    }
+    await save({ events: updated });
+    cancelEdit();
+  }
+
+  async function deleteEvent(idx) {
+    if (!window.confirm("Delete this event?")) return;
+    const updated = events.filter((_, i) => i !== idx);
+    await save({ events: updated });
+  }
+
+  async function toggleActive(idx) {
+    const updated = events.map((e, i) => (i === idx ? { ...e, active: !e.active } : e));
+    await save({ events: updated });
+  }
+
+  async function toggleFeatured(idx) {
+    const updated = events.map((e, i) => (i === idx ? { ...e, featured: !e.featured } : e));
+    await save({ events: updated });
+  }
+
+  const filteredEvents = filterCategory === "all" ? events : events.filter((e) => e.category === filterCategory);
+
+  function renderEventForm() {
+    return (
+      <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: 20, marginBottom: 20 }}>
+        <h4 style={{ marginTop: 0 }}>{editEvent === "new" ? "Add New Event" : "Edit Event"}</h4>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+          <div>
+            <label style={labelStyle}>Title *</label>
+            <input style={inputStyle} value={eventForm.title} onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })} placeholder="Event title" />
           </div>
-          <div style={{ marginBottom: "0.5rem" }}>
-            <label style={{ display: "block", fontWeight: "bold" }}>Intro text</label>
-            <textarea
-              name="body"
-              value={textForm.body}
-              onChange={handleTextChange}
-              rows={4}
-              style={{ width: "100%", padding: "6px" }}
-            />
+          <div>
+            <label style={labelStyle}>Category</label>
+            <select style={inputStyle} value={eventForm.category} onChange={(e) => setEventForm({ ...eventForm, category: e.target.value })}>
+              {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
           </div>
-          <button type="submit" disabled={savingText}>
-            {savingText ? "Saving..." : "Save Intro"}
-          </button>
-        </form>
+        </div>
+
+        <label style={labelStyle}>Description</label>
+        <textarea style={{ ...inputStyle, minHeight: 80 }} value={eventForm.description} onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })} placeholder="Event details…" />
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+          <div>
+            <label style={labelStyle}>Start Date & Time</label>
+            <input type="datetime-local" style={inputStyle} value={eventForm.date} onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })} />
+          </div>
+          <div>
+            <label style={labelStyle}>End Date & Time</label>
+            <input type="datetime-local" style={inputStyle} value={eventForm.endDate} onChange={(e) => setEventForm({ ...eventForm, endDate: e.target.value })} />
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+          <div>
+            <label style={labelStyle}>Location</label>
+            <input style={inputStyle} value={eventForm.location} onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })} placeholder="Event venue" />
+          </div>
+          <div>
+            <label style={labelStyle}>Link URL</label>
+            <input style={inputStyle} value={eventForm.linkUrl} onChange={(e) => setEventForm({ ...eventForm, linkUrl: e.target.value })} placeholder="https://..." />
+          </div>
+        </div>
+
+        {/* Image Upload */}
+        <label style={labelStyle}>Event Image</label>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
+          <label style={{ ...btnStyle, background: imageUploading ? "#ccc" : "#667eea", cursor: imageUploading ? "not-allowed" : "pointer" }}>
+            {imageUploading ? "Uploading…" : "📁 Upload Image"}
+            <input type="file" accept="image/*" hidden disabled={imageUploading} onChange={async (e) => {
+              setImageUploading(true);
+              await handleUploadImage(e.target.files?.[0], (url) => setEventForm({ ...eventForm, imageUrl: url }));
+              setImageUploading(false);
+            }} />
+          </label>
+          <span style={{ color: "#666", fontSize: 13 }}>or paste URL below</span>
+        </div>
+        <input style={inputStyle} value={eventForm.imageUrl} onChange={(e) => setEventForm({ ...eventForm, imageUrl: e.target.value })} placeholder="Image URL" />
+        {eventForm.imageUrl && <img src={eventForm.imageUrl} alt="Preview" style={{ maxWidth: 200, maxHeight: 120, borderRadius: 4, marginTop: 4, border: "1px solid #ddd" }} onError={(e) => { e.target.style.display = "none"; }} />}
+
+        <div style={{ marginTop: 8 }}>
+          <label style={labelStyle}>Image Alt Text</label>
+          <input style={inputStyle} value={eventForm.imageAlt} onChange={(e) => setEventForm({ ...eventForm, imageAlt: e.target.value })} placeholder="Describe the image" />
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 12 }}>
+          <div>
+            <label style={labelStyle}>Card Colour</label>
+            <select style={inputStyle} value={eventForm.color} onChange={(e) => setEventForm({ ...eventForm, color: e.target.value })}>
+              {COLOR_OPTIONS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>Display Order</label>
+            <input type="number" style={inputStyle} value={eventForm.displayOrder} onChange={(e) => setEventForm({ ...eventForm, displayOrder: parseInt(e.target.value) || 0 })} />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingTop: 24 }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14 }}>
+              <input type="checkbox" checked={eventForm.featured} onChange={(e) => setEventForm({ ...eventForm, featured: e.target.checked })} /> Featured
+            </label>
+            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14 }}>
+              <input type="checkbox" checked={eventForm.active} onChange={(e) => setEventForm({ ...eventForm, active: e.target.checked })} /> Active
+            </label>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+          <button style={{ ...btnStyle, background: "#667eea" }} disabled={saving} onClick={saveEvent}>{saving ? "Saving…" : editEvent === "new" ? "Add Event" : "Update Event"}</button>
+          <button style={{ ...btnStyle, background: "#6b7280" }} onClick={cancelEdit}>Cancel</button>
+        </div>
       </div>
+    );
+  }
 
-      {/* Upload media */}
-      <div style={{ marginBottom: "1.5rem" }}>
-        <h3>Upload Event Media</h3>
-        <p style={{ fontSize: "0.85rem" }}>
-          Upload images, videos, PDFs, or other files linked to events.
-        </p>
-        <form onSubmit={handleUploadFiles}>
-          <input
-            type="file"
-            multiple
-            onChange={handleFileChange}
-            style={{ marginBottom: "0.5rem" }}
-          />
-          <br />
-          <button type="submit" disabled={uploading}>
-            {uploading ? "Uploading..." : "Upload Files"}
-          </button>
-        </form>
-      </div>
+  function renderEvents() {
+    return (
+      <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
+          <h3 style={{ margin: 0 }}>Events ({events.length})</h3>
+          <button style={{ ...btnStyle, background: "#10b981" }} onClick={openNewEvent}>+ Add Event</button>
+        </div>
 
-      {/* Media titles/descriptions - HORIZONTAL GRID LAYOUT */}
-      <div style={{ marginBottom: "2rem" }}>
-        <h3 style={{ marginBottom: "1rem", color: "#1e293b" }}>📁 Media Files ({attachments.length})</h3>
-        {attachments.length === 0 && (
-          <div style={{ 
-            padding: "2rem", 
-            background: "linear-gradient(135deg, #f8fafc, #f1f5f9)", 
-            borderRadius: "12px", 
-            textAlign: "center",
-            border: "2px dashed #cbd5e1"
-          }}>
-            <p style={{ color: "#64748b", margin: 0 }}>No media uploaded yet. Upload files above to get started.</p>
-          </div>
-        )}
+        {/* Category filters */}
+        <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
+          <button style={{ ...pillStyle, background: filterCategory === "all" ? "#1e293b" : "#e2e8f0", color: filterCategory === "all" ? "#fff" : "#334155" }} onClick={() => setFilterCategory("all")}>All</button>
+          {CATEGORIES.map((c) => (
+            <button key={c.value} style={{ ...pillStyle, background: filterCategory === c.value ? c.color : "#e2e8f0", color: filterCategory === c.value ? "#fff" : "#334155" }} onClick={() => setFilterCategory(c.value)}>{c.label}</button>
+          ))}
+        </div>
 
-        {/* HORIZONTAL GRID - 3 columns on desktop, 2 on tablet, 1 on mobile */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-          gap: "1.25rem",
-        }}>
-          {attachments.map((file, idx) => {
-            const isVideo = file.mimetype?.startsWith("video/");
-            const isImage = file.mimetype?.startsWith("image/");
-            const href = fileHref(file);
-            
+        {editEvent !== null && renderEventForm()}
+
+        {filteredEvents.length === 0 && <p style={{ color: "#999", textAlign: "center", padding: 20 }}>No events{filterCategory !== "all" ? ` in "${filterCategory}"` : ""}. Add one above!</p>}
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
+          {filteredEvents.map((ev, idx) => {
+            const realIdx = events.indexOf(ev);
+            const catObj = CATEGORIES.find((c) => c.value === ev.category) || CATEGORIES[6];
             return (
-              <div
-                key={idx}
-                style={{
-                  background: "#ffffff",
-                  borderRadius: "12px",
-                  boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-                  overflow: "hidden",
-                  transition: "transform 0.2s, box-shadow 0.2s",
-                  border: "1px solid #e2e8f0",
-                }}
-              >
-                {/* Media Preview */}
-                <div style={{ 
-                  height: "140px", 
-                  background: "linear-gradient(135deg, #1e293b, #334155)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  position: "relative",
-                  overflow: "hidden"
-                }}>
-                  {isImage && href && (
-                    <img 
-                      src={href} 
-                      alt={file.title || file.originalName}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
-                  )}
-                  {isVideo && (
-                    <div style={{ textAlign: "center", color: "#fff" }}>
-                      <span style={{ fontSize: "2.5rem" }}>🎬</span>
-                      <p style={{ margin: "4px 0 0", fontSize: "0.75rem", opacity: 0.8 }}>Video</p>
-                    </div>
-                  )}
-                  {!isImage && !isVideo && (
-                    <div style={{ textAlign: "center", color: "#fff" }}>
-                      <span style={{ fontSize: "2.5rem" }}>📄</span>
-                      <p style={{ margin: "4px 0 0", fontSize: "0.75rem", opacity: 0.8 }}>Document</p>
-                    </div>
-                  )}
-                  {/* File type badge */}
-                  <span style={{
-                    position: "absolute",
-                    top: "8px",
-                    right: "8px",
-                    background: "rgba(0,0,0,0.6)",
-                    color: "#fff",
-                    padding: "2px 8px",
-                    borderRadius: "4px",
-                    fontSize: "0.7rem",
-                    fontWeight: "600"
-                  }}>
-                    {file.mimetype?.split("/")[1]?.toUpperCase() || "FILE"}
-                  </span>
-                </div>
-
-                {/* Card Content */}
-                <div style={{ padding: "1rem" }}>
-                  {/* File info */}
-                  <p style={{ 
-                    fontSize: "0.75rem", 
-                    color: "#64748b", 
-                    margin: "0 0 0.75rem",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis"
-                  }}>
-                    {file.originalName || file.name || "(unnamed)"} · {file.size ? `${(file.size / 1024).toFixed(0)} KB` : ""}
-                  </p>
-
-                  {/* Title input */}
-                  <div style={{ marginBottom: "0.5rem" }}>
-                    <input
-                      type="text"
-                      value={file.title || ""}
-                      onChange={(e) => handleMediaMetaChange(idx, "title", e.target.value)}
-                      placeholder="Enter title..."
-                      style={{ 
-                        width: "100%", 
-                        padding: "8px 10px", 
-                        border: "1px solid #e2e8f0",
-                        borderRadius: "6px",
-                        fontSize: "0.85rem",
-                        boxSizing: "border-box"
-                      }}
-                    />
+              <div key={ev._id || idx} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, overflow: "hidden", opacity: ev.active ? 1 : 0.5, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+                {ev.imageUrl && (
+                  <div style={{ height: 150, overflow: "hidden", background: "#f0f0f0" }}>
+                    <img src={ev.imageUrl} alt={ev.imageAlt || ev.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { e.target.style.display = "none"; }} />
                   </div>
-
-                  {/* Description input */}
-                  <div style={{ marginBottom: "0.75rem" }}>
-                    <textarea
-                      value={file.description || ""}
-                      onChange={(e) => handleMediaMetaChange(idx, "description", e.target.value)}
-                      rows={2}
-                      placeholder="Add description..."
-                      style={{ 
-                        width: "100%", 
-                        padding: "8px 10px", 
-                        border: "1px solid #e2e8f0",
-                        borderRadius: "6px",
-                        fontSize: "0.8rem",
-                        resize: "none",
-                        boxSizing: "border-box"
-                      }}
-                    />
+                )}
+                <div style={{ padding: 14 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: 8, marginBottom: 6 }}>
+                    <h4 style={{ margin: 0, fontSize: 15 }}>{ev.title}</h4>
+                    <span style={{ ...pillStyle, background: catObj.color, color: "#fff", fontSize: 11, flexShrink: 0 }}>{catObj.label}</span>
                   </div>
-
-                  {/* Open file link */}
-                  {href && (
-                    <a 
-                      href={href} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      style={{ 
-                        fontSize: "0.8rem", 
-                        color: "#2563eb",
-                        textDecoration: "none",
-                        display: "inline-block",
-                        marginBottom: "0.75rem"
-                      }}
-                    >
-                      🔗 Open file
-                    </a>
-                  )}
-
-                  {/* ACTION BUTTONS - DELETE AND REPLACE */}
-                  <div style={{ 
-                    display: "flex", 
-                    gap: "0.5rem", 
-                    paddingTop: "0.75rem", 
-                    borderTop: "1px solid #f1f5f9"
-                  }}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const id = file._id || file.id || file.url || file.downloadUrl || file.originalName || file.name;
-                        handleDeleteMedia(id);
-                      }}
-                      style={{
-                        flex: 1,
-                        backgroundColor: "#dc2626",
-                        color: "#fff",
-                        border: "none",
-                        padding: "10px 12px",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                        fontWeight: "600",
-                        fontSize: "0.8rem",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "4px"
-                      }}
-                    >
-                      🗑️ Delete
-                    </button>
-
-                    <label
-                      style={{
-                        flex: 1,
-                        backgroundColor: "#2563eb",
-                        color: "#fff",
-                        padding: "10px 12px",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                        fontWeight: "600",
-                        fontSize: "0.8rem",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "4px",
-                        textAlign: "center"
-                      }}
-                    >
-                      🔄 Replace
-                      <input
-                        type="file"
-                        hidden
-                        onChange={(e) => {
-                          const id = file._id || file.id || file.url || file.downloadUrl || file.originalName || file.name;
-                          if (e.target.files && e.target.files[0]) {
-                            handleReplaceMedia(id, e.target.files[0]);
-                          }
-                        }}
-                      />
-                    </label>
+                  {ev.date && <p style={{ margin: "0 0 4px", fontSize: 12, color: "#666" }}>📅 {new Date(ev.date).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</p>}
+                  {ev.location && <p style={{ margin: "0 0 4px", fontSize: 12, color: "#666" }}>📍 {ev.location}</p>}
+                  <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                    {ev.featured && <span style={{ fontSize: 11, background: "#fef3c7", color: "#b45309", padding: "2px 8px", borderRadius: 4 }}>⭐ Featured</span>}
+                    {!ev.active && <span style={{ fontSize: 11, background: "#fee2e2", color: "#dc2626", padding: "2px 8px", borderRadius: 4 }}>Hidden</span>}
+                  </div>
+                  <div style={{ display: "flex", gap: 6, marginTop: 10, borderTop: "1px solid #f1f5f9", paddingTop: 10 }}>
+                    <button style={{ ...smallBtn, background: "#3b82f6" }} onClick={() => openEditEvent(realIdx)}>Edit</button>
+                    <button style={{ ...smallBtn, background: ev.featured ? "#f59e0b" : "#e2e8f0", color: ev.featured ? "#fff" : "#333" }} onClick={() => toggleFeatured(realIdx)}>{ev.featured ? "Unfeature" : "Feature"}</button>
+                    <button style={{ ...smallBtn, background: ev.active ? "#6b7280" : "#10b981", color: "#fff" }} onClick={() => toggleActive(realIdx)}>{ev.active ? "Hide" : "Show"}</button>
+                    <button style={{ ...smallBtn, background: "#ef4444" }} onClick={() => deleteEvent(realIdx)}>Delete</button>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
+      </div>
+    );
+  }
 
-        {attachments.length > 0 && (
-          <button 
-            onClick={handleSaveMediaDetails} 
-            style={{ 
-              marginTop: "1.5rem",
-              background: "linear-gradient(135deg, #10b981, #059669)",
-              color: "#fff",
-              border: "none",
-              padding: "12px 24px",
-              borderRadius: "8px",
-              fontWeight: "600",
-              fontSize: "0.9rem",
-              cursor: "pointer",
-              boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)"
-            }}
-          >
-            💾 Save All Media Details
+  if (loading) return <div style={{ padding: 20 }}>Loading events…</div>;
+
+  const tabs = [
+    { key: "settings", label: "Page Settings", icon: "⚙️" },
+    { key: "events", label: "Events", icon: "📅" },
+  ];
+
+  return (
+    <section style={{ padding: 0 }}>
+      <h2>📅 Events Management</h2>
+      {error && <div style={{ color: "#dc2626", background: "#fef2f2", padding: "10px 14px", borderRadius: 6, marginBottom: 14 }}>{error}</div>}
+      {success && <div style={{ color: "#16a34a", background: "#f0fdf4", padding: "10px 14px", borderRadius: 6, marginBottom: 14 }}>{success}</div>}
+
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 20, borderBottom: "2px solid #e2e8f0", paddingBottom: 0 }}>
+        {tabs.map((t) => (
+          <button key={t.key} onClick={() => setTab(t.key)} style={{ padding: "10px 20px", border: "none", borderBottom: tab === t.key ? "3px solid #667eea" : "3px solid transparent", background: "none", cursor: "pointer", fontWeight: tab === t.key ? 700 : 400, color: tab === t.key ? "#667eea" : "#64748b", fontSize: 14 }}>
+            {t.icon} {t.label}
           </button>
-        )}
+        ))}
       </div>
 
-      {/* Events list */}
-      <div style={{ marginBottom: "1.5rem" }}>
-        <h3>Events List</h3>
-        <form onSubmit={handleAddEvent} style={{ marginBottom: "1rem" }}>
-          <div style={{ marginBottom: "0.5rem" }}>
-            <label style={{ display: "block", fontWeight: "bold" }}>Event title</label>
-            <input
-              type="text"
-              name="title"
-              value={eventForm.title}
-              onChange={handleEventFormChange}
-              style={{ width: "100%", padding: "6px" }}
-              placeholder="e.g. 'Prize Giving Day'"
-            />
-          </div>
-          <div style={{ marginBottom: "0.5rem" }}>
-            <label style={{ display: "block", fontWeight: "bold" }}>
-              Description / details
-            </label>
-            <textarea
-              name="description"
-              value={eventForm.description}
-              onChange={handleEventFormChange}
-              rows={3}
-              style={{ width: "100%", padding: "6px" }}
-              placeholder="Details about this event..."
-            />
-          </div>
-          <div style={{ marginBottom: "0.5rem", display: "flex", gap: "0.5rem" }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: "block", fontWeight: "bold" }}>Date</label>
-              <input
-                type="date"
-                name="date"
-                value={eventForm.date}
-                onChange={handleEventFormChange}
-                style={{ width: "100%", padding: "4px" }}
-              />
-            </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: "block", fontWeight: "bold" }}>Location</label>
-              <input
-                type="text"
-                name="location"
-                value={eventForm.location}
-                onChange={handleEventFormChange}
-                style={{ width: "100%", padding: "4px" }}
-                placeholder="e.g. School Hall"
-              />
-            </div>
-          </div>
-          <div style={{ marginBottom: "0.5rem" }}>
-            <label style={{ display: "block", fontWeight: "bold" }}>
-              Container colour
-            </label>
-            <select
-              name="color"
-              value={eventForm.color}
-              onChange={handleEventFormChange}
-              style={{ padding: "4px" }}
-            >
-              {COLOR_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div style={{ marginBottom: "0.5rem" }}>
-            <label style={{ display: "block", fontWeight: "bold" }}>
-              Optional link (more details)
-            </label>
-            <input
-              type="text"
-              name="linkUrl"
-              value={eventForm.linkUrl}
-              onChange={handleEventFormChange}
-              style={{ width: "100%", padding: "4px" }}
-              placeholder="https://..."
-            />
-          </div>
-          <button type="submit" disabled={savingEvents}>
-            {savingEvents ? "Adding..." : "Add Event"}
-          </button>
-        </form>
-
-        {events.length === 0 && <p>No events added yet.</p>}
-
-        {events.length > 0 && (
-          <div>
-            {events.map((ev, index) => (
-              <div
-                key={ev.id || ev._id || index}
-                style={{
-                  marginBottom: "0.75rem",
-                  padding: "0.5rem",
-                  border: "1px solid #ddd",
-                  borderRadius: 4,
-                  backgroundColor: ev.color || "#f3f4f6",
-                }}
-              >
-                <div style={{ marginBottom: "0.25rem" }}>
-                  <label style={{ display: "block", fontWeight: "bold" }}>
-                    Event title
-                  </label>
-                  <input
-                    type="text"
-                    value={ev.title || ""}
-                    onChange={(e) => handleEventChange(index, "title", e.target.value)}
-                    style={{ width: "100%", padding: "4px" }}
-                  />
-                </div>
-                <div style={{ marginBottom: "0.25rem" }}>
-                  <label style={{ display: "block", fontWeight: "bold" }}>
-                    Description / details
-                  </label>
-                  <textarea
-                    value={ev.description || ""}
-                    onChange={(e) =>
-                      handleEventChange(index, "description", e.target.value)
-                    }
-                    rows={3}
-                    style={{ width: "100%", padding: "4px" }}
-                  />
-                </div>
-                <div
-                  style={{
-                    marginBottom: "0.25rem",
-                    display: "flex",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: "block", fontWeight: "bold" }}>
-                      Date
-                    </label>
-                    <input
-                      type="date"
-                      value={ev.date ? ev.date.substring(0, 10) : ""}
-                      onChange={(e) =>
-                        handleEventChange(index, "date", e.target.value)
-                      }
-                      style={{ width: "100%", padding: "4px" }}
-                    />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: "block", fontWeight: "bold" }}>
-                      Location
-                    </label>
-                    <input
-                      type="text"
-                      value={ev.location || ""}
-                      onChange={(e) =>
-                        handleEventChange(index, "location", e.target.value)
-                      }
-                      style={{ width: "100%", padding: "4px" }}
-                    />
-                  </div>
-                </div>
-                <div style={{ marginBottom: "0.25rem" }}>
-                  <label style={{ display: "block", fontWeight: "bold" }}>
-                    Container colour
-                  </label>
-                  <select
-                    value={ev.color || COLOR_OPTIONS[0].value}
-                    onChange={(e) =>
-                      handleEventChange(index, "color", e.target.value)
-                    }
-                  >
-                    {COLOR_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div style={{ marginBottom: "0.25rem" }}>
-                  <label style={{ display: "block", fontWeight: "bold" }}>
-                    Optional link (more details)
-                  </label>
-                  <input
-                    type="text"
-                    value={ev.linkUrl || ""}
-                    onChange={(e) =>
-                      handleEventChange(index, "linkUrl", e.target.value)
-                    }
-                    style={{ width: "100%", padding: "4px" }}
-                    placeholder="https://..."
-                  />
-                </div>
-                {ev.createdAt && (
-                  <div style={{ fontSize: "0.8rem", marginBottom: "0.25rem" }}>
-                    Created:{" "}
-                    {new Date(ev.createdAt).toLocaleString(undefined, {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={() => handleDeleteEvent(index)}
-                  style={{
-                    backgroundColor: "#fee2e2",
-                    border: "1px solid #fecaca",
-                    padding: "2px 6px",
-                    fontSize: "0.85rem",
-                    cursor: "pointer",
-                  }}
-                >
-                  Delete event
-                </button>
-              </div>
-            ))}
-
-            <button
-              type="button"
-              onClick={handleSaveAllEvents}
-              disabled={savingEvents}
-              style={{ marginTop: "0.5rem" }}
-            >
-              {savingEvents ? "Saving..." : "Save All Events"}
-            </button>
-          </div>
-        )}
-      </div>
+      {tab === "settings" && renderSettings()}
+      {tab === "events" && renderEvents()}
     </section>
   );
 }
+
+// ─── Shared styles ────────────────────────────────────────────
+const labelStyle = { display: "block", fontWeight: 600, fontSize: 13, marginBottom: 4, marginTop: 12, color: "#374151" };
+const inputStyle = { width: "100%", padding: "8px 10px", borderRadius: 6, border: "1px solid #d1d5db", fontSize: 14, boxSizing: "border-box" };
+const btnStyle = { display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 18px", border: "none", borderRadius: 6, color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer" };
+const pillStyle = { padding: "4px 12px", borderRadius: 20, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 500 };
+const smallBtn = { padding: "5px 10px", border: "none", borderRadius: 4, color: "#fff", fontSize: 12, cursor: "pointer", fontWeight: 600 };

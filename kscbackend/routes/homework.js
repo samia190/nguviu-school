@@ -1,48 +1,34 @@
 import express from "express";
 import multer from "multer";
+import mongoose from "mongoose";
 import Homework from "../models/Homework.js";
-import { requireAuth, requireRole } from "../middleware/requireAuth.js";
+import { requireAuth } from "../middleware/requireAuth.js";
 import { uploadBuffer } from "../utils/storage.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-function toAbsoluteUrl(req, relativePath) {
-  if (!relativePath) return relativePath;
-  if (String(relativePath).startsWith("http")) return relativePath;
-  const origin = process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`;
-  return `${origin}${relativePath}`;
-}
-
-function normalizeHomeworkUrls(req, homework) {
-  if (!homework) return homework;
-  const obj = homework.toObject ? homework.toObject() : homework;
-  return {
-    ...obj,
-    attachments: (obj.attachments || []).map(att => ({
-      ...att,
-      url: toAbsoluteUrl(req, att.url)
-    }))
-  };
-}
-
-// GET all homework (public or admin/teacher)
-router.get("/", async (req, res) => {
+// GET all homework (students, teachers, admins only)
+router.get("/", requireAuth, async (req, res) => {
   try {
+    const allowedRoles = ["student", "teacher", "admin"];
+    if (!allowedRoles.includes(req.user?.role)) {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
     const { subject, class: classFilter, teacher, status } = req.query;
     const filter = { status: "published" };
 
     if (subject) filter.subject = subject;
     if (classFilter) filter.class = classFilter;
     if (teacher) filter["teacher._id"] = teacher;
-    if (status && req.user?.role === "admin") filter.status = status;
+    if (status && req.user.role === "admin") filter.status = status;
 
     const homework = await Homework.find(filter)
       .sort({ dueDate: -1, createdAt: -1 })
       .limit(100);
 
-    const normalized = homework.map(hw => normalizeHomeworkUrls(req, hw));
-    res.json(normalized);
+    res.json(homework);
   } catch (err) {
     console.error("Error fetching homework:", err);
     res.status(500).json({ error: "Failed to fetch homework" });
@@ -66,24 +52,28 @@ router.get("/admin/all", requireAuth, async (req, res) => {
       .lean();
 
     console.log("Found homework count:", homework.length);
-    const normalized = (homework || []).map(hw => normalizeHomeworkUrls(req, hw));
-    res.json(normalized);
+    res.json(homework || []);
   } catch (err) {
     console.error("Error fetching homework:", err.message);
     res.status(500).json({ error: "Failed to fetch homework: " + err.message });
   }
 });
 
-// GET homework by ID
-router.get("/:id", async (req, res) => {
+// GET homework by ID (students, teachers, admins only)
+router.get("/:id", requireAuth, async (req, res) => {
   try {
+    const allowedRoles = ["student", "teacher", "admin"];
+    if (!allowedRoles.includes(req.user?.role)) {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
     const homework = await Homework.findById(req.params.id);
     if (!homework) {
       return res.status(404).json({ error: "Homework not found" });
     }
-    res.json(normalizeHomeworkUrls(req, homework));
+    res.json(homework);
   } catch (err) {
-    console.error("Error fetching homework:", err);
+    console.error("Error fetching homework:", err.message);
     res.status(500).json({ error: "Failed to fetch homework" });
   }
 });
@@ -122,6 +112,16 @@ router.post("/", requireAuth, upload.array("attachments", 10), async (req, res) 
       }
     }
 
+    // Get teacher name — prefer JWT name, fallback to DB lookup
+    let teacherName = user.name;
+    if (!teacherName) {
+      try {
+        const User = mongoose.model("User");
+        const dbUser = await User.findById(user.id).select("name").lean();
+        teacherName = dbUser?.name || user.email || "Unknown";
+      } catch { teacherName = user.email || "Unknown"; }
+    }
+
     const homework = new Homework({
       title,
       description,
@@ -129,8 +129,8 @@ router.post("/", requireAuth, upload.array("attachments", 10), async (req, res) 
       class: classParam,
       contentType: contentType || "assignment",
       teacher: {
-        _id: user._id,
-        name: user.name
+        _id: user.id,
+        name: teacherName
       },
       dueDate: dueDate || null,
       attachments,
@@ -138,7 +138,7 @@ router.post("/", requireAuth, upload.array("attachments", 10), async (req, res) 
     });
 
     await homework.save();
-    res.status(201).json(normalizeHomeworkUrls(req, homework));
+    res.status(201).json(homework);
   } catch (err) {
     console.error("Error creating homework:", err);
     res.status(500).json({ error: "Failed to create homework" });
@@ -154,7 +154,7 @@ router.put("/:id", requireAuth, upload.array("attachments", 10), async (req, res
     }
 
     // Check authorization
-    const isTeacher = req.user.role === "teacher" && homework.teacher._id.toString() === req.user._id.toString();
+    const isTeacher = req.user.role === "teacher" && homework.teacher._id.toString() === req.user.id.toString();
     const isAdmin = req.user.role === "admin";
     if (!isTeacher && !isAdmin) {
       return res.status(403).json({ error: "Unauthorized to update this homework" });
@@ -188,9 +188,8 @@ router.put("/:id", requireAuth, upload.array("attachments", 10), async (req, res
       }
     }
 
-    homework.updatedAt = new Date();
     await homework.save();
-    res.json(normalizeHomeworkUrls(req, homework));
+    res.json(homework);
   } catch (err) {
     console.error("Error updating homework:", err);
     res.status(500).json({ error: "Failed to update homework" });
@@ -206,7 +205,7 @@ router.delete("/:id", requireAuth, async (req, res) => {
     }
 
     // Check authorization
-    const isTeacher = req.user.role === "teacher" && homework.teacher._id.toString() === req.user._id.toString();
+    const isTeacher = req.user.role === "teacher" && homework.teacher._id.toString() === req.user.id.toString();
     const isAdmin = req.user.role === "admin";
     if (!isTeacher && !isAdmin) {
       return res.status(403).json({ error: "Unauthorized to delete this homework" });
@@ -229,7 +228,7 @@ router.delete("/:homeworkId/attachments/:attachmentId", requireAuth, async (req,
     }
 
     // Check authorization
-    const isTeacher = req.user.role === "teacher" && homework.teacher._id.toString() === req.user._id.toString();
+    const isTeacher = req.user.role === "teacher" && homework.teacher._id.toString() === req.user.id.toString();
     const isAdmin = req.user.role === "admin";
     if (!isTeacher && !isAdmin) {
       return res.status(403).json({ error: "Unauthorized" });

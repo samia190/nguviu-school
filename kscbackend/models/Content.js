@@ -30,9 +30,11 @@ const attachmentSchema = new mongoose.Schema({
     default: '',
     validate: {
       validator: function(v) {
-        // Extension should start with dot or be empty
-        return v === '' || /^\.[a-z0-9]+$/i.test(v);
-      }
+        // Extension should start with dot, be empty, or be a valid string
+        if (v === '' || v === null || v === undefined) return true;
+        return /^\.[a-z0-9]+$/i.test(v) || /^[a-z0-9]+$/i.test(v);
+      },
+      message: 'Extension must be empty or start with a dot (e.g., .jpg)'
     }
   },
 

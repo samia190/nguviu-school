@@ -61,7 +61,7 @@ const user = new User({ name, email, passwordHash: hash, role });
     await user.save();
 
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { id: user._id, name: user.name, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -97,7 +97,7 @@ router.post("/login", authLimiter, async (req, res) => {
     if (!ok) return res.status(401).json({ error: "Invalid credentials" });
 
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { id: user._id, name: user.name, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );

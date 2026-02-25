@@ -1,22 +1,22 @@
 import React, { useState } from "react";
 import { upload } from "../utils/api";
 
-const downloadableFiles = [
-  {
-    name: "Admission Brochure 2025",
-    url: "/downloads/admission-brochure.pdf",
-  },
-  {
-    name: "Admission Guidelines",
-    url: "/downloads/admission-guidelines.pdf",
-  },
-  {
-    name: "Application Form (PDF)",
-    url: "/down/Document 7.pdf",
-  },
+// All 47 Kenya counties
+const KENYA_COUNTIES = [
+  "Baringo", "Bomet", "Bungoma", "Busia", "Elgeyo-Marakwet", "Embu",
+  "Garissa", "Homa Bay", "Isiolo", "Kajiado", "Kakamega", "Kericho",
+  "Kiambu", "Kilifi", "Kirinyaga", "Kisii", "Kisumu", "Kitui",
+  "Kwale", "Laikipia", "Lamu", "Machakos", "Makueni", "Mandera",
+  "Marsabit", "Meru", "Migori", "Mombasa", "Murang'a", "Nairobi",
+  "Nakuru", "Nandi", "Narok", "Nyamira", "Nyandarua", "Nyeri",
+  "Samburu", "Siaya", "Taita-Taveta", "Tana River", "Tharaka Nithi",
+  "Trans Nzoia", "Turkana", "Uasin Gishu", "Vihiga", "Wajir",
+  "West Pokot",
 ];
 
-function AdmissionForm() {
+function AdmissionForm({ year, formTitle, downloads = [], formSteps = [], formDeclarations = [], formInstructions = "", formDisclaimer = "" }) {
+  // Helper to get step config by step number, with fallback
+  const getStep = (n) => formSteps.find((s) => s.step === n) || {};
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     // Personal Information
@@ -115,11 +115,13 @@ function AdmissionForm() {
     certificate: null,
   });
 
-  const [declarations, setDeclarations] = useState({
-    studentPromise: false,
-    parentConfirmFit: false,
-    parentUnderstandDiet: false,
-  });
+  // Build initial declarations state from admin config or use defaults
+  const defaultDecl = { studentPromise: false, parentConfirmFit: false, parentUnderstandDiet: false };
+  const initDecl = formDeclarations.length > 0
+    ? Object.fromEntries(formDeclarations.map((d) => [d.key, false]))
+    : defaultDecl;
+
+  const [declarations, setDeclarations] = useState(initDecl);
 
   const [status, setStatus] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -156,8 +158,9 @@ function AdmissionForm() {
       return;
     }
 
-    // Final submission
-    if (!declarations.studentPromise || !declarations.parentConfirmFit || !declarations.parentUnderstandDiet) {
+    // Final submission — check all declarations are accepted
+    const allDeclAccepted = Object.values(declarations).every(Boolean);
+    if (!allDeclAccepted) {
       setStatus({ type: "error", message: "Please accept all declarations before submitting" });
       return;
     }
@@ -215,9 +218,11 @@ function AdmissionForm() {
           baptismCertificate: null, passportPhoto1: null, passportPhoto2: null,
           transferLetter: null, transcript: null, certificate: null,
         });
-        setDeclarations({
-          studentPromise: false, parentConfirmFit: false, parentUnderstandDiet: false,
-        });
+        setDeclarations(
+          formDeclarations.length > 0
+            ? Object.fromEntries(formDeclarations.map((d) => [d.key, false]))
+            : { studentPromise: false, parentConfirmFit: false, parentUnderstandDiet: false }
+        );
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setStatus({ type: "error", message: "Failed to submit: " + (json && json.error) });
@@ -232,28 +237,30 @@ function AdmissionForm() {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={styles.title}>ST. ANGELA KANGARU GIRLS' SENIOR SCHOOL</h1>
-        <h2 style={styles.subtitle}>Admission Application Form 2025</h2>
+        <h1 style={styles.title}>KANGARU GIRLS' SENIOR SCHOOL</h1>
+        <h2 style={styles.subtitle}>{formTitle || "Online Admission Application"} {year || new Date().getFullYear()}</h2>
       </div>
 
-      {/* Download Section */}
-      <section style={styles.downloadSection}>
-        <h3 style={styles.sectionTitle}>📄 Download Admission Documents</h3>
-        <div style={styles.downloadGrid}>
-          {downloadableFiles.map((file) => (
-            <a 
-              key={file.name} 
-              href={file.url} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              download
-              style={styles.downloadLink}
-            >
-              📥 {file.name}
-            </a>
-          ))}
-        </div>
-      </section>
+      {/* Download Section — from page singleton, not hardcoded */}
+      {downloads.length > 0 && (
+        <section style={styles.downloadSection}>
+          <h3 style={styles.sectionTitle}>📄 Download Admission Documents</h3>
+          <div style={styles.downloadGrid}>
+            {downloads.map((file, i) => (
+              <a
+                key={file.url || i}
+                href={file.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                download
+                style={styles.downloadLink}
+              >
+                📥 {file.name || "Download"}
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Progress Indicator */}
       <div style={styles.progressContainer}>
@@ -262,6 +269,13 @@ function AdmissionForm() {
         </div>
         <div style={styles.progressText}>Step {currentStep} of 6</div>
       </div>
+
+      {/* General Instructions */}
+      {formInstructions && currentStep === 1 && (
+        <div style={{ padding: "12px 16px", background: "#f0f4ff", borderRadius: 10, marginBottom: 16, color: "#1e40af", fontSize: "0.9rem", lineHeight: 1.6 }}>
+          {formInstructions}
+        </div>
+      )}
 
       {status && (
         <div style={{
@@ -278,7 +292,8 @@ function AdmissionForm() {
         {/* STEP 1: Personal Information */}
         {currentStep === 1 && (
           <div style={styles.step}>
-            <h3 style={styles.stepTitle}>📝 Step 1: Personal Information</h3>
+            <h3 style={styles.stepTitle}>{getStep(1).icon || "📝"} {getStep(1).title || "Step 1: Personal Information"}</h3>
+            {getStep(1).instructions && <p style={styles.stepInstructions}>{getStep(1).instructions}</p>}
             <div style={styles.formGrid}>
               <label style={styles.label}>
                 Full Name (As per Birth Certificate) <span style={styles.required}>*</span>
@@ -342,7 +357,6 @@ function AdmissionForm() {
                 >
                   <option value="">-- Select Gender --</option>
                   <option value="Female">Female</option>
-                  <option value="Male">Male</option>
                 </select>
               </label>
 
@@ -391,7 +405,8 @@ function AdmissionForm() {
         {/* STEP 2: Location & Contact */}
         {currentStep === 2 && (
           <div style={styles.step}>
-            <h3 style={styles.stepTitle}>📍 Step 2: Location & Contact Details</h3>
+            <h3 style={styles.stepTitle}>{getStep(2).icon || "📍"} {getStep(2).title || "Step 2: Location & Contact Details"}</h3>
+            {getStep(2).instructions && <p style={styles.stepInstructions}>{getStep(2).instructions}</p>}
             <div style={styles.formGrid}>
               <label style={styles.label}>
                 Home County <span style={styles.required}>*</span>
@@ -403,17 +418,9 @@ function AdmissionForm() {
                   style={styles.input}
                 >
                   <option value="">-- Select County --</option>
-                  <option value="Embu">Embu</option>
-                  <option value="Nairobi">Nairobi</option>
-                  <option value="Mombasa">Mombasa</option>
-                  <option value="Kisumu">Kisumu</option>
-                  <option value="Nakuru">Nakuru</option>
-                  <option value="Kiambu">Kiambu</option>
-                  <option value="Machakos">Machakos</option>
-                  <option value="Meru">Meru</option>
-                  <option value="Kirinyaga">Kirinyaga</option>
-                  <option value="Tharaka Nithi">Tharaka Nithi</option>
-                  <option value="Other">Other</option>
+                  {KENYA_COUNTIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
                 </select>
               </label>
 
@@ -559,7 +566,8 @@ function AdmissionForm() {
         {/* STEP 3: Academic Information */}
         {currentStep === 3 && (
           <div style={styles.step}>
-            <h3 style={styles.stepTitle}>🎓 Step 3: Academic Information</h3>
+            <h3 style={styles.stepTitle}>{getStep(3).icon || "🎓"} {getStep(3).title || "Step 3: Academic Information"}</h3>
+            {getStep(3).instructions && <p style={styles.stepInstructions}>{getStep(3).instructions}</p>}
             <div style={styles.formGrid}>
               <label style={styles.label}>
                 Junior School Attended <span style={styles.required}>*</span>
@@ -596,8 +604,9 @@ function AdmissionForm() {
                   style={styles.input}
                 >
                   <option value="">-- Select Grade --</option>
-                  <option value="Form 1">Form 1</option>
-                  <option value="Form 2">Form 2</option>
+                  <option value="Grade 10">Grade 10</option>
+                  <option value="Grade 11">Grade 11</option>
+                  <option value="Grade 12">Grade 12</option>
                   <option value="Form 3">Form 3</option>
                   <option value="Form 4">Form 4</option>
                 </select>
@@ -751,7 +760,8 @@ function AdmissionForm() {
         {/* STEP 4: Religion & Parents */}
         {currentStep === 4 && (
           <div style={styles.step}>
-            <h3 style={styles.stepTitle}>👨‍👩‍👧 Step 4: Religion & Parent/Guardian Information</h3>
+            <h3 style={styles.stepTitle}>{getStep(4).icon || "👨‍👩‍👧"} {getStep(4).title || "Step 4: Religion & Parent/Guardian Information"}</h3>
+            {getStep(4).instructions && <p style={styles.stepInstructions}>{getStep(4).instructions}</p>}
             
             <h4 style={{ marginBottom: 15, color: '#667eea' }}>Religion</h4>
             <div style={styles.formGrid}>
@@ -997,7 +1007,8 @@ function AdmissionForm() {
         {/* STEP 5: Documents Upload */}
         {currentStep === 5 && (
           <div style={styles.step}>
-            <h3 style={styles.stepTitle}>📎 Step 5: Upload Required Documents</h3>
+            <h3 style={styles.stepTitle}>{getStep(5).icon || "📎"} {getStep(5).title || "Step 5: Upload Required Documents"}</h3>
+            {getStep(5).instructions && <p style={styles.stepInstructions}>{getStep(5).instructions}</p>}
             <p style={{ marginBottom: 20, color: '#666' }}>
               Please upload all required documents. Accepted formats: PDF, JPG, JPEG, PNG (Max 5MB each)
             </p>
@@ -1086,56 +1097,50 @@ function AdmissionForm() {
         {/* STEP 6: Declarations */}
         {currentStep === 6 && (
           <div style={styles.step}>
-            <h3 style={styles.stepTitle}>✅ Step 6: Declarations & Submission</h3>
-            
-            <div style={styles.declarationBox}>
-              <h4 style={{ color: '#667eea', marginBottom: 15 }}>Student Promise</h4>
-              <label style={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  name="studentPromise"
-                  checked={declarations.studentPromise}
-                  onChange={handleCheckboxChange}
-                  required
-                  style={styles.checkbox}
-                />
-                <span>
-                  I promise to abide by the school rules and regulations, respect teachers and fellow students, 
-                  and work hard to achieve academic excellence.
-                </span>
-              </label>
-            </div>
+            <h3 style={styles.stepTitle}>{getStep(6).icon || "✅"} {getStep(6).title || "Step 6: Declarations & Submission"}</h3>
+            {getStep(6).instructions && <p style={styles.stepInstructions}>{getStep(6).instructions}</p>}
 
-            <div style={styles.declarationBox}>
-              <h4 style={{ color: '#667eea', marginBottom: 15 }}>Parent/Guardian Declarations</h4>
-              <label style={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  name="parentConfirmFit"
-                  checked={declarations.parentConfirmFit}
-                  onChange={handleCheckboxChange}
-                  required
-                  style={styles.checkbox}
-                />
-                <span>
-                  I confirm that the student is medically and mentally fit to attend school and participate in all school activities.
-                </span>
-              </label>
-
-              <label style={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  name="parentUnderstandDiet"
-                  checked={declarations.parentUnderstandDiet}
-                  onChange={handleCheckboxChange}
-                  required
-                  style={styles.checkbox}
-                />
-                <span>
-                  I understand and accept the school's dietary provisions and agree to pay all fees as per the school's fee structure.
-                </span>
-              </label>
-            </div>
+            {/* Dynamic declarations from admin config */}
+            {formDeclarations.length > 0 ? (
+              formDeclarations.map((decl, idx) => (
+                <div key={decl.key || idx} style={styles.declarationBox}>
+                  <h4 style={{ color: '#667eea', marginBottom: 15 }}>{decl.heading}</h4>
+                  <label style={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      name={decl.key}
+                      checked={!!declarations[decl.key]}
+                      onChange={handleCheckboxChange}
+                      required
+                      style={styles.checkbox}
+                    />
+                    <span>{decl.text}</span>
+                  </label>
+                </div>
+              ))
+            ) : (
+              /* Fallback hardcoded declarations if none configured */
+              <>
+                <div style={styles.declarationBox}>
+                  <h4 style={{ color: '#667eea', marginBottom: 15 }}>Student Promise</h4>
+                  <label style={styles.checkboxLabel}>
+                    <input type="checkbox" name="studentPromise" checked={declarations.studentPromise} onChange={handleCheckboxChange} required style={styles.checkbox} />
+                    <span>I promise to abide by the school rules and regulations, respect teachers and fellow students, and work hard to achieve academic excellence.</span>
+                  </label>
+                </div>
+                <div style={styles.declarationBox}>
+                  <h4 style={{ color: '#667eea', marginBottom: 15 }}>Parent/Guardian Declarations</h4>
+                  <label style={styles.checkboxLabel}>
+                    <input type="checkbox" name="parentConfirmFit" checked={declarations.parentConfirmFit} onChange={handleCheckboxChange} required style={styles.checkbox} />
+                    <span>I confirm that the student is medically and mentally fit to attend school and participate in all school activities.</span>
+                  </label>
+                  <label style={styles.checkboxLabel}>
+                    <input type="checkbox" name="parentUnderstandDiet" checked={declarations.parentUnderstandDiet} onChange={handleCheckboxChange} required style={styles.checkbox} />
+                    <span>I understand and accept the school's dietary provisions and agree to pay all fees as per the school's fee structure.</span>
+                  </label>
+                </div>
+              </>
+            )}
 
             <div style={styles.formGrid}>
               <label style={styles.labelFull}>
@@ -1151,8 +1156,7 @@ function AdmissionForm() {
             </div>
 
             <div style={styles.finalNote}>
-              <p><strong>⚠️ Important:</strong> Please ensure all information provided is accurate and truthful. 
-              False information may lead to disqualification of the application.</p>
+              <p><strong>⚠️ Important:</strong> {formDisclaimer || "Please ensure all information provided is accurate and truthful. False information may lead to disqualification of the application."}</p>
             </div>
           </div>
         )}
@@ -1312,11 +1316,18 @@ const styles = {
   },
   stepTitle: {
     marginTop: 0,
-    marginBottom: 20,
+    marginBottom: 8,
     fontSize: 20,
     color: "#667eea",
     borderBottom: "2px solid #e9ecef",
     paddingBottom: 10,
+  },
+  stepInstructions: {
+    margin: "0 0 18px",
+    fontSize: "0.9rem",
+    color: "#6b7280",
+    lineHeight: 1.5,
+    fontStyle: "italic",
   },
   formGrid: {
     display: "grid",

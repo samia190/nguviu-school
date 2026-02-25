@@ -95,8 +95,10 @@ router.post("/", async (req, res) => {
       remarks,
       email,
       phone,
-      qualifications,
-      experience,
+      // Handle qualifications - convert empty arrays to empty string
+      qualifications: Array.isArray(qualifications) && qualifications.length === 0 ? "" : qualifications,
+      // Handle experience - convert empty arrays to empty string
+      experience: Array.isArray(experience) && experience.length === 0 ? "" : experience,
       displayOrder: displayOrder || 0,
       active: true
     });
@@ -133,8 +135,14 @@ router.put("/:id", async (req, res) => {
     if (remarks) staff.remarks = remarks;
     if (email) staff.email = email;
     if (phone) staff.phone = phone;
-    if (qualifications) staff.qualifications = qualifications;
-    if (experience) staff.experience = experience;
+    // Handle qualifications - convert empty arrays to empty string
+    if (qualifications !== undefined) {
+      staff.qualifications = Array.isArray(qualifications) && qualifications.length === 0 ? "" : qualifications;
+    }
+    // Handle experience - convert empty arrays to empty string
+    if (experience !== undefined) {
+      staff.experience = Array.isArray(experience) && experience.length === 0 ? "" : experience;
+    }
     if (displayOrder !== undefined) staff.displayOrder = displayOrder;
     if (photoUrl) staff.photoUrl = photoUrl;
 

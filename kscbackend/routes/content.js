@@ -227,11 +227,24 @@ router.patch("/:type/:field", async (req, res) => {
  */
 router.post("/", async (req, res) => {
   try {
-    const newContent = await Content.create(req.body);
+    // Sanitize attachments if present
+    let data = { ...req.body };
+    if (data.attachments && Array.isArray(data.attachments)) {
+      data.attachments = data.attachments.map(att => {
+        const cleaned = { ...att };
+        // Fix extension format if needed
+        if (cleaned.extension && !cleaned.extension.startsWith('.') && cleaned.extension.length > 0) {
+          cleaned.extension = '.' + cleaned.extension;
+        }
+        return cleaned;
+      });
+    }
+
+    const newContent = await Content.create(data);
     return res.status(201).json(newContent);
   } catch (err) {
     console.error("Error creating content:", err);
-    return res.status(400).json({ error: "Invalid content data" });
+    return res.status(400).json({ error: "Invalid content data", details: err.message });
   }
 });
 
@@ -241,9 +254,22 @@ router.post("/", async (req, res) => {
  */
 router.put("/:id", async (req, res) => {
   try {
+    // Sanitize attachments if present
+    let data = { ...req.body };
+    if (data.attachments && Array.isArray(data.attachments)) {
+      data.attachments = data.attachments.map(att => {
+        const cleaned = { ...att };
+        // Fix extension format if needed  
+        if (cleaned.extension && !cleaned.extension.startsWith('.') && cleaned.extension.length > 0) {
+          cleaned.extension = '.' + cleaned.extension;
+        }
+        return cleaned;
+      });
+    }
+
     const updatedContent = await Content.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      data,
       {
         new: true,
         runValidators: true,
@@ -257,7 +283,7 @@ router.put("/:id", async (req, res) => {
     return res.json(updatedContent);
   } catch (err) {
     console.error("Error updating content:", err);
-    return res.status(400).json({ error: "Invalid content data" });
+    return res.status(400).json({ error: "Invalid content data", details: err.message });
   }
 });
 

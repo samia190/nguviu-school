@@ -35,9 +35,7 @@ const HomeworkSchema = new mongoose.Schema(
     },
     isPublic: { type: Boolean, default: true },
     downloadCount: { type: Number, default: 0 },
-    viewCount: { type: Number, default: 0 },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    viewCount: { type: Number, default: 0 }
   },
   {
     timestamps: true

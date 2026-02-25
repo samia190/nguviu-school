@@ -7,7 +7,7 @@ const AdmissionSchema = new mongoose.Schema({
   assessmentNo: { type: String },
   dateOfBirth: { type: Date, required: true },
   placeOfBirth: { type: String },
-  gender: { type: String, enum: ['Male', 'Female', 'Other', ''], default: '' },
+  gender: { type: String, enum: ['Female', ''], default: 'Female' },
   nationality: { type: String, default: 'Kenyan' },
   birthCertEntryNo: { type: String },
   birthCertNo: { type: String },
@@ -116,9 +116,6 @@ const AdmissionSchema = new mongoose.Schema({
   // Application metadata
   applicationYear: { type: Number, default: () => new Date().getFullYear() },
   applicationNumber: { type: String, unique: true, sparse: true },
-  
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 
 // Generate application number before saving

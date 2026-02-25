@@ -4,26 +4,26 @@ import EditableText from "./EditableText";
 import EditableSubheading from "./EditableSubheading";
 import AdminContentForm from "./AdminContentForm";
 
-import AdmissionsManagement from "./AdmissionsManagement";
+import AdmissionsPageManagement from "./AdmissionsPageManagement";
 import AdminSubmissions from "./AdminSubmissions";
 import FeeStructureManagement from "./FeeStructureManagement";
 import NewslettersManagement from "./NewslettersManagement";
 import EventsManagement from "./EventsManagement";
 import GalleryManagement from "./GalleryManagement";
 import LegalManagement from "./LegalManagement";
-import EventsDataManagement from "./admin/EventsManagement";
-import StudentLifeDataManagement from "./admin/StudentLifeManagement";
+import StudentLifeManagement from "./StudentLifeManagement";
 
 // Import new content page management components
 import AboutManagement from "./AboutManagement";
 import ContactManagement from "./ContactManagement";
-import CurriculumManagement from "./CurriculumManagement";
+import CurriculumPageManagement from "./CurriculumPageManagement";
 import PerformanceManagement from "./PerformanceManagement";
 import PoliciesManagement from "./PoliciesManagement";
 import ParentsManagement from "./ParentsManagement";
-import StudentsManagement from "./StudentsManagement";
+import StudentPageManagement from "./StudentPageManagement";
 import StaffManagement from "./StaffManagement";
 import HeroManagement from "./HeroManagement";
+import HomeManagement from "./HomeManagement";
 import HomeNewsManagement from "./HomeNewsManagement";
 import StudentAdminManagement from "./StudentAdminManagement";
 import RoleManagement from "./RoleManagement";
@@ -142,6 +142,7 @@ export default function AdminDashboard({ user }) {
 
   const sections = [
     { key: "dashboard", label: "Dashboard", icon: "🏠", color: "#3b82f6" },
+    { key: "home", label: "Home Page", icon: "🏡", color: "#14b8a6" },
     { key: "submissions", label: "Submissions", icon: "📬", color: "#8b5cf6" },
     { key: "roles", label: "Roles", icon: "👥", color: "#ec4899" },
     { key: "admissions", label: "Admissions", icon: "📝", color: "#10b981" },
@@ -149,7 +150,6 @@ export default function AdminDashboard({ user }) {
     { key: "newsletters", label: "Newsletters", icon: "📰", color: "#06b6d4" },
     { key: "magazine", label: "Magazine", icon: "📖", color: "#6366f1" },
     { key: "events", label: "Events", icon: "📅", color: "#ef4444" },
-    { key: "eventsData", label: "Event Catalog", icon: "📋", color: "#dc2626" },
     { key: "studentLife", label: "Student Life", icon: "🎓", color: "#059669" },
     { key: "gallery", label: "Gallery", icon: "🖼️", color: "#14b8a6" },
     { key: "legal", label: "Legal", icon: "⚖️", color: "#64748b" },
@@ -160,10 +160,10 @@ export default function AdminDashboard({ user }) {
     { key: "policies", label: "Policies", icon: "📋", color: "#84cc16" },
     { key: "parents", label: "Parents", icon: "👨‍👩‍👧", color: "#e11d48" },
     { key: "staff", label: "Staff", icon: "👔", color: "#7c3aed" },
-    { key: "heroContent", label: "Hero Content", icon: "🎬", color: "#f43f5e" },
+    { key: "heroContent", label: "Hero Content (Legacy)", icon: "🎬", color: "#f43f5e" },
     { key: "homeNews", label: "Home News", icon: "📣", color: "#06b6d4" },
     { key: "homework", label: "Homework & Notes", icon: "📚", color: "#FF6B6B" },
-    { key: "students", label: "Students", icon: "🎓", color: "#0891b2" },
+    { key: "students", label: "Student Page", icon: "🎓", color: "#0891b2" },
     { key: "studentAdmin", label: "Student Admin", icon: "🛠️", color: "#8b5cf6" },
     { key: "pagebackground", label: "Backgrounds", icon: "🎨", color: "#db2777" },
   ];
@@ -172,7 +172,6 @@ export default function AdminDashboard({ user }) {
     { key: "staff/leadership", label: "Staff Leadership", contentTypes: ["text", "staffList", "images"] },
     { key: "staff/teaching", label: "Staff Teaching", contentTypes: ["text", "staffList", "images"] },
     { key: "staff/support", label: "Staff Support", contentTypes: ["text", "staffList", "images"] },
-    { key: "students/admissions-guide", label: "Student Admissions Guide", contentTypes: ["text", "table", "files"] },
     { key: "students/fees", label: "Student Fees", contentTypes: ["text", "table", "files"] },
     { key: "students/exams", label: "Student Exams", contentTypes: ["text", "table", "files"] },
     { key: "students/clubs", label: "Student Clubs", contentTypes: ["text", "images"] },
@@ -180,13 +179,7 @@ export default function AdminDashboard({ user }) {
     { key: "parents/communication", label: "Parents Communication", contentTypes: ["text", "files"] },
     { key: "parents/resources", label: "Parents Resources", contentTypes: ["text", "files"] },
     { key: "parents/calendar", label: "Parents Calendar", contentTypes: ["text", "table"] },
-    { key: "curriculum/overview", label: "Curriculum Overview", contentTypes: ["text", "images"] },
-    { key: "curriculum/primary", label: "Curriculum Primary", contentTypes: ["text", "table"] },
-    { key: "curriculum/secondary", label: "Curriculum Secondary", contentTypes: ["text", "table"] },
-    { key: "curriculum/syllabus", label: "Curriculum Syllabus", contentTypes: ["text", "table", "files"] },
-    { key: "curriculum/extracurricular", label: "Curriculum Extracurricular", contentTypes: ["text", "images"] },
-    { key: "curriculum/assessment", label: "Curriculum Assessment", contentTypes: ["text", "table"] },
-    { key: "curriculum/careers", label: "Curriculum Careers", contentTypes: ["text", "files"] },
+
   ];
 
   return (
@@ -314,7 +307,7 @@ export default function AdminDashboard({ user }) {
           </>
         )}
 
-        {activeSection === "admissions" && <AdmissionsManagement />}
+        {activeSection === "admissions" && <AdmissionsPageManagement />}
 
         {activeSection === "roles" && <RoleManagement />}
 
@@ -328,9 +321,7 @@ export default function AdminDashboard({ user }) {
 
         {activeSection === "events" && <EventsManagement />}
 
-        {activeSection === "eventsData" && <EventsDataManagement user={user} />}
-
-        {activeSection === "studentLife" && <StudentLifeDataManagement user={user} />}
+        {activeSection === "studentLife" && <StudentLifeManagement />}
 
         {activeSection === "gallery" && <GalleryManagement />}
 
@@ -340,7 +331,7 @@ export default function AdminDashboard({ user }) {
 
         {activeSection === "contact" && <ContactManagement />}
 
-        {activeSection === "curriculum" && <CurriculumManagement />}
+        {activeSection === "curriculum" && <CurriculumPageManagement />}
 
         {activeSection === "performance" && <PerformanceManagement />}
 
@@ -348,11 +339,13 @@ export default function AdminDashboard({ user }) {
 
         {activeSection === "parents" && <ParentsManagement />}
 
-        {activeSection === "students" && <StudentsManagement />}
+        {activeSection === "students" && <StudentPageManagement />}
 
         {activeSection === "staff" && <StaffManagement />}
 
         {activeSection === "heroContent" && <HeroManagement />}
+
+        {activeSection === "home" && <HomeManagement />}
 
         {activeSection === "homeNews" && <HomeNewsManagement />}
 

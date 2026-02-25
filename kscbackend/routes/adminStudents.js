@@ -2,22 +2,27 @@ import express from "express";
 import multer from "multer";
 import Student from "../models/Student.js";
 import { uploadBuffer } from "../utils/storage.js";
-import path from "path";
-import fs from "fs";
+import { requireAuth } from "../middleware/requireAuth.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Helper: convert relative URLs to absolute
-function toAbsoluteUrl(req, relativePath) {
-  if (!relativePath) return relativePath;
-  if (String(relativePath).startsWith("http")) return relativePath;
-  const origin = process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`;
-  return `${origin}${relativePath}`;
-}
+// GET students for dropdown/selection (minimal data)
+router.get("/list/simple", requireAuth, async (req, res) => {
+  try {
+    const students = await Student.find({ status: "Active" })
+      .select("_id admissionNumber firstName lastName class stream")
+      .sort({ class: 1, admissionNumber: 1 });
+    
+    res.json(students);
+  } catch (err) {
+    console.error("Error fetching student list:", err);
+    res.status(500).json({ error: "Failed to fetch student list" });
+  }
+});
 
 // GET all students
-router.get("/", async (req, res) => {
+router.get("/", requireAuth, async (req, res) => {
   try {
     const { class: studentClass, status, searchTerm } = req.query;
     const filter = {};
@@ -35,16 +40,10 @@ router.get("/", async (req, res) => {
     }
     
     const students = await Student.find(filter)
-      .select("-idCardSecret") // Don't return sensitive data
+      .select("-idCardSecret")
       .sort({ class: 1, admissionNumber: 1 });
     
-    // Convert photoUrl to absolute URLs
-    const studentsWithAbsoluteUrls = students.map(student => ({
-      ...student.toObject(),
-      photoUrl: toAbsoluteUrl(req, student.photoUrl)
-    }));
-    
-    res.json({ students: studentsWithAbsoluteUrls, count: studentsWithAbsoluteUrls.length });
+    res.json({ students, count: students.length });
   } catch (err) {
     console.error("Error fetching students:", err);
     res.status(500).json({ error: "Failed to fetch students" });
@@ -52,19 +51,13 @@ router.get("/", async (req, res) => {
 });
 
 // GET single student
-router.get("/:id", async (req, res) => {
+router.get("/:id", requireAuth, async (req, res) => {
   try {
     const student = await Student.findById(req.params.id).select("-idCardSecret");
     if (!student) {
       return res.status(404).json({ error: "Student not found" });
     }
-    
-    const studentWithAbsoluteUrl = {
-      ...student.toObject(),
-      photoUrl: toAbsoluteUrl(req, student.photoUrl)
-    };
-    
-    res.json(studentWithAbsoluteUrl);
+    res.json(student);
   } catch (err) {
     console.error("Error fetching student:", err);
     res.status(500).json({ error: "Failed to fetch student" });
@@ -72,7 +65,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST create new student
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
   try {
     const {
       admissionNumber,
@@ -143,12 +136,7 @@ router.post("/", async (req, res) => {
     const studentObj = student.toObject();
     delete studentObj.idCardSecret;
     
-    const response = {
-      ...studentObj,
-      photoUrl: toAbsoluteUrl(req, studentObj.photoUrl)
-    };
-    
-    res.status(201).json(response);
+    res.status(201).json(studentObj);
   } catch (err) {
     console.error("Error creating student:", err);
     res.status(500).json({ error: "Failed to create student" });
@@ -156,7 +144,7 @@ router.post("/", async (req, res) => {
 });
 
 // PUT update student
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireAuth, async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) {
@@ -210,19 +198,13 @@ router.put("/:id", async (req, res) => {
     if (status) student.status = status;
     if (photoUrl) student.photoUrl = photoUrl;
 
-    student.updatedAt = new Date();
     await student.save();
 
     // Return without sensitive data
     const studentObj = student.toObject();
     delete studentObj.idCardSecret;
     
-    const response = {
-      ...studentObj,
-      photoUrl: toAbsoluteUrl(req, studentObj.photoUrl)
-    };
-    
-    res.json(response);
+    res.json(studentObj);
   } catch (err) {
     console.error("Error updating student:", err);
     res.status(500).json({ error: "Failed to update student" });
@@ -230,7 +212,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // DELETE student
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAuth, async (req, res) => {
   try {
     const student = await Student.findByIdAndDelete(req.params.id);
     if (!student) {
@@ -240,20 +222,6 @@ router.delete("/:id", async (req, res) => {
   } catch (err) {
     console.error("Error deleting student:", err);
     res.status(500).json({ error: "Failed to delete student" });
-  }
-});
-
-// GET students for dropdown/selection (minimal data)
-router.get("/list/simple", async (req, res) => {
-  try {
-    const students = await Student.find({ status: "Active" })
-      .select("_id admissionNumber firstName lastName class stream")
-      .sort({ class: 1, admissionNumber: 1 });
-    
-    res.json(students);
-  } catch (err) {
-    console.error("Error fetching student list:", err);
-    res.status(500).json({ error: "Failed to fetch student list" });
   }
 });
 

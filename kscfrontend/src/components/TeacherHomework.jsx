@@ -16,14 +16,23 @@ export default function TeacherHomework({ user }) {
     title: "",
     description: "",
     subject: "",
-    class: "Form 1",
+    class: "Grade 10",
     contentType: "assignment",
     dueDate: "",
     status: "published"
   });
 
-  const classes = ["Form 1", "Form 2", "Form 3", "Form 4"];
-  const subjects = ["Mathematics", "English", "Science", "History", "Geography", "Kiswahili", "Arts", "Physical Education"];
+  const classes = ["Grade 10", "Grade 11", "Grade 12", "Form 3", "Form 4"];
+  const subjects = [
+    "Mathematics", "English", "Kiswahili",
+    "Biology", "Physics", "Chemistry",
+    "History & Citizenship", "Geography",
+    "Computer Science", "Business Studies",
+    "Agriculture", "Home Science",
+    "Art & Design", "Music", "French", "German",
+    "CRE", "IRE", "Health Education",
+    "Physical Education & Sports", "Life Skills"
+  ];
   const contentTypes = [
     { value: "assignment", label: "📋 Assignment" },
     { value: "exam", label: "📝 Exam" },
@@ -66,21 +75,11 @@ export default function TeacherHomework({ user }) {
     setSuccess("");
 
     try {
-      // Validate attachments
-      const validImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-      const validDocTypes = ['application/pdf', 'application/msword', 
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.ms-powerpoint',
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-        'application/zip', 'application/x-zip-compressed'];
-      const allowedTypes = [...validImageTypes, ...validDocTypes];
+      // Validate attachments (size only — all file types allowed)
       const maxFileSize = 50 * 1024 * 1024; // 50MB per file
       
       const failedFiles = [];
       for (const file of attachmentFiles) {
-        if (!allowedTypes.includes(file.type)) {
-          failedFiles.push(`${file.name} (invalid type)`);
-        }
         if (file.size > maxFileSize) {
           failedFiles.push(`${file.name} (exceeds 50MB)`);
         }
@@ -135,7 +134,7 @@ export default function TeacherHomework({ user }) {
         setSuccess("Homework uploaded successfully!");
       }
 
-      setForm({ title: "", description: "", subject: "", class: "Form 1", contentType: "assignment", dueDate: "", status: "published" });
+      setForm({ title: "", description: "", subject: "", class: "Grade 10", contentType: "assignment", dueDate: "", status: "published" });
       setAttachmentFiles([]);
       setShowForm(false);
       setEditingId(null);
@@ -286,7 +285,7 @@ export default function TeacherHomework({ user }) {
             </div>
 
             <div style={{ marginBottom: "20px" }}>
-              <label>Upload Files (PDF, DOC, Images, ZIP) *</label>
+              <label>Upload Files (any type, max 50MB each) *</label>
               <input
                 type="file"
                 multiple

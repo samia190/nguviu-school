@@ -1,317 +1,85 @@
 import React, { useEffect, useState } from "react";
-import { get, patch } from "../utils/api";
+import { get } from "../utils/api";
 import { cachedGet } from "../utils/apiCache";
-import EditableHeading from "../components/EditableHeading";
-import EditableText from "../components/EditableText";
-import NewsWidget from "./NewsWidget";
 import HeroCarousel from "./HeroCarousel";
 import OptimizedImage from "./OptimizedImage";
 import OptimizedVideo from "./OptimizedVideo";
-import { useBatchImagePreload } from "../hooks/useImagePreload";
+import NewsWidget from "./NewsWidget";
 
-// Cloudinary base for optimized images
-const CLD = 'https://res.cloudinary.com/ddm1dgws8/image/upload';
-
-// Default hero slides — shown when no API data is available
+// Default hero slides as fallback
 const defaultHeroSlides = [
-  { _id: 'default-1', url: `${CLD}/w_1200,q_auto,f_auto/kangaru/DSC_5353.jpg`, title: 'Welcome to Kangaru Girls School', description: 'A center of excellence in education', active: true, type: 'slide' },
-  { _id: 'default-2', url: `${CLD}/w_1200,q_auto,f_auto/kangaru/DSC_5400.jpg`, title: 'Academic Excellence', description: 'Nurturing future leaders with knowledge and confidence', active: true, type: 'slide' },
-  { _id: 'default-3', url: `${CLD}/w_1200,q_auto,f_auto/kangaru/DSC_5500.jpg`, title: 'Student Life', description: 'Vibrant community and enriching experiences', active: true, type: 'slide' },
-  { _id: 'default-4', url: `${CLD}/w_1200,q_auto,f_auto/kangaru/DSC_5613.jpg`, title: 'Sports & Activities', description: 'Building character through sports and extracurricular activities', active: true, type: 'slide' },
-  { _id: 'default-5', url: `${CLD}/w_1200,q_auto,f_auto/kangaru/DSC_5820.jpg`, title: 'Our Campus', description: 'A beautiful and serene learning environment', active: true, type: 'slide' },
+  { _id: 'default-1', url: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_1200,q_auto,f_auto/kangaru/DSC_5353.jpg', title: 'Welcome to Kangaru Girls School', description: 'A center of excellence in education', active: true, type: 'slide' },
+  { _id: 'default-2', url: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_1200,q_auto,f_auto/kangaru/DSC_5400.jpg', title: 'Academic Excellence', description: 'Nurturing future leaders with knowledge and confidence', active: true, type: 'slide' },
+  { _id: 'default-3', url: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_1200,q_auto,f_auto/kangaru/DSC_5500.jpg', title: 'Student Life', description: 'Vibrant community and enriching experiences', active: true, type: 'slide' },
+  { _id: 'default-4', url: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_1200,q_auto,f_auto/kangaru/DSC_5613.jpg', title: 'Sports & Activities', description: 'Building character through sports and extracurricular activities', active: true, type: 'slide' },
+  { _id: 'default-5', url: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_1200,q_auto,f_auto/kangaru/DSC_5820.jpg', title: 'Our Campus', description: 'A beautiful and serene learning environment', active: true, type: 'slide' },
 ];
 
 export default function Home({ user, setRoute }) {
-  const [content, setContent] = useState({});
+  // Single data source from /api/home
+  const [homeData, setHomeData] = useState(null);
   const [error, setError] = useState("");
-  const [summaries, setSummaries] = useState({});
-  const [newsImages, setNewsImages] = useState([]);
-  // Show default slides INSTANTLY — no waiting for API
-  const [heroContent, setHeroContent] = useState({ type: "slide", data: defaultHeroSlides });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fire all API calls in parallel using cache
-    Promise.all([
-      cachedGet("/api/content/home", get).catch(() => null),
-      cachedGet("/api/hero-content?page=home", get).catch(() => null),
-      fetchSummaries(),
-      fetchNewsImages(),
-    ]).then(([homeData, heroData]) => {
-        if (homeData) setContent(homeData);
-        // Only override defaults if API returns real data
-        if (heroData && Array.isArray(heroData)) {
-          const activeHeros = heroData.filter(h => h.active !== false);
-          if (activeHeros.length > 0) {
-            const videoHero = activeHeros.find(h => h.type === "video");
-            const slideHeros = activeHeros.filter(h => h.type === "slide");
-            const imageHero = activeHeros.find(h => h.type === "image");
-            
-            if (videoHero) {
-              setHeroContent({ type: "video", data: videoHero });
-            } else if (slideHeros.length > 0) {
-              setHeroContent({ type: "slide", data: slideHeros });
-            } else if (imageHero) {
-              setHeroContent({ type: "image", data: imageHero });
-            }
-          }
-        }
-      });
+    fetchHomeData();
   }, []);
 
-  async function fetchNewsImages() {
+  async function fetchHomeData() {
+    setLoading(true);
     try {
-      const data = await cachedGet("/api/home-news?active=true", get);
-      const newsList = Array.isArray(data) ? data : (data.news || []);
-      const images = newsList
-        .slice(0, 3)
-        .filter(item => item.imageUrl)
-        .map(item => ({ src: item.imageUrl }));
-      setNewsImages(images);
+      const data = await cachedGet("/api/home", get);
+      setHomeData(data);
+      console.log("✅ Home page data loaded:", data);
     } catch (err) {
-      // Silently ignore errors
-    }
-  }
-
-  // Preload news images on component mount
-  useBatchImagePreload(newsImages);
-
-  async function fetchSummaries() {
-    try {
-      const keys = ["about", "admissions", "curriculum", "staff", "gallery", "contact"];
-      const results = await Promise.all(
-        keys.map((k) => cachedGet(`/api/content/summary/${k}`, get).catch(() => null))
-      );
-      const map = {};
-      keys.forEach((k, i) => {
-        if (results[i]) map[k] = results[i];
+      console.error("❌ Failed to load home data:", err);
+      setError("Failed to load home page data");
+      // Use safe defaults on error
+      setHomeData({
+        title: "WELCOME TO KANGARU GIRLS' SCHOOL",
+        intro: "A center of excellence in education...",
+        heroContent: {
+          type: "slide",
+          items: defaultHeroSlides,
+        },
+        quickLinks: [],
       });
-      setSummaries(map);
-    } catch (err) {
-      setSummaries({});
+    } finally {
+      setLoading(false);
     }
   }
 
-  async function updateSection(key, value) {
-    try {
-      await patch("/api/content/home", { [key]: value });
-      setContent((c) => ({ ...c, [key]: value }));
-    } catch (err) {
-      setError("Failed to save changes.");
-    }
-  }
-
-  const sections = [
-    {
-      key: "about",
-      title: "About Us",
-      text: "Learn about our mission, history, values, and vision.",
-      childContainers: [
-        {
-          title: "Our Vision",
-          text: "To empower future leaders with knowledge and confidence.",
-        },
-        {
-          title: "Leadership",
-          text: "We believe in strong leadership to guide our students.",
-        },
-      ],
-    },
-
-    {
-      key: "our-school",
-      title: "About Our School",
-      text: "Learn about our mission, history, values, and vision.",
-      childContainers: [],
-    },
-
-    {
-      childContainers: [],
-    },
-
-    {
-      key: "admissions",
-      title: "Admission Process",
-      text: "See the full admission process and join our school.",
-      childContainers: [
-        {
-          title: "Admission Requirements",
-          text: "Find out the requirements to apply to our school.",
-        },
-        {
-          title: "Scholarships",
-          text: "Explore the scholarship opportunities we offer.",
-        },
-        {
-          title: "Application Deadline",
-          text: "Check the deadlines for applying for the upcoming academic year.",
-        },
-        {
-          title: "Admission Events",
-          text: "Attend our open days and information sessions.",
-        },
-      ],
-    },
-    {
-      key: "curriculum",
-      title: "Curriculum Overview",
-      text: "Explore subjects, programs, and academic structure.",
-      childContainers: [
-        {
-          title: "Secondary School Curriculum",
-          text: "A detailed overview of our secondary school offerings.",
-        },
-        {
-          title: "Extracurricular Activities",
-          text: "Sports, arts, and leadership programs beyond the classroom.",
-        },
-        {
-          title: "Assessments and Exams",
-          text: "Information on how we assess our students' progress.",
-        },
-        {
-          title: "Curriculum Syllabus",
-          text: "Detailed breakdown of each subject and course.",
-        },
-      ],  
-    },
-    {
-      key: "staff",
-      title: "Our Staff",
-      text: "Meet our teachers, leadership, and support staff.",
-      childContainers: [
-        {
-          title: "Leadership Team",
-          text: "Meet the leaders guiding our institution.",
-        },
-        {
-          title: "Teaching Staff",
-          text: "Our team of dedicated educators.",
-        },
-        {
-          title: "Support Staff",
-          text: "The support team that ensures the smooth running of our school.",
-        },
-        {
-          title: "Staff Training",
-          text: "Our continuous professional development programs.",
-        },
-        {
-          title: "Staff Wellness",
-          text: "We prioritize the well-being of our staff members.",
-        },
-        {
-          title: "Faculty Achievements",
-          text: "Recognizing the accomplishments of our academic staff.",
-        },
-      ],
-    },
-    {
-      key: "gallery",
-      title: "School Gallery",
-      text: "Browse photos of school events and student life.",
-      childContainers: [
-        {
-          title: "Graduation Ceremony",
-          text: "Celebrate our students' achievements.",
-        },
-        {
-          title: "Field Trips",
-          text: "Our students' educational field trips and excursions.",
-        },
-        {
-          title: "Student Performances",
-          text: "Talent shows, performances, and arts exhibitions.",
-        },
-      ],
-    },
-    {
-      key: "contact",
-      title: "Get in Touch",
-      text: "Reach out to us for inquiries and support.",
-      childContainers: [
-        {
-          title: "Contact Information",
-          text: "call us through the school official number on 0113688538.",
-        },
-        {
-          title: "Whatsapp account details",
-          text: "for any inquiry reach us through whatsapp account on +254 720 123456.",
-        },
-        {
-          title: "Visit Us",
-          text: "Plan visit to our institution and experience our learning environment.",
-        },
-        {
-          title: "Email Us",
-          text: "Send us an email at info@nguvuigirls@yahoo.com for any questions or support.",
-        },
-      ],
-    },
-  ];
-
-  const SectionGrid = ({ sections: gridSections }) => {
+  if (loading) {
     return (
-      <div style={{ marginTop: 20 }}>
-        {gridSections.map((sec) => {
-          const s = summaries[sec.key] || {};
-          return (
-            <div
-              key={sec.key}
-              style={{
-                width: "100%",
-                marginBottom: "20px",
-              }}
-            >
-              <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
-                {sec.title || s.title}
-              </h2>
-
-              {/* Landscape Main Container */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  width: "100%",
-                  gap: "0px",
-                  childgap: "0px",
-                  flexWrap: "wrap", // Ensures it’s responsive
-                }}
-              >
-                {/* Loop through each child container for the section */}
-                {sec.childContainers &&
-                  sec.childContainers.map((child, index) => (
-                    <div key={index} className="section-child">
-                      <h3 className="section-child-title">{child.title}</h3>
-                      <p className="section-child-text">{child.text}</p>
-                      <button
-                        onClick={() => setRoute(sec.key)}
-                        className="section-child-button"
-                      >
-                        Visit →
-                      </button>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <section style={{ padding: "40px 20px", textAlign: "center" }}>
+        <p>Loading home page...</p>
+      </section>
     );
-  };
+  }
+
+  if (!homeData) {
+    return (
+      <section style={{ padding: "40px 20px", textAlign: "center" }}>
+        <p>Unable to load home page</p>
+      </section>
+    );
+  }
+
+  const { title, intro, heroContent, quickLinks } = homeData;
 
   return (
     <section style={{ padding: 0, position: "relative", overflow: "hidden" }}>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p style={{ color: "red", padding: "20px" }}>{error}</p>}
 
-      {/* Hero Section - Managed from Admin Dashboard */}
-      {heroContent ? (
-        // Render hero carousel for slides or single hero for image/video
+      {/* ===== HERO SECTION ===== */}
+      {heroContent && heroContent.items && heroContent.items.length > 0 ? (
         heroContent.type === "slide" ? (
-          <div style={{ width: "100%"}}>
-            <HeroCarousel slides={heroContent.data} />
+          // CAROUSEL: Multiple slides
+          <div style={{ width: "100%" }}>
+            <HeroCarousel slides={heroContent.items} />
           </div>
         ) : heroContent.type === "video" ? (
+          // VIDEO: Full-width video
           <div
             style={{
               position: "relative",
@@ -323,7 +91,7 @@ export default function Home({ user, setRoute }) {
             }}
           >
             <OptimizedVideo
-              src={heroContent.data.url}
+              src={heroContent.items[0]?.url}
               autoPlay
               loop
               muted
@@ -343,7 +111,7 @@ export default function Home({ user, setRoute }) {
             />
           </div>
         ) : (
-          // Image hero
+          // IMAGE: Single image with overlay text
           <div
             style={{
               position: "relative",
@@ -355,8 +123,8 @@ export default function Home({ user, setRoute }) {
             }}
           >
             <OptimizedImage
-              src={heroContent.data.url}
-              alt={heroContent.data.title || "Hero Image"} 
+              src={heroContent.items[0]?.url}
+              alt={heroContent.items[0]?.title || "Hero Image"}
               priority={true}
               style={{
                 width: "100%",
@@ -372,7 +140,7 @@ export default function Home({ user, setRoute }) {
                 background: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6))",
               }}
             />
-            {heroContent.data.title && (
+            {heroContent.items[0]?.title && (
               <div
                 style={{
                   position: "absolute",
@@ -394,9 +162,9 @@ export default function Home({ user, setRoute }) {
                     textAlign: "center",
                   }}
                 >
-                  <h2 style={{ fontSize: "2rem", margin: 0 }}>{heroContent.data.title}</h2>
-                  {heroContent.data.description && (
-                    <p style={{ fontSize: "1.1rem", marginTop: "10px" }}>{heroContent.data.description}</p>
+                  <h2 style={{ fontSize: "2rem", margin: 0 }}>{heroContent.items[0].title}</h2>
+                  {heroContent.items[0]?.description && (
+                    <p style={{ fontSize: "1.1rem", marginTop: "10px" }}>{heroContent.items[0].description}</p>
                   )}
                 </div>
               </div>
@@ -404,49 +172,134 @@ export default function Home({ user, setRoute }) {
           </div>
         )
       ) : (
-        // Fallback gradient hero if no database content
-        <div style={{ padding: "40px 20px", textAlign: "center", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", color: "white" }}>
-          <h2 style={{ margin: "0 0 10px 0", fontSize: "28px" }}>WELCOME TO KANGARU GIRLS' SENIOR SCHOOL!</h2>
+        // FALLBACK: Default gradient hero
+        <div
+          style={{
+            padding: "40px 20px",
+            textAlign: "center",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+          }}
+        >
+          <h2 style={{ margin: "0 0 10px 0", fontSize: "28px" }}>WELCOME TO KANGARU GIRLS' SCHOOL!</h2>
           <p>Explore our programs and discover excellence in education</p>
         </div>
       )}
 
-      <EditableHeading
-        value={content.title || "WELCOME TO KANGARU GIRLS' SCHOOL"}
-        onSave={(val) => updateSection("title", val)}
-        isAdmin={user?.role === "admin"}
-        level={1}
-      />
+      {/* ===== TITLE ===== */}
+      <div style={{ padding: "40px 20px", textAlign: "center", maxWidth: "1200px", margin: "0 auto" }}>
+        <h1 style={{ fontSize: "2.5rem", margin: "0 0 20px 0" }}>
+          {title || "WELCOME TO KANGARU GIRLS' SCHOOL"}
+        </h1>
 
-      <EditableText
-        value={
-          content.intro ||
-          "At our institution, we believe education is a journey of creativity, growth, and excellence..."
-        }
-        onSave={(val) => updateSection("intro", val)}
-        isAdmin={user?.role === "admin"}
-      />
+        {/* ===== INTRO ===== */}
+        <p style={{ fontSize: "1.05rem", lineHeight: "1.6", color: "#555", marginBottom: "40px", maxWidth: "900px", margin: "0 auto 40px" }}>
+          {intro || "At our institution, we believe education is a journey of creativity, growth, and excellence..."}
+        </p>
+      </div>
 
-      {/* HORIZONTAL SPLIT: Main Content + News Widget Sidebar */}
-      <div style={{
-        display: "flex",
-        gap: "30px",
-        flexWrap: "wrap",
-        alignItems: "flex-start",
-        margin: "30px auto",
-        maxWidth: "1400px"
-      }}>
-        {/* LEFT SIDE: Quick Links (70%) */}
+      {/* ===== MAIN CONTENT + SIDEBAR ===== */}
+      <div
+        style={{
+          display: "flex",
+          gap: "30px",
+          flexWrap: "wrap",
+          alignItems: "flex-start",
+          margin: "30px auto",
+          maxWidth: "1400px",
+          padding: "0 20px",
+        }}
+      >
+        {/* LEFT: QUICK LINKS GRID (70%) */}
         <div style={{ flex: "1 1 65%", minWidth: "300px" }}>
-          <h2 style={{ marginTop: 0 }}>Quick Links</h2>
-          <SectionGrid sections={sections} />
+          <h2 style={{ marginTop: 0, marginBottom: "30px", textAlign: "center" }}>Quick Links</h2>
+
+          {quickLinks && quickLinks.length > 0 ? (
+            <div style={{ display: "grid", gap: "30px" }}>
+              {quickLinks.map((section) => (
+                <div key={section._id} style={{ width: "100%" }}>
+                  <h3 style={{ textAlign: "center", marginBottom: "20px", fontSize: "1.3rem" }}>
+                    {section.title}
+                  </h3>
+
+                  {/* Child containers grid */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                      gap: "20px",
+                    }}
+                  >
+                    {section.childContainers && section.childContainers.length > 0 ? (
+                      section.childContainers.map((child, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            background: "white",
+                            padding: "20px",
+                            borderRadius: "8px",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "12px",
+                          }}
+                        >
+                          <h4 style={{ margin: "0 0 8px 0", color: "#333", fontSize: "1rem" }}>
+                            {child.title}
+                          </h4>
+                          <p style={{ margin: 0, fontSize: "0.9rem", color: "#666", lineHeight: "1.5" }}>
+                            {child.text}
+                          </p>
+                          <button
+                            onClick={() => setRoute(section.key)}
+                            style={{
+                              marginTop: "auto",
+                              padding: "10px 16px",
+                              background: "#667eea",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              fontSize: "0.9rem",
+                              fontWeight: "600",
+                            }}
+                          >
+                            Visit →
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <button
+                        onClick={() => setRoute(section.key)}
+                        style={{
+                          gridColumn: "1/-1",
+                          padding: "15px 20px",
+                          background: "#667eea",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                        }}
+                      >
+                        {section.title} →
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ textAlign: "center", color: "#999" }}>No quick links available</p>
+          )}
         </div>
 
-        {/* RIGHT SIDE: News Widget Sidebar (30%) */}
+        {/* RIGHT: NEWS WIDGET SIDEBAR (30%) */}
         <div style={{ flex: "1 1 30%", minWidth: "280px" }}>
           <NewsWidget />
         </div>
       </div>
     </section>
   );
-};
+}
