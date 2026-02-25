@@ -29,6 +29,7 @@ import StudentAdminManagement from "./StudentAdminManagement";
 import RoleManagement from "./RoleManagement";
 import MagazineManagement from "./MagazineManagement";
 import HomeworkManagement from "./admin/HomeworkManagement";
+import ChatManagement from "./ChatManagement";
 
 // Universal subpage management component
 import SubpageManagement from "./SubpageManagement";
@@ -166,6 +167,7 @@ export default function AdminDashboard({ user }) {
     { key: "students", label: "Student Page", icon: "🎓", color: "#0891b2" },
     { key: "studentAdmin", label: "Student Admin", icon: "🛠️", color: "#8b5cf6" },
     { key: "pagebackground", label: "Backgrounds", icon: "🎨", color: "#db2777" },
+    { key: "chat", label: "Chat System", icon: "💬", color: "#0d9488" },
   ];
 
   const subSections = [
@@ -354,6 +356,8 @@ export default function AdminDashboard({ user }) {
         {activeSection === "studentAdmin" && <StudentAdminManagement />}
 
         {activeSection === "pagebackground" && <PageBackgroundManagement />}
+
+        {activeSection === "chat" && <ChatManagement />}
       </main>
     </section>
   );

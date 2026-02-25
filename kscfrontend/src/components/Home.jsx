@@ -235,7 +235,7 @@ export default function Home({ user, setRoute }) {
                         <div
                           key={idx}
                           style={{
-                            background: "white",
+                            background: "skyblue",
                             padding: "20px",
                             borderRadius: "8px",
                             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
@@ -247,7 +247,7 @@ export default function Home({ user, setRoute }) {
                           <h4 style={{ margin: "0 0 8px 0", color: "#333", fontSize: "1rem" }}>
                             {child.title}
                           </h4>
-                          <p style={{ margin: 0, fontSize: "0.9rem", color: "#666", lineHeight: "1.5" }}>
+                          <p style={{ margin: 0, fontSize: "0.9rem", color: "purple", lineHeight: "1.5" }}>
                             {child.text}
                           </p>
                           <button

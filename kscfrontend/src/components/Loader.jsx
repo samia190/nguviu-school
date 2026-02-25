@@ -1,7 +1,6 @@
 import React from "react";
 import "./loader.css";
 import { safePath } from "../utils/paths";
-import OptimizedImage from "./OptimizedImage";
 
 export default function Loader({ size = 140 }) {
   const px = typeof size === "number" ? `${size}px` : size;

@@ -12,7 +12,6 @@ import StudentClubs from "./subpages/StudentClubs.jsx";
 import StudentSupportServices from "./subpages/StudentSupportServices.jsx";
 
 const subpageMap = {
-  "admissions-guide": StudentAdmissionsGuide,
   fees: StudentFees,
   exams: StudentExams,
   clubs: StudentClubs,

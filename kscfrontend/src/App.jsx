@@ -4,6 +4,7 @@ import Header from "./components/Header";
 import Home from "./components/Home";
 import Footer from "./components/Footer";
 import Loader from "./components/Loader";
+import ChatWidget from "./components/ChatWidget";
 
 // Lazy-load all pages except Home (first paint)
 const About = lazy(() => import("./components/About"));
@@ -518,6 +519,7 @@ export default function App() {
       </main>
 
       <Footer />
+      <ChatWidget />
     </>
   );
 }

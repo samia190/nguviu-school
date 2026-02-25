@@ -159,7 +159,7 @@ export default function Footer() {
           >
             <OptimizedImage
               alt="kangaru girls logo"
-              src="/header/logo.PNG"
+              src="/header/logo.png"
               priority={true}
               style={{ width: 60, height: 60 }}
             />
@@ -248,7 +248,7 @@ export default function Footer() {
           {/* ================= CREDITS ================= */}
           <div className="footer-credits" style={{ fontSize: 14, color: "#555", minWidth: 160 }}>
             Built <br />
-            Designed and developed by Samia
+            Designed and developed by Samia: Orions logistics and technologies
           </div>
         </div>
 

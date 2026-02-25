@@ -42,6 +42,7 @@ import studentPageRoutes from "./routes/student-page.js";
 import curriculumPageRoutes from "./routes/curriculum-page.js";
 import admissionsPageRoutes from "./routes/admissions-page.js";
 import homeworkRoutes from "./routes/homework.js";
+import chatRoutes from "./routes/chat.js";
 
 // Initialize the Express app
 const app = express();
@@ -186,6 +187,7 @@ app.use("/api/student-page", studentPageRoutes);
 app.use("/api/curriculum-page", curriculumPageRoutes);
 app.use("/api/admissions-page", admissionsPageRoutes);
 app.use("/api/homework", homeworkRoutes);
+app.use("/api/chat", chatRoutes);
 
 // ==========================================
 // DATABASE CONNECTION
