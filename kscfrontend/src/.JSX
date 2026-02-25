@@ -36,7 +36,6 @@ import StaffTeaching from './components/subpages/StaffTeaching.jsx';
 import StaffSupport from './components/subpages/StaffSupport.jsx';
 
 // Student subpages
-import StudentAdmissionsGuide from './components/subpages/StudentAdmissionsGuide.jsx';
 import StudentFees from './components/subpages/StudentFees.jsx';
 import StudentExams from './components/subpages/StudentExams.jsx';
 import StudentClubs from './components/subpages/StudentClubs.jsx';
@@ -72,7 +71,6 @@ function MenuButton({ route, setRoute, setLoading }) {
 
     { key: "student", label: "Students" },
     // Student subpages
-    { key: "student/admissions-guide", label: "Student Admissions Guide" },
     { key: "student/fees", label: "Student Fees" },
     { key: "student/exams", label: "Student Exams" },
     { key: "student/clubs", label: "Student Clubs" },
@@ -336,8 +334,6 @@ export default function App() {
 
             case "student":
               switch (subRoute) {
-                case "admissions-guide":
-                  return <StudentAdmissionsGuide user={user} />;
                 case "fees":
                   return <StudentFees user={user} />;
                 case "exams":

@@ -5,7 +5,7 @@ import Loader from "./Loader";
 import LazyImage from "./LazyImage";
 
 // Subpage components (lazy-loaded in App.jsx, eagerly here as they're small stubs)
-import StudentAdmissionsGuide from "./subpages/StudentAdmissionsGuide.jsx";
+
 import StudentFees from "./subpages/StudentFees.jsx";
 import StudentExams from "./subpages/StudentExams.jsx";
 import StudentClubs from "./subpages/StudentClubs.jsx";
