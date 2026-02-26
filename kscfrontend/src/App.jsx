@@ -286,6 +286,11 @@ export default function App() {
     };
   }, [route]);
 
+  // Scroll to top when route changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [route]);
+
   // Decode user from token (if any)
   useEffect(() => {
     const token = localStorage.getItem("token");
