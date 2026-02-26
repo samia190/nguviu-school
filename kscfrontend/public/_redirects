@@ -1,5 +1,3 @@
-# Serve optimized versions only for header assets (known to exist in .optimized/)
-/header/*   /.optimized/header/:splat    200
-
-# SPA catch-all — must be last
+# SPA routing — redirect all non-file routes to index.html
+# This allows React Router to handle all URLs
 /*    /index.html   200
