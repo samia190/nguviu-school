@@ -26,9 +26,11 @@ function copyToClipboard(text) {
 }
 
 function buildInviteUrl(token) {
-  // Use the configured frontend URL (so invite links work even when admin is on localhost)
+  // Use hash fragment (#invite=TOKEN) instead of query string so Render's CDN
+  // only ever sees the path "/signup" — hash is never sent to the server,
+  // preventing CDN 404 caching for unique token URLs.
   const base = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
-  return `${base}/signup?invite=${token}`;
+  return `${base}/signup#invite=${token}`;
 }
 
 export default function InviteManagement() {

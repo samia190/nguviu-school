@@ -13,8 +13,11 @@ export default function SignUp({ onAuth, navigate }) {
   const [status, setStatus] = useState("");
 
   // Check for invite token on mount — if none, allow public registration as "user"
+  // Reads from hash fragment (#invite=TOKEN) — hash is never sent to the server so
+  // the CDN rewrite always serves index.html for /signup regardless of invite token.
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const hash = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : "";
+    const params = new URLSearchParams(hash);
     const token = params.get("invite");
     if (token) {
       setInviteToken(token);
