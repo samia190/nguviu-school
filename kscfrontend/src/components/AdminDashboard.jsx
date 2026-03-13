@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import EditableHeading from "./EditableHeading";
 import EditableText from "./EditableText";
 import EditableSubheading from "./EditableSubheading";
@@ -55,6 +55,9 @@ export default function AdminDashboard({ user }) {
   const [loading, setLoading] = useState(false);
   const [activeSection, setActiveSection] = useState("dashboard");
   const [genericValue, setGenericValue] = useState("");
+  const [unreadChat, setUnreadChat] = useState(0);
+  const [chatToast, setChatToast] = useState(false);
+  const prevUnreadRef = useRef(-1); // -1 = first poll, skip notification on mount
 
   function getNested(obj, path) {
     if (!obj || !path) return "";
@@ -82,6 +85,25 @@ export default function AdminDashboard({ user }) {
       setGenericValue(getNested(content, activeSection) || "");
     }
   }, [activeSection, content]);
+
+  // ─── Poll for unread chat messages every 30s
+  useEffect(() => {
+    const pollChat = async () => {
+      try {
+        const data = await get("/api/chat/messages/stats");
+        const count = data?.new || 0;
+        if (prevUnreadRef.current >= 0 && count > prevUnreadRef.current) {
+          setChatToast(true);
+          setTimeout(() => setChatToast(false), 4000);
+        }
+        prevUnreadRef.current = count;
+        setUnreadChat(count);
+      } catch {}
+    };
+    pollChat();
+    const id = setInterval(pollChat, 30000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -181,7 +203,6 @@ export default function AdminDashboard({ user }) {
     { key: "policies", label: "Policies", icon: "📋", color: "#84cc16" },
     { key: "users", label: "Registered Users", icon: "👥", color: "#6366f1" },
     { key: "roles", label: "Roles", icon: "👥", color: "#ec4899" },
-    { key: "staff", label: "Staff", icon: "👔", color: "#7c3aed" },
     { key: "studentAdmin", label: "Student Admin", icon: "🛠️", color: "#8b5cf6" },
     { key: "studentLife", label: "Student Life", icon: "🎓", color: "#059669" },
     { key: "students", label: "Student Page", icon: "🎓", color: "#0891b2" },
@@ -195,6 +216,7 @@ export default function AdminDashboard({ user }) {
     // Hidden until needed:
     // { key: "heroContent", label: "Hero Content (Legacy)", icon: "🎬", color: "#f43f5e" },
     // { key: "pagebackground", label: "Backgrounds", icon: "🎨", color: "#db2777" },
+    // { key: "staff", label: "Staff", icon: "👔", color: "#7c3aed" },
   ];
 
   const subSections = [
@@ -239,6 +261,9 @@ export default function AdminDashboard({ user }) {
                 style={{ "--card-color": item.color }}
               >
                 <span className="nav-card-icon">{item.icon}</span>
+                {item.key === "chat" && unreadChat > 0 && (
+                  <span className="nav-card-badge">{unreadChat > 99 ? "99+" : unreadChat}</span>
+                )}
                 <span className="nav-card-label">{item.label}</span>
               </button>
             );
@@ -403,6 +428,20 @@ export default function AdminDashboard({ user }) {
         {activeSection === "users" && <UserList />}
         {activeSection === "create-account" && <DirectAccountCreate />}
       </main>
+
+      {/* Chat unread toast notification */}
+      {chatToast && (
+        <div className="chat-toast" role="status" aria-live="polite">
+          <span>📬</span>
+          <span>{unreadChat} unread chat message{unreadChat !== 1 ? "s" : ""}</span>
+          <button
+            onClick={() => { setActiveSection("chat"); setChatToast(false); }}
+            className="chat-toast-btn"
+          >
+            View
+          </button>
+        </div>
+      )}
     </section>
   );
 }

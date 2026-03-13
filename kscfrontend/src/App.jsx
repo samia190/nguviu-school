@@ -234,10 +234,10 @@ export default function App() {
     
     window.addEventListener('popstate', handlePopState);
     
-    // Set initial history state
+    // Set initial history state — preserve query string and hash so invite tokens survive
     const initialRoute = getRouteFromPath();
     const initialPath = initialRoute === 'home' ? '/' : `/${initialRoute}`;
-    window.history.replaceState({ route: initialRoute }, '', initialPath);
+    window.history.replaceState({ route: initialRoute }, '', initialPath + window.location.search + window.location.hash);
     
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
