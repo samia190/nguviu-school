@@ -123,7 +123,7 @@ Service worker knows about `/uploads/` but if it can't fetch from it (CORS), it 
 
 ### What's Happening
 ```
-GET https://kangarugirlsschool-sc-ke.onrender.com/header/logo new.PNG  [HTTP/3 404]
+GET https://kangarugirlsseniorschool-sc-ke.onrender.comheader/logo new.PNG  [HTTP/3 404]
 ```
 
 ### Root Cause
@@ -145,7 +145,7 @@ Backend structure:
 
 When frontend tries relative path `/header/logo new.PNG`, it looks in:
 ```
-https://kangarugirlsschool-sc-ke.onrender.com/header/logo new.PNG
+https://kangarugirlsseniorschool-sc-ke.onrender.comheader/logo new.PNG
                                               ^^^^^^^^^ NOT FOUND
                                               (should be on backend domain)
 ```

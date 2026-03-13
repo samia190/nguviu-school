@@ -154,7 +154,7 @@ Follow [RENDER_ENV_SETUP.md](RENDER_ENV_SETUP.md) to set Render environment vari
 ```bash
 # Health checks
 curl https://kangarugirlsschool.onrender.com/api/health
-curl https://kangarugirlsschool-sc-ke.onrender.com/
+curl https://kangarugirlsseniorschool-sc-ke.onrender.com
 
 # Browser console test (DevTools → Console)
 fetch('https://kangarugirlsschool.onrender.com/api/home-news')

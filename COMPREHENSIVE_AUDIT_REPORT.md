@@ -690,7 +690,7 @@ items.forEach((section) => {
 **To verify fixes:**
 ```bash
 # Test image loading
-curl -I https://kangarugirlsschool-sc-ke.onrender.com/header/logo new.PNG
+curl -I https://kangarugirlsseniorschool-sc-ke.onrender.comheader/logo new.PNG
 # Should return 200, not 404
 
 # Test srcset parsing

@@ -81,7 +81,7 @@ Render deployed:
 
 ### Where It's Coming From
 ```
-Frontend tries: GET https://kangarugirlsschool-sc-ke.onrender.com/images/DSC_5454.jpg
+Frontend tries: GET https://kangarugirlsseniorschool-sc-ke.onrender.comimages/DSC_5454.jpg
 Render static site: No such file (never, existed, never will)
 Result: 404
 ```

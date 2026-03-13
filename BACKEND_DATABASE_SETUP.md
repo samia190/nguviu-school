@@ -166,7 +166,7 @@ app.get('/health', (req, res) => {
 });
 ```
 
-Test: `curl https://kangarugirlsschool-sc-ke.onrender.com/health`
+Test: `curl https://kangarugirlsseniorschool-sc-ke.onrender.comhealth`
 
 ---
 

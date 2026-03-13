@@ -298,7 +298,7 @@ To confirm migration success:
 ### After Production Deployment
 1. Verify gallery on production:
    ```
-   https://kangarugirlsschool-sc-ke.onrender.com/gallery
+   https://kangarugirlsseniorschool-sc-ke.onrender.comgallery
    ```
 
 2. Check production logs for any image errors

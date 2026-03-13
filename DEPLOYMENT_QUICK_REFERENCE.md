@@ -96,7 +96,7 @@ RATE_LIMIT_MAX=5
 curl https://kangarugirlsschool.onrender.com/api/health
 
 # Frontend accessible
-curl https://kangarugirlsschool-sc-ke.onrender.com/ | grep "DOCTYPE"
+curl https://kangarugirlsseniorschool-sc-ke.onrender.com | grep "DOCTYPE"
 ```
 
 #### Browser DevTools Console Tests

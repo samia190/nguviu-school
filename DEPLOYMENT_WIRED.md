@@ -116,7 +116,7 @@ Click on Network, reload page, check requests:
 ```
 ✅ https://kangarugirlsschool.onrender.com/api/footer-links → 200
 ✅ https://kangarugirlsschool.onrender.com/api/content/home → 200
-✅ https://kangarugirlsschool-sc-ke.onrender.com/images/* → 200
+✅ https://kangarugirlsseniorschool-sc-ke.onrender.comimages/* → 200
 ```
 
 ### 3. Test Live Site

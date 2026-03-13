@@ -115,7 +115,7 @@ curl https://kangarugirlsschool.onrender.com/api/health
 # { "status": "ok", "uptime": 123.45 }
 
 # Frontend health
-curl https://kangarugirlsschool-sc-ke.onrender.com/
+curl https://kangarugirlsseniorschool-sc-ke.onrender.com
 
 # Expected response:
 # (HTML page with DOCTYPE)
