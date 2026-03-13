@@ -18,7 +18,7 @@ const attachmentSchema = new mongoose.Schema({
   // Relative URL (served by Express static middleware), e.g. "/uploads/file.pdf"
   url: { type: String, required: true },
 
-  // Full absolute URL, e.g. "https://kangarugirlsschool.onrender.com/uploads/file.pdf"
+  // Full absolute URL, e.g. "https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.pdf"
   downloadUrl: { type: String },
 
   // ========== ADDED: Video thumbnail URL ==========

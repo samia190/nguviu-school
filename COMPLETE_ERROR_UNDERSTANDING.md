@@ -5,7 +5,7 @@
 Your system is showing these errors:
 ```
 A resource is blocked by OpaqueResponseBlocking
-GET https://kangarugirlsschool.onrender.com/uploads/...
+GET https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/...
 NS_BINDING_ABORTED
 ```
 
@@ -23,7 +23,7 @@ Plus:
 
 When you run frontend on `localhost:5173`:
 1. Frontend fetches gallery data from backend
-2. Backend returns imageUrl like: `https://kangarugirlsschool.onrender.com/uploads/file.jpg`
+2. Backend returns imageUrl like: `https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg`
 3. Frontend tries to load image from production domain
 4. Browser sees cross-origin request (different domain)
 5. Browser blocks it as potential security threat
@@ -38,17 +38,17 @@ When you run frontend on `localhost:5173`:
 1. **Upload Endpoint** (`/api/files/upload`):
    ```javascript
    // This returns ABSOLUTE URL
-   url: toAbsoluteUrl(req, doc.url)  // Could be https://kangarugirlsschool.onrender.com/uploads/...
+   url: toAbsoluteUrl(req, doc.url)  // Could be https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/...
    ```
 
 2. **Frontend receives** from upload:
    ```
-   { url: "https://kangarugirlsschool.onrender.com/uploads/file.jpg" }
+   { url: "https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg" }
    ```
 
 3. **Frontend sends to** POST `/api/home-news` or `/api/student-life`:
    ```
-   { imageUrl: "https://kangarugirlsschool.onrender.com/uploads/file.jpg" }
+   { imageUrl: "https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg" }
    ```
 
 4. **Backend stores** as-is in database:
@@ -68,7 +68,7 @@ When you run frontend on `localhost:5173`:
 
 **Correct Approach:**
 - Database: Store relative paths only (`/uploads/file.jpg`)
-- API Response: Convert to absolute based on request (`https://kangarugirlsschool.onrender.com/uploads/file.jpg`)
+- API Response: Convert to absolute based on request (`https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg`)
 - Frontend: Receives absolute URL, uses as-is
 
 **Why this works:**
@@ -82,11 +82,11 @@ When you run frontend on `localhost:5173`:
 
 ### #1: Database Has Wrong Format
 ```
-Gallery attachments:    /uploads/... or https://kangarugirlsschool.onrender.com/uploads/...
-StudentLife items:      /images/... or https://kangarugirlsschool.onrender.com/uploads/...
-Events items:          /images/... or https://kangarugirlsschool.onrender.com/uploads/...
-Staff photos:          /images/staff/... or https://kangarugirlsschool.onrender.com/uploads/...
-HomeNews items:        https://kangarugirlsschool.onrender.com/uploads/... (mostly absolute)
+Gallery attachments:    /uploads/... or https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/...
+StudentLife items:      /images/... or https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/...
+Events items:          /images/... or https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/...
+Staff photos:          /images/staff/... or https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/...
+HomeNews items:        https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/... (mostly absolute)
 ```
 
 **Should all be:** `/uploads/...` (relative only)

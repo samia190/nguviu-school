@@ -132,7 +132,7 @@ Status:     ✅ COMPLETE
 ```
 Impact:     Developer confusion about URL format
 Affected:   Content.js model comment
-Fixed:      "http:///..." → "https://kangarugirlsschool.onrender.com/..."
+Fixed:      "http:///..." → "https://kangarugirlsseniorschool-sc-ke.onrender.com/..."
 Status:     ✅ COMPLETE
 ```
 

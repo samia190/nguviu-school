@@ -177,7 +177,7 @@ After migration:
 ### After Deployment (Production)
 1. Verify gallery on production server
    ```
-   https://kangarugirlsseniorschool-sc-ke.onrender.comgallery
+   https://kangarugirlsseniorschool-sc-ke.onrender.com/gallery
    ```
 
 2. Monitor logs for any image errors

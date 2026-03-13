@@ -84,7 +84,7 @@ async function checkGalleryDatabase() {
       console.log(chalk.red.bold("❌ PROBLEM FOUND: Database has absolute URLs!"));
       console.log(chalk.yellow("   This causes OpaqueResponseBlocking errors when:"));
       console.log(chalk.yellow("   - Running frontend on localhost:5173"));
-      console.log(chalk.yellow("   - Gallery tries to fetch from https://kangarugirlsschool.onrender.com"));
+      console.log(chalk.yellow("   - Gallery tries to fetch from https://kangarugirlsseniorschool-sc-ke.onrender.com"));
       console.log(chalk.yellow("   - Triggers CORS/security blocks\n"));
     }
     

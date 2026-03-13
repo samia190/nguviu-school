@@ -24,8 +24,8 @@ JWT_EXPIRES_IN=7d
 # APPLICATION
 NODE_ENV=production
 PORT=4000
-CLIENT_ORIGIN=https://kangarugirlsschool-sc-ke.onrender.com
-CORS_ORIGINS=https://kangarugirlsschool-sc-ke.onrender.com
+CLIENT_ORIGIN=https://kangarugirlsseniorschool-sc-ke.onrender.com
+CORS_ORIGINS=https://kangarugirlsseniorschool-sc-ke.onrender.com
 
 # EMAIL (if needed)
 SMTP_HOST=smtp.gmail.com
@@ -91,8 +91,8 @@ CORS_ORIGINS=http://localhost:5173,http://localhost:4000
 ### Production (Render)
 ```env
 NODE_ENV=production
-CLIENT_ORIGIN=https://kangarugirlsschool-sc-ke.onrender.com
-CORS_ORIGINS=https://kangarugirlsschool-sc-ke.onrender.com
+CLIENT_ORIGIN=https://kangarugirlsseniorschool-sc-ke.onrender.com
+CORS_ORIGINS=https://kangarugirlsseniorschool-sc-ke.onrender.com
 ```
 
 ---
@@ -166,7 +166,7 @@ app.get('/health', (req, res) => {
 });
 ```
 
-Test: `curl https://kangarugirlsseniorschool-sc-ke.onrender.comhealth`
+Test: `curl https://kangarugirlsseniorschool-sc-ke.onrender.com/health`
 
 ---
 

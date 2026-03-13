@@ -5,7 +5,7 @@
 You reported these errors:
 ```
 A resource is blocked by OpaqueResponseBlocking
-GET https://kangarugirlsschool.onrender.com/uploads/...
+GET https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/...
 NS_BINDING_ABORTED
 ```
 
@@ -22,7 +22,7 @@ And images not showing in:
 
 ### Why This Breaks:
 1. You run frontend on `http://localhost:5173`
-2. Frontend fetches image URL from database: `https://kangarugirlsschool.onrender.com/uploads/file.jpg`
+2. Frontend fetches image URL from database: `https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg`
 3. Frontend tries to load from production domain (different domain)
 4. Browser sees cross-origin request
 5. Browser security blocks it: "OpaqueResponseBlocking"
@@ -30,7 +30,7 @@ And images not showing in:
 
 ### How It Got This Way:
 1. `/api/files/upload` endpoint returns absolute URL
-2. Frontend receives: `https://kangarugirlsschool.onrender.com/uploads/file.jpg`
+2. Frontend receives: `https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg`
 3. Frontend sends this to `/api/home-news` or `/api/student-life` etc.
 4. Backend stores it as-is in database
 5. Later, when dev server runs locally, same absolute URL points to production = CORS error
@@ -41,7 +41,7 @@ And images not showing in:
 
 ### Step 1: Normalize Database
 Convert all image URLs to relative format:
-- `https://kangarugirlsschool.onrender.com/uploads/file.jpg` → `/uploads/file.jpg`
+- `https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg` → `/uploads/file.jpg`
 - `/images/old-file.jpg` → `/uploads/old-file.jpg`
 - Keep `/uploads/file.jpg` as-is
 
@@ -77,10 +77,10 @@ Frontend requests from localhost ✓ Same domain, no CORS error
 
 ### Production:
 ```
-POST /upload → Returns https://kangarugirlsschool.onrender.com/uploads/file
+POST /upload → Returns https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file
 ↓ Normalized to: /uploads/file (stored in DB)
 ↓ Later: GET /api/gallery
-↓ Returns: https://kangarugirlsschool.onrender.com/uploads/file (absolute to production)
+↓ Returns: https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file (absolute to production)
 ↓
 Frontend requests from production domain ✓ Same domain, no CORS error
 ```

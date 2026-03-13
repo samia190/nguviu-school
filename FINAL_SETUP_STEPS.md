@@ -55,7 +55,7 @@ CLOUDINARY_FOLDER=kangaru
 
 ### Step 3: Verify It Works (1 min)
 
-Open your site: https://kangarugirlsschool-sc-ke.onrender.com
+Open your site: https://kangarugirlsseniorschool-sc-ke.onrender.com
 
 **Check these:**
 - [ ] Gallery page loads without 404 errors
@@ -71,7 +71,7 @@ Open your site: https://kangarugirlsschool-sc-ke.onrender.com
 
 ```javascript
 // Test if backend is healthy
-fetch('https://kangarugirlsschool.onrender.com/api/health')
+fetch('https://kangarugirlsseniorschool-sc-ke.onrender.com/api/health')
   .then(r => r.json())
   .then(d => console.log('✅ Backend OK'))
   .catch(e => console.error('❌ Backend error:', e.message));
@@ -113,7 +113,7 @@ Should show: `✅ Backend OK`
 
 **Test:**
 ```javascript
-fetch('https://kangarugirlsschool.onrender.com/api/gallery')
+fetch('https://kangarugirlsseniorschool-sc-ke.onrender.com/api/gallery')
   .then(r => r.json())
   .then(d => console.log('Gallery:', d))
 ```

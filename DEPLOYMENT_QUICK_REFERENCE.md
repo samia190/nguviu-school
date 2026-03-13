@@ -56,9 +56,9 @@ JWT_SECRET=<paste-64-char-hex-string>
 JWT_EXPIRES_IN=7d
 
 # CORS - includes both Render frontend and backend subdomains
-FRONTEND_URL=https://kangarugirlsschool-sc-ke.onrender.com
-CORS_ORIGINS=https://kangarugirlsschool-sc-ke.onrender.com,https://kangarugirlsschool.onrender.com,http://localhost:5173,http://localhost:4000
-PUBLIC_ORIGIN=https://kangarugirlsschool.onrender.com
+FRONTEND_URL=https://kangarugirlsseniorschool-sc-ke.onrender.com
+CORS_ORIGINS=https://kangarugirlsseniorschool-sc-ke.onrender.com,https://kangarugirlsseniorschool-sc-ke.onrender.com,http://localhost:5173,http://localhost:4000
+PUBLIC_ORIGIN=https://kangarugirlsseniorschool-sc-ke.onrender.com
 
 # EMAIL - Gmail (recommended for testing)
 # 1. Enable 2FA: https://myaccount.google.com/security
@@ -93,22 +93,22 @@ RATE_LIMIT_MAX=5
 #### Terminal Tests
 ```bash
 # Backend health
-curl https://kangarugirlsschool.onrender.com/api/health
+curl https://kangarugirlsseniorschool-sc-ke.onrender.com/api/health
 
 # Frontend accessible
-curl https://kangarugirlsseniorschool-sc-ke.onrender.com | grep "DOCTYPE"
+curl https://kangarugirlsseniorschool-sc-ke.onrender.com/ | grep "DOCTYPE"
 ```
 
 #### Browser DevTools Console Tests
 ```javascript
 // 1. API connectivity
-fetch('https://kangarugirlsschool.onrender.com/api/health')
+fetch('https://kangarugirlsseniorschool-sc-ke.onrender.com/api/health')
   .then(r => r.json())
   .then(d => console.log('✓ API OK:', d))
   .catch(e => console.error('✗ API Failed:', e));
 
 // 2. Database connectivity
-fetch('https://kangarugirlsschool.onrender.com/api/home-news?active=true')
+fetch('https://kangarugirlsseniorschool-sc-ke.onrender.com/api/home-news?active=true')
   .then(r => r.json())
   .then(d => console.log('✓ Database OK:', d.length, 'items'))
   .catch(e => console.error('✗ Database Failed:', e));
@@ -120,7 +120,7 @@ img.onerror = () => console.error('✗ Cloudinary Failed');
 img.src = 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_100,q_auto/kangaru/DSC_5392.jpg';
 
 // 4. CORS test (should have no errors)
-fetch('https://kangarugirlsschool.onrender.com/api/home-news')
+fetch('https://kangarugirlsseniorschool-sc-ke.onrender.com/api/home-news')
   .then(r => r.json())
   .then(d => console.log('✓ CORS OK'))
   .catch(e => console.error('✗ CORS Failed:', e.message));
@@ -143,7 +143,7 @@ fetch('https://kangarugirlsschool.onrender.com/api/home-news')
 **Solution:**
 1. Render dashboard → Backend Settings → Environment
 2. Find CORS_ORIGINS line
-3. Verify it contains `https://kangarugirlsschool-sc-ke.onrender.com`
+3. Verify it contains `https://kangarugirlsseniorschool-sc-ke.onrender.com`
 4. Save → wait 1-2 minutes → hard refresh (Ctrl+Shift+Delete)
 
 ### Problem: Images showing 404 or broken
@@ -171,7 +171,7 @@ After deployment, verify these items:
 - [ ] Render shows "Deploy successful" (check Logs)
 - [ ] MONGO_URI set in Render backend environment
 - [ ] CORS_ORIGINS includes frontend subdomain
-- [ ] `curl https://kangarugirlsschool.onrender.com/api/health` returns `{"status":"ok"}`
+- [ ] `curl https://kangarugirlsseniorschool-sc-ke.onrender.com/api/health` returns `{"status":"ok"}`
 - [ ] Frontend loads at `kangarugirlsschool-sc-ke.onrender.com`
 - [ ] No "CORS error" in browser DevTools console
 - [ ] Gallery page loads images (no 404s)

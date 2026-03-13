@@ -20,12 +20,12 @@
 **From console logs you showed:**
 ```
 A resource is blocked by OpaqueResponseBlocking
-GET https://kangarugirlsschool.onrender.com/uploads/1771840325075-DSC_5353.webp
+GET https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/1771840325075-DSC_5353.webp
 NS_BINDING_ABORTED
 ```
 
 This tells us:
-1. Browser is trying to fetch from `https://kangarugirlsschool.onrender.com` (production domain)
+1. Browser is trying to fetch from `https://kangarugirlsseniorschool-sc-ke.onrender.com` (production domain)
 2. But frontend is running on `http://localhost:5173` (development)
 3. Browser blocks the cross-origin request
 4. Image fails to load
@@ -35,7 +35,7 @@ This tells us:
 ## 2. Why Database Has Production URLs
 
 Looking at your code and the console, the database likely contains:
-- **Absolute URLs**: `https://kangarugirlsschool.onrender.com/uploads/...`
+- **Absolute URLs**: `https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/...`
 - **Old format URLs**: `/images/...` (pointing to old location)
 
 ### How This Happened
@@ -52,7 +52,7 @@ Looking at your code and the console, the database likely contains:
 
 ```
 Admin uploads image → Backend saves to /uploads/ → 
-Returns absolute URL (https://kangarugirlsschool.onrender.com/uploads/...) →
+Returns absolute URL (https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/...) →
 Frontend receives absolute URL → 
 Stores absolute URL in database →
 Later when fetching from frontend (localhost:5173) →
@@ -163,9 +163,9 @@ Image loads ✓
 
 **In Production (Render)**
 ```
-Component requests data from https://kangarugirlsschool.onrender.com/api/endpoint
+Component requests data from https://kangarugirlsseniorschool-sc-ke.onrender.com/api/endpoint
 ↓
-Backend returns: { imageUrl: "https://kangarugirlsschool.onrender.com/uploads/file.jpg" }
+Backend returns: { imageUrl: "https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg" }
 ↓
 Component displays from kangarugirlsschool.onrender.com (same domain)
 ↓

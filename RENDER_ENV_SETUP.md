@@ -37,14 +37,14 @@ JWT_EXPIRES_IN=7d
 
 # ==================== CORS & FRONTEND ====================
 # Frontend URL (Render auto-assigned for static site)
-FRONTEND_URL=https://kangarugirlsschool-sc-ke.onrender.com
+FRONTEND_URL=https://kangarugirlsseniorschool-sc-ke.onrender.com
 
 # CORS_ORIGINS: Both frontend AND backend must be included
 # DO NOT LEAVE EMPTY - this is a security risk!
-CORS_ORIGINS=https://kangarugirlsschool-sc-ke.onrender.com,https://kangarugirlsschool.onrender.com,http://localhost:5173,http://localhost:4000
+CORS_ORIGINS=https://kangarugirlsseniorschool-sc-ke.onrender.com,https://kangarugirlsseniorschool-sc-ke.onrender.com,http://localhost:5173,http://localhost:4000
 
 # Public origin for generating absolute URLs
-PUBLIC_ORIGIN=https://kangarugirlsschool.onrender.com
+PUBLIC_ORIGIN=https://kangarugirlsseniorschool-sc-ke.onrender.com
 
 # ==================== EMAIL CONFIGURATION ====================
 # Option A: Gmail (Recommended for testing)
@@ -109,13 +109,13 @@ After setting environment variables, verify deployment:
 
 ```bash
 # Backend health
-curl https://kangarugirlsschool.onrender.com/api/health
+curl https://kangarugirlsseniorschool-sc-ke.onrender.com/api/health
 
 # Expected response:
 # { "status": "ok", "uptime": 123.45 }
 
 # Frontend health
-curl https://kangarugirlsseniorschool-sc-ke.onrender.com
+curl https://kangarugirlsseniorschool-sc-ke.onrender.com/
 
 # Expected response:
 # (HTML page with DOCTYPE)
@@ -127,13 +127,13 @@ Open browser DevTools → Console and verify:
 
 ```javascript
 // 1. API connectivity test
-fetch('https://kangarugirlsschool.onrender.com/api/health')
+fetch('https://kangarugirlsseniorschool-sc-ke.onrender.com/api/health')
   .then(r => r.json())
   .then(d => console.log('✓ API connected:', d))
   .catch(e => console.error('✗ API failed:', e));
 
 // 2. Database test (via API endpoint)
-fetch('https://kangarugirlsschool.onrender.com/api/home-news?active=true')
+fetch('https://kangarugirlsseniorschool-sc-ke.onrender.com/api/home-news?active=true')
   .then(r => r.json())
   .then(d => console.log('✓ Database working:', d.length, 'news items'))
   .catch(e => console.error('✗ Database error:', e));
@@ -155,7 +155,7 @@ img.src = 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_100,q_auto/kangar
 
 **Fix:**
 1. Go to Backend Settings → Environment
-2. Check CORS_ORIGINS contains `https://kangarugirlsschool-sc-ke.onrender.com`
+2. Check CORS_ORIGINS contains `https://kangarugirlsseniorschool-sc-ke.onrender.com`
 3. Click "Save"
 4. Wait 1-2 minutes for redeploy
 5. Hard refresh browser (Ctrl+Shift+Delete)

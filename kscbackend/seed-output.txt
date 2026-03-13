@@ -2,13 +2,13 @@
 ≡ƒôï Loaded 87 Cloudinary URLs from Phase 1
 ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
   Phase 2: Seed Database Records
-  Target: https://kangarugirlsschool.onrender.com
+  Target: https://kangarugirlsseniorschool-sc-ke.onrender.com
 ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
 
 ≡ƒîÉ Testing API connection...
   Γ£à API is healthy: {"ok":true,"time":"2026-02-23T15:43:41.167Z"}
 
-≡ƒöÉ Logging into https://kangarugirlsschool.onrender.com...
+≡ƒöÉ Logging into https://kangarugirlsseniorschool-sc-ke.onrender.com...
 node :   ΓÜá∩╕Å  Login failed (500): {"error":"Login failed"}
 At line:1 char:68
 + ... \vrs 1.2.2 ksc copy\kscbackend"; node seed-phase2-db.mjs 2>&1 | Out-F ...

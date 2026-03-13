@@ -6,7 +6,7 @@
   
   <!-- Home Page -->
   <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com</loc>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>always</changefreq>
     <priority>1.0</priority>
@@ -14,7 +14,7 @@
   
   <!-- About Section -->
   <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.comabout</loc>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/about</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
@@ -22,7 +22,7 @@
   
   <!-- Admissions -->
   <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.comadmissions</loc>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/admissions</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -30,7 +30,7 @@
   
   <!-- Events -->
   <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.comevents</loc>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/events</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -38,7 +38,7 @@
   
   <!-- Fee Structure -->
   <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.comfeestructure</loc>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/feestructure</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -46,7 +46,7 @@
   
   <!-- Curriculum -->
   <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.comcurriculum</loc>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/curriculum</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
@@ -54,7 +54,7 @@
   
   <!-- Performance -->
   <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.comperformance</loc>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/performance</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -62,7 +62,7 @@
   
   <!-- Policies -->
   <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.compolicies</loc>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/policies</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -70,7 +70,7 @@
   
   <!-- Parents -->
   <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.comparents</loc>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/parents</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -78,7 +78,7 @@
   
   <!-- Student Life -->
   <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.comstudent-life</loc>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/student-life</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -86,7 +86,7 @@
   
   <!-- Gallery -->
   <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.comgallery</loc>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/gallery</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -94,7 +94,7 @@
   
   <!-- Newsletter -->
   <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.comnewsletter</loc>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/newsletter</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -102,7 +102,7 @@
   
   <!-- Contact -->
   <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.comcontact</loc>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/contact</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -110,7 +110,7 @@
   
   <!-- Legal -->
   <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.comlegal</loc>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/legal</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>

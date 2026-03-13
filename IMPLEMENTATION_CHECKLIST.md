@@ -394,7 +394,7 @@ Wait for: `Local: http://localhost:5173`
 
 ### Task 5.2: Test on Production URL
 ```
-https://kangarugirlsschool-sc-ke.onrender.com
+https://kangarugirlsseniorschool-sc-ke.onrender.com
 ```
 
 1. Open each page:

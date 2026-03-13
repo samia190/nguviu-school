@@ -66,7 +66,7 @@ Files blocked:
 ### Root Cause
 **CORS policy blocking cross-origin image responses**
 
-When frontend (https://kangarugirlsschool-sc-ke.onrender.com) tries to load images from backend (https://kangarugirlsschool.onrender.com/uploads/), the response is blocked because:
+When frontend (https://kangarugirlsseniorschool-sc-ke.onrender.com) tries to load images from backend (https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/), the response is blocked because:
 
 1. Backend returns image without proper CORS headers
 2. Browser applies OpaqueResponseBlocking (security feature)
@@ -94,7 +94,7 @@ app.use('/uploads', express.static('public/uploads'));  // ❌ Might be missing 
 
 ### What's Happening
 ```
-GET https://kangarugirlsschool.onrender.com/uploads/gallery-1771837587079-DSC_5391.jpg
+GET https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/gallery-1771837587079-DSC_5391.jpg
 NS_BINDING_ABORTED
 ```
 
@@ -123,7 +123,7 @@ Service worker knows about `/uploads/` but if it can't fetch from it (CORS), it 
 
 ### What's Happening
 ```
-GET https://kangarugirlsseniorschool-sc-ke.onrender.comheader/logo new.PNG  [HTTP/3 404]
+GET https://kangarugirlsseniorschool-sc-ke.onrender.com/header/logo new.PNG  [HTTP/3 404]
 ```
 
 ### Root Cause
@@ -145,7 +145,7 @@ Backend structure:
 
 When frontend tries relative path `/header/logo new.PNG`, it looks in:
 ```
-https://kangarugirlsseniorschool-sc-ke.onrender.comheader/logo new.PNG
+https://kangarugirlsseniorschool-sc-ke.onrender.com/header/logo new.PNG
                                               ^^^^^^^^^ NOT FOUND
                                               (should be on backend domain)
 ```
@@ -158,7 +158,7 @@ From [kscfrontend/index.html](../kscfrontend/index.html#L54):
 
 This file should be:
 1. Copied into frontend `public/header/`
-2. OR fetched from backend with full URL: `https://kangarugirlsschool.onrender.com/header/logo new.PNG`
+2. OR fetched from backend with full URL: `https://kangarugirlsseniorschool-sc-ke.onrender.com/header/logo new.PNG`
 
 ---
 
@@ -210,7 +210,7 @@ Update index.html to use correct domain:
 <link rel="preload" href="/header/logo new.PNG" />
 
 <!-- To: -->
-<link rel="preload" href="https://kangarugirlsschool.onrender.com/header/logo new.PNG" />
+<link rel="preload" href="https://kangarugirlsseniorschool-sc-ke.onrender.com/header/logo new.PNG" />
 ```
 
 ---

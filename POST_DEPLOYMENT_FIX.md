@@ -7,7 +7,7 @@
 - **Fixed**: 
   - Updated `kscfrontend/.env.production` with `VITE_API_URL=/api`
   - Updated `kscbackend/.env` with correct `CLIENT_ORIGIN` and `CORS_ORIGINS`
-  - Backend now allows requests from: `https://kangarugirlsschool-sc-ke.onrender.com`
+  - Backend now allows requests from: `https://kangarugirlsseniorschool-sc-ke.onrender.com`
 
 ### 2. **Missing Images (Critical)**
 - **Problem**: Images in responses returning 404
@@ -51,8 +51,8 @@ git push
 # MONGO_URI=mongodb+srv://...
 # JWT_SECRET=...
 # NODE_ENV=production
-# CLIENT_ORIGIN=https://kangarugirlsschool-sc-ke.onrender.com
-# CORS_ORIGINS=https://kangarugirlsschool-sc-ke.onrender.com
+# CLIENT_ORIGIN=https://kangarugirlsseniorschool-sc-ke.onrender.com
+# CORS_ORIGINS=https://kangarugirlsseniorschool-sc-ke.onrender.com
 ```
 
 ---
@@ -69,8 +69,8 @@ VITE_API_URL=/api
 ### Backend (.env)
 ```
 NODE_ENV=production
-CLIENT_ORIGIN=https://kangarugirlsschool-sc-ke.onrender.com
-CORS_ORIGINS=http://localhost:5173,http://localhost:4000,https://kangarugirlsschool-sc-ke.onrender.com
+CLIENT_ORIGIN=https://kangarugirlsseniorschool-sc-ke.onrender.com
+CORS_ORIGINS=http://localhost:5173,http://localhost:4000,https://kangarugirlsseniorschool-sc-ke.onrender.com
 ```
 - Allows CORS requests from production frontend
 - Includes localhost for local development

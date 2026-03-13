@@ -5,7 +5,7 @@
 You reported that images are failing to load with these errors:
 ```
 A resource is blocked by OpaqueResponseBlocking
-GET https://kangarugirlsschool.onrender.com/uploads/...
+GET https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/...
 NS_BINDING_ABORTED
 ```
 
@@ -22,7 +22,7 @@ Plus images not showing in:
 **ROOT CAUSE:** Database stores ABSOLUTE URLs pointing to PRODUCTION DOMAIN
 
 When frontend runs on localhost:5173:
-1. Fetches image URL from database (absolute: `https://kangarugirlsschool.onrender.com/uploads/file`)
+1. Fetches image URL from database (absolute: `https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file`)
 2. Tries to load from production domain (different domain)
 3. Browser security blocks cross-origin request (OpaqueResponseBlocking)
 4. Image fails to load
