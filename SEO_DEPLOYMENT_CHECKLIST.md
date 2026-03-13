@@ -8,7 +8,7 @@ Use this checklist when deploying to ensure your site is properly optimized for 
   - [ ] sitemap.xml
   - [ ] robots.txt
   - [ ] schema.json
-  
+  #
 - [ ] Meta tags added to index.html:
   - [ ] Meta description
   - [ ] Meta keywords
