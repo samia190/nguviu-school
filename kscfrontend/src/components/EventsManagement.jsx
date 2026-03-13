@@ -145,7 +145,7 @@ export default function EventsManagement() {
           </label>
         </div>
         <input style={inputStyle} value={settings.heroImage} onChange={(e) => setSettings({ ...settings, heroImage: e.target.value })} placeholder="https://..." />
-        {settings.heroImage && <img src={settings.heroImage} alt="Hero preview" style={{ maxWidth: 400, maxHeight: 160, borderRadius: 6, marginTop: 6, border: "1px solid #ddd" }} onError={(e) => { e.target.style.display = "none"; }} />}
+        {settings.heroImage && <img src={settings.heroImage} alt="Hero preview" style={{ maxWidth: 400, maxHeight: 160, borderRadius: 6, marginTop: 6, border: "1px solid #ddd" }} onError={(e) => { if (e?.target) e.target.style.display = "none"; }} />}
 
         <div style={{ marginTop: 20 }}>
           <button style={{ ...btnStyle, background: "#667eea" }} disabled={saving} onClick={() => save({ title: settings.title, intro: settings.intro, heroImage: settings.heroImage, heroOverlayText: settings.heroOverlayText })}>
@@ -269,7 +269,7 @@ export default function EventsManagement() {
           <span style={{ color: "#666", fontSize: 13 }}>or paste URL below</span>
         </div>
         <input style={inputStyle} value={eventForm.imageUrl} onChange={(e) => setEventForm({ ...eventForm, imageUrl: e.target.value })} placeholder="Image URL" />
-        {eventForm.imageUrl && <img src={eventForm.imageUrl} alt="Preview" style={{ maxWidth: 200, maxHeight: 120, borderRadius: 4, marginTop: 4, border: "1px solid #ddd" }} onError={(e) => { e.target.style.display = "none"; }} />}
+        {eventForm.imageUrl && <img src={eventForm.imageUrl} alt="Preview" style={{ maxWidth: 200, maxHeight: 120, borderRadius: 4, marginTop: 4, border: "1px solid #ddd" }} onError={(e) => { if (e?.target) e.target.style.display = "none"; }} />}
 
         <div style={{ marginTop: 8 }}>
           <label style={labelStyle}>Image Alt Text</label>
@@ -333,7 +333,7 @@ export default function EventsManagement() {
               <div key={ev._id || idx} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, overflow: "hidden", opacity: ev.active ? 1 : 0.5, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
                 {ev.imageUrl && (
                   <div style={{ height: 150, overflow: "hidden", background: "#f0f0f0" }}>
-                    <img src={ev.imageUrl} alt={ev.imageAlt || ev.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { e.target.style.display = "none"; }} />
+                    <img src={ev.imageUrl} alt={ev.imageAlt || ev.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { if (e?.target) e.target.style.display = "none"; }} />
                   </div>
                 )}
                 <div style={{ padding: 14 }}>

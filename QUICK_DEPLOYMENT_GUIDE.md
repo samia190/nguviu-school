@@ -133,7 +133,7 @@ cat orphaned-urls-report.txt
 
 **Check**:
 1. Header logo loads (top-left)
-   - DevTools → Network → Filter: "logo.png"
+   - DevTools → Network → Filter: "logo new.PNG"
    - Should show 200 OK, not 404
 
 2. About page → Principal section

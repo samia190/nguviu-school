@@ -1,21 +1,23 @@
-# robots.txt for School Website
+﻿# robots.txt for Kangaru Girls School Website
 
 User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://kangarugirlssseniorschool.co.ke/sitemap.xml
+Sitemap: https://kangarugirlsschool-sc-ke.onrender.com/sitemap.xml
 
-# Disallow admin and private areas
+# Disallow admin and private/authenticated areas
 Disallow: /admin
 Disallow: /login
 Disallow: /signup
 Disallow: /reset-password
-Disallow: /dev-login
 Disallow: /student-id-management
 Disallow: /results-management
 Disallow: /performance-management
 Disallow: /verify-student
+Disallow: /student
+Disallow: /staff
+Disallow: /portal/
 
-# Crawl delay (optional - adjust as needed)
+# Crawl delay
 Crawl-delay: 1

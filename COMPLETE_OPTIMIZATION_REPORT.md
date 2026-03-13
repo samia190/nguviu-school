@@ -142,7 +142,7 @@ import OptimizedImage from './components/OptimizedImage';
 
 // Critical image (logo, hero)
 <OptimizedImage 
-  src="/header/logo.PNG"
+  src="/header/logo new.PNG"
   alt="Logo"
   priority={true}
 />

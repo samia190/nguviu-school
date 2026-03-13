@@ -64,8 +64,8 @@ export default function ResetPassword({ navigate }) {
       return;
     }
 
-    if (password.length < 6) {
-      setStatus("Password must be at least 6 characters");
+    if (password.length < 8) {
+      setStatus("Password must be at least 8 characters");
       return;
     }
 

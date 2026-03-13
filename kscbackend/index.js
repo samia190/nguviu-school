@@ -27,6 +27,8 @@ import submissionsRoutes from "./routes/submissions.js";
 import submitFormRoutes from "./routes/submitForm.js";
 import studentVerificationRoutes from "./routes/studentVerification.js";
 import resultsRoutes from "./routes/results.js";
+import parentPortalRoutes from "./routes/parentPortal.js";
+import engagementRoutes from "./routes/engagement.js";
 import performanceRoutes from "./routes/performance.js";
 import performancePageRoutes from "./routes/performance-page.js";
 import schoolMagazineRoutes from "./routes/schoolMagazine.js";
@@ -43,6 +45,8 @@ import curriculumPageRoutes from "./routes/curriculum-page.js";
 import admissionsPageRoutes from "./routes/admissions-page.js";
 import homeworkRoutes from "./routes/homework.js";
 import chatRoutes from "./routes/chat.js";
+import inviteRoutes from "./routes/invites.js";
+import invitePublicRoutes from "./routes/invitePublic.js";
 
 // Initialize the Express app
 const app = express();
@@ -166,12 +170,16 @@ app.use("/api/content", contentRoutes);
 app.use("/api/files", filesRoutes);
 app.use("/api/downloads", downloadRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/admin/invite", inviteRoutes);
+app.use("/api/invite", invitePublicRoutes);
 app.use("/api/submissions", submissionsRoutes);
 // Public submit form and admin helpers
 app.use("/api/submit-form", submitFormRoutes);
 app.use("/api/footer-links", footerLinksRoutes);
 app.use("/api/student-verification", studentVerificationRoutes);
 app.use("/api/results", resultsRoutes);
+app.use("/api/parent", parentPortalRoutes);
+app.use("/api/engagement", engagementRoutes);
 app.use("/api/performance-page", performancePageRoutes);
 app.use("/api/performance", performanceRoutes);
 app.use("/api/school-magazine", schoolMagazineRoutes);
@@ -209,7 +217,7 @@ app.use((err, req, res, next) => {
   console.error("Message:", err.message);
   console.error("Stack:", err.stack);
   res.status(err.status || 500).json({ 
-    error: err.message || "Internal Server Error",
+    error: "Internal Server Error",
     path: req.path,
     method: req.method
   });

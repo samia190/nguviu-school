@@ -93,13 +93,13 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
           )}
           <OptimizedImage
             alt="KANGARU GIRLS Logo"
-            src="/header/logo.png"
+            src="/header/logo new.PNG"
             priority={true}
             style={{
               width: 50,
               height: 50,
               objectFit: "contain",
-              borderRadius: 4,
+              borderRadius: 0,
             }}
             onError={(e) => {
               e.currentTarget.onerror = null;
@@ -127,8 +127,8 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "nowrap", flex: 1, justifyContent: "flex-end" }}>
+      {/* Navigation — hidden on mobile; MenuButton (hamburger) handles mobile nav */}
+      <nav className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "nowrap", flex: 1, justifyContent: "flex-end" }}>
         {/* Quick access buttons */}
         <button onClick={() => go("home")} style={navButtonStyle(route === "home")}>
           Home
@@ -229,20 +229,20 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
 
         {/* Apply Now Button - Highlighted */}
         <button 
-          onClick={() => go("admission")} 
+          onClick={() => go("admissions")} 
           style={{
-            ...navButtonStyle(route === "admission"),
-            background: route === "admission" ? "skyblue" : "linear-gradient(135deg, greenyellow 50%, skyblue 50%)",
-            color: route === "admission" ? "yellow" : "skyblack",
+            ...navButtonStyle(route === "admissions"),
+            background: route === "admissions" ? "skyblue" : "linear-gradient(135deg, greenyellow 50%, skyblue 50%)",
+            color: route === "admissions" ? "yellow" : "skyblack",
             fontWeight: "bold",
             padding: "6px 10px",
             fontSize: "0.9rem",
             boxShadow: "0 4px 8px rgba(40, 167, 69, 0.3)",
-            border: route === "admission" ? "2px solid #28a745" : "none",
+            border: route === "admissions" ? "2px solid #28a745" : "none",
             transition: "all 0.3s ease",
           }}
           onMouseEnter={(e) => {
-            if (route !== "admission") {
+            if (route !== "admissions") {
               e.currentTarget.style.transform = "translateY(-2px)";
               e.currentTarget.style.boxShadow = "0 6px 12px rgba(40, 167, 69, 0.4)";
             }
@@ -317,7 +317,15 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
             width: 100%;
             display: flex !important;
             flex-wrap: wrap !important;
+            overflow-x: hidden !important;
             gap: 6px !important;
+          }
+
+          .main-header nav button,
+          .main-header nav > div button {
+            font-size: 0.8rem !important;
+            padding: 5px 8px !important;
+            flex-shrink: 1 !important;
           }
         }
         

@@ -82,7 +82,7 @@ router.post("/upload", upload.single("file"), optimizeMedia(), async (req, res) 
     });
   } catch (err) {
     console.error("❌ Upload error:", err);
-    return res.status(500).json({ error: "Upload failed", details: err.message });
+    return res.status(500).json({ error: "Upload failed" });
   }
 });
 

@@ -5,6 +5,11 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import User from "../models/User.js";
+import InviteToken from "../models/InviteToken.js";
+import StudentProfile from "../models/StudentProfile.js";
+import TeacherProfile from "../models/TeacherProfile.js";
+import StaffProfile from "../models/StaffProfile.js";
+import ParentProfile from "../models/ParentProfile.js";
 import { sendEmail } from "../utils/email.js";
 import { authLimiter } from "../middleware/rateLimiter.js";
 
@@ -36,10 +41,33 @@ const validatePasswordStrength = (password) => {
 };
 router.post("/register", authLimiter, async (req, res) => {
   try {
-    const { name, email, password, role = "user" } = req.body;
+    const {
+      name,
+      email,
+      password,
+      inviteToken,
+      // Role-specific profile fields (all optional at signup)
+      phone,
+      dateOfBirth,
+      admissionNumber,
+      stream,
+      grade,
+      form,
+      yearOfAdmission,
+      guardianName,
+      guardianPhone,
+      guardianRelation,
+      subjects,
+      department,
+      qualifications,
+      staffId,
+      position,
+      occupation,
+      providedAdmissionNumbers,
+    } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password required" });
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: "Name, email, and password are required" });
     }
 
     // Validate password strength
@@ -52,15 +80,89 @@ router.post("/register", authLimiter, async (req, res) => {
       return res.status(500).json({ error: "JWT_SECRET is not set in .env" });
     }
 
-    const existing = await User.findOne({ email });
-    if (existing) return res.status(409).json({ error: "User already exists" });
+    // --- Invite token validation (optional — public registration assigns role "user") ---
+    let assignedRole = "user";
+    let linkType = null;
+    let invite = null;
+
+    if (inviteToken) {
+      invite = await InviteToken.findOne({ token: inviteToken });
+      if (!invite) {
+        return res.status(400).json({ error: "Invalid invite link" });
+      }
+      if (invite.revoked) {
+        return res.status(410).json({ error: "This invite link has been revoked" });
+      }
+      if (invite.expiresAt < new Date()) {
+        return res.status(410).json({ error: "This invite link has expired" });
+      }
+      if (invite.maxUses !== null && invite.useCount >= invite.maxUses) {
+        return res.status(410).json({ error: "This invite link has reached its usage limit" });
+      }
+      // Role comes from the invite, never from the request body
+      assignedRole = invite.role;
+      linkType = invite.linkType;
+    }
+
+    const existing = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existing) return res.status(409).json({ error: "An account with this email already exists" });
 
     const hash = await bcrypt.hash(password, 10);
-const user = new User({ name, email, passwordHash: hash, role });
-
+    const user = new User({ name, email: email.toLowerCase().trim(), passwordHash: hash, role: assignedRole });
     await user.save();
 
-    const token = jwt.sign(
+    // --- Create role-specific profile (only for invited users with a linkType) ---
+    if (linkType === "student-cbc" || linkType === "student-844") {
+      const curriculum = linkType === "student-cbc" ? "CBC" : "8-4-4";
+      await StudentProfile.create({
+        user: user._id,
+        curriculum,
+        admissionNumber: admissionNumber || undefined,
+        stream: stream || undefined,
+        yearOfAdmission: yearOfAdmission || undefined,
+        grade: grade || undefined,
+        form: form || undefined,
+        dateOfBirth: dateOfBirth || undefined,
+        guardianName: guardianName || undefined,
+        guardianPhone: guardianPhone || undefined,
+        guardianRelation: guardianRelation || undefined,
+      });
+    } else if (linkType === "teacher") {
+      await TeacherProfile.create({
+        user: user._id,
+        staffId: staffId || undefined,
+        subjects: subjects ? (Array.isArray(subjects) ? subjects : [subjects]) : [],
+        department: department || undefined,
+        qualifications: qualifications || undefined,
+        phone: phone || undefined,
+      });
+    } else if (linkType === "staff") {
+      await StaffProfile.create({
+        user: user._id,
+        staffId: staffId || undefined,
+        position: position || undefined,
+        department: department || undefined,
+        phone: phone || undefined,
+      });
+    } else if (linkType === "parent") {
+      // Option B: always allow signup, store admission numbers for admin to link later
+      const admNums = providedAdmissionNumbers
+        ? (Array.isArray(providedAdmissionNumbers) ? providedAdmissionNumbers : [providedAdmissionNumbers]).filter(Boolean)
+        : [];
+      await ParentProfile.create({
+        user: user._id,
+        phone: phone || undefined,
+        occupation: occupation || undefined,
+        providedAdmissionNumbers: admNums,
+      });
+    }
+
+    // --- Record token usage (only for invite-based registrations) ---
+    if (invite) {
+      invite.useCount += 1;
+    invite.usages.push({ userId: user._id, usedAt: new Date() });
+    await invite.save();    }
+    const jwtToken = jwt.sign(
       { id: user._id, name: user.name, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -68,7 +170,7 @@ const user = new User({ name, email, passwordHash: hash, role });
 
     return res.status(201).json({
       user: { id: user._id, name: user.name, email: user.email, role: user.role },
-      token,
+      token: jwtToken,
     });
   } catch (err) {
     console.error("Register error:", err);
@@ -165,6 +267,9 @@ router.post("/forgot-password", async (req, res) => {
     await user.save();
 
     // Create reset URL
+    if (!process.env.FRONTEND_URL && process.env.NODE_ENV === 'production') {
+      console.error('[Auth] CRITICAL: FRONTEND_URL environment variable is not set. Password reset emails will contain localhost URLs that will not work in production. Set FRONTEND_URL in your deployment environment.');
+    }
     const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/#/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
     // Send email

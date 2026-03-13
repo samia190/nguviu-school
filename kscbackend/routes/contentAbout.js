@@ -137,7 +137,7 @@ router.post("/", async (req, res) => {
   } catch (err) {
     console.error("Error creating about content:", err.message);
     console.error("Stack:", err.stack);
-    return res.status(400).json({ error: "Invalid content data", details: err.message });
+    return res.status(400).json({ error: "Invalid content data" });
   }
 });
 
@@ -235,7 +235,7 @@ router.put("/:id", async (req, res) => {
     return res.json(out);
   } catch (err) {
     console.error("Error updating about content:", err);
-    return res.status(400).json({ error: "Invalid content data", details: err.message });
+    return res.status(400).json({ error: "Invalid content data" });
   }
 });
 

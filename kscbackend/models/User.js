@@ -22,6 +22,11 @@ const UserSchema = new mongoose.Schema(
     resetTokenHash: { type: String },
     resetTokenExpires: { type: Date },
 
+    // Parent portal fields
+    linkedStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
+    accessTokenHash: { type: String },
+    accessTokenExpires: { type: Date },
+
     createdAt: { type: Date, default: Date.now }
   },
   {

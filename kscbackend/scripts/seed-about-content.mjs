@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://kscadmin:Ksc098765@cluster0.7bmfdr8.mongodb.net/kangaru_girls_db?retryWrites=true&w=majority";
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) { console.error("MONGO_URI env var is required"); process.exit(1); }
 
 // Define Content schema inline to avoid import issues
 const contentSchema = new mongoose.Schema({

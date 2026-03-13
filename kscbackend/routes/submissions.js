@@ -19,10 +19,11 @@ router.get("/", async (req, res) => {
     if (status) q.status = status;
     if (studentEmail) q.studentEmail = studentEmail;
     if (search) {
+      const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       q.$or = [
-        { originalName: { $regex: search, $options: "i" } },
-        { studentEmail: { $regex: search, $options: "i" } },
-        { notes: { $regex: search, $options: "i" } },
+        { originalName: { $regex: safeSearch, $options: "i" } },
+        { studentEmail: { $regex: safeSearch, $options: "i" } },
+        { notes: { $regex: safeSearch, $options: "i" } },
       ];
     }
 

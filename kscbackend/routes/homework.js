@@ -55,7 +55,7 @@ router.get("/admin/all", requireAuth, async (req, res) => {
     res.json(homework || []);
   } catch (err) {
     console.error("Error fetching homework:", err.message);
-    res.status(500).json({ error: "Failed to fetch homework: " + err.message });
+    res.status(500).json({ error: "Failed to fetch homework" });
   }
 });
 

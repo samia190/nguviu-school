@@ -44,9 +44,9 @@ const API_ORIGIN = (() => {
   return "";
 })();
 
-function getToken() {
+export function getToken() {
   try {
-    return localStorage.getItem("token");
+    return localStorage.getItem("token") || sessionStorage.getItem("token") || null;
   } catch {
     return null;
   }
@@ -172,6 +172,7 @@ export function saveToken(token) {
 export function clearToken() {
   try {
     localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
   } catch {}
 }
 

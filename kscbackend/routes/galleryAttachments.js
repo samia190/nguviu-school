@@ -6,6 +6,7 @@ import path from "path";
 import fs from "fs";
 import GalleryItem from "../models/GalleryItem.js";
 import { uploadBuffer, deleteFile } from "../utils/storage.js";
+import { requireRole } from "../middleware/requireAuth.js";
 // ========== MEDIA OPTIMIZATION ==========
 import { optimizeMedia, mediaFileFilter } from "../middleware/mediaOptimizer.js";
 
@@ -78,7 +79,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST /api/content/gallery -> create item
-router.post("/", async (req, res) => {
+router.post("/", requireRole(['admin']), async (req, res) => {
   try {
     const { title, body } = req.body || {};
     const item = await GalleryItem.create({
@@ -95,7 +96,7 @@ router.post("/", async (req, res) => {
 });
 
 // PATCH /api/content/gallery/:id -> update title/body/attachments
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", requireRole(['admin']), async (req, res) => {
   try {
     const { title, body, attachments } = req.body || {};
     const updateFields = {};
@@ -127,7 +128,7 @@ router.patch("/:id", async (req, res) => {
 });
 
 // DELETE /api/content/gallery/:id -> delete item
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireRole(['admin']), async (req, res) => {
   try {
     const deleted = await GalleryItem.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ error: "Not found" });
@@ -144,7 +145,7 @@ router.delete("/:id", async (req, res) => {
 
 // ========== UPDATED: Added optimizeMedia() middleware after Multer ==========
 // POST /api/content/gallery/:id/attachments  (supports 100 files per request)
-router.post("/:id/attachments", upload.array("attachments", 100), optimizeMedia(), async (req, res) => {
+router.post("/:id/attachments", requireRole(['admin']), upload.array("attachments", 100), optimizeMedia(), async (req, res) => {
   try {
     const item = await GalleryItem.findById(req.params.id);
     if (!item) return res.status(404).json({ error: "Gallery item not found" });

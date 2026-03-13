@@ -36,7 +36,11 @@ const verbose = args.includes('--verbose') || args.includes('-v');
 // CONFIGURATION
 // ==========================================
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@example.com";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+if (!ADMIN_EMAIL) {
+  console.error("ADMIN_EMAIL env var is required");
+  process.exit(1);
+}
 const ADMIN_NAME = "System Administrator";
 
 // Admin password - defaults to a secure random password

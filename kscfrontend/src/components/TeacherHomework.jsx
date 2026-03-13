@@ -285,12 +285,11 @@ export default function TeacherHomework({ user }) {
             </div>
 
             <div style={{ marginBottom: "20px" }}>
-              <label>Upload Files (any type, max 50MB each) *</label>
+              <label>Upload Files (any type, max 50MB each){editingId ? "" : " *"}</label>
               <input
                 type="file"
                 multiple
                 onChange={handleFileChange}
-                required
                 style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
               />
               {attachmentFiles.length > 0 && (
@@ -307,7 +306,7 @@ export default function TeacherHomework({ user }) {
 
             <button
               type="submit"
-              disabled={saving || !form.title || !form.subject || attachmentFiles.length === 0}
+              disabled={saving || !form.title || !form.subject || (!editingId && attachmentFiles.length === 0)}
               style={{
                 padding: "10px 20px",
                 background: saving ? "#ccc" : "#007bff",

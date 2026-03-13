@@ -159,7 +159,7 @@ export default function Footer() {
           >
             <OptimizedImage
               alt="kangaru girls logo"
-              src="/header/logo.png"
+              src="/header/logo new.PNG"
               priority={true}
               style={{ width: 60, height: 60 }}
             />
@@ -172,7 +172,7 @@ export default function Footer() {
           </div>
 
           {/* ================= COLLABORATORS ================= */}
-          <div className="footer-partnerships" style={{ flex: 1, minWidth: 500 }}>
+          <div className="footer-partnerships" style={{ flex: 1, minWidth: "min(500px, 100%)" }}>
             <h4 style={{ marginBottom: 8 }}>KENYAN CURRUCULUM PATNERSHIP</h4>
             <div
               style={{

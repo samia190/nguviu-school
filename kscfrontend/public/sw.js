@@ -1,26 +1,16 @@
 // Service Worker for caching and offline functionality
-const CACHE_NAME = 'kangaru girls-v2';
-const RUNTIME_CACHE = 'kangaru girls-runtime-v2';
+// Bump version string on every deployment to force cache invalidation
+const CACHE_NAME = 'kangaru-girls-v3';
+const RUNTIME_CACHE = 'kangaru-girls-runtime-v3';
 
-// Only cache essential static assets that actually exist in build
-const PRECACHE_URLS = [
-  '/',
-  '/index.html',
-];
-
-// Install event - cache critical assets
+// Install event - skip waiting immediately, no HTML precache
+// HTML must always come from the network so stale index.html never serves old JS hashes
 self.addEventListener('install', (event) => {
   console.log('Service Worker installing...');
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('Caching precache assets');
-      return cache.addAll(PRECACHE_URLS);
-    })
-  );
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Activate event - delete ALL previous caches, then claim clients
 self.addEventListener('activate', (event) => {
   console.log('Service Worker activating...');
   event.waitUntil(
@@ -28,14 +18,16 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames
           .filter((name) => name !== CACHE_NAME && name !== RUNTIME_CACHE)
-          .map((name) => caches.delete(name))
+          .map((name) => {
+            console.log('[SW] Deleting old cache:', name);
+            return caches.delete(name);
+          })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -45,12 +37,24 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // API requests - network first, cache fallback
+  // Navigation requests (HTML pages) — ALWAYS network-first, never serve from cache.
+  // This prevents stale index.html with old hashed JS filenames causing blank pages
+  // after a new deployment.
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).catch(() => {
+        // Offline fallback: serve cached index.html if available
+        return caches.match('/index.html');
+      })
+    );
+    return;
+  }
+
+  // API requests — network first, runtime cache fallback
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Clone and cache successful API responses
           if (response.status === 200) {
             const responseClone = response.clone();
             caches.open(RUNTIME_CACHE).then((cache) => {
@@ -59,54 +63,49 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => {
-          // Return cached version if network fails
-          return caches.match(request);
-        })
+        .catch(() => caches.match(request))
     );
     return;
   }
 
-  // Static assets - cache first, network fallback
+  // Static assets (hashed filenames from Vite build) — cache first, network fallback
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
         return cachedResponse;
       }
 
-      return fetch(request).catch((error) => {
-        // Handle CORS or network errors for cross-origin resources
-        console.warn('[SW] Fetch failed for:', request.url, error);
-        // Try to return cached version if available
-        return caches.match(request) || Promise.reject(error);
-      }).then((response) => {
-        // Don't cache non-successful responses
+      return fetch(request).then((response) => {
+        // Only cache successful, same-origin, non-HTML asset responses
         if (!response || response.status !== 200) {
           return response;
         }
 
-        // Don't cache responses where content-type doesn't match the request.
-        // This prevents caching HTML error pages served for missing images/assets.
         const contentType = response.headers.get('content-type') || '';
         const requestPath = url.pathname.toLowerCase();
 
-        const isAssetRequest = /\.(jpg|jpeg|png|gif|webp|svg|mp4|webm|pdf|css|js|ico|woff2?|ttf|eot)(\?|$)/i.test(requestPath)
+        const isStaticAsset = /\.(jpg|jpeg|png|gif|webp|svg|mp4|webm|pdf|css|js|ico|woff2?|ttf|eot)(\?|$)/i.test(requestPath)
+          || requestPath.startsWith('/assets/')
           || requestPath.startsWith('/images/')
           || requestPath.startsWith('/uploads/')
           || requestPath.startsWith('/downloads/');
 
-        // If the request looks like an asset but got HTML back, don't cache it
-        if (isAssetRequest && contentType.includes('text/html')) {
+        // Don't cache if the server returned HTML for an asset request (CDN error page)
+        if (isStaticAsset && contentType.includes('text/html')) {
           return response;
         }
 
-        // Clone and cache the response
-        const responseClone = response.clone();
-        caches.open(RUNTIME_CACHE).then((cache) => {
-          cache.put(request, responseClone);
-        });
+        if (isStaticAsset) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone);
+          });
+        }
 
         return response;
+      }).catch((error) => {
+        console.warn('[SW] Fetch failed for:', request.url, error);
+        return caches.match(request) || Promise.reject(error);
       });
     })
   );

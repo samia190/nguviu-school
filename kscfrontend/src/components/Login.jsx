@@ -1,49 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { post, get } from "../utils/api";
-import PageBackground from "../components/PageBackground";
-import OptimizedImage from "./OptimizedImage";
+import React, { useState } from "react";
+import { post } from "../utils/api";
 
 export default function Login({ onAuth, navigate }) {
   const [status, setStatus] = useState("");
   const [remember, setRemember] = useState(false);
-  const [imagesLoaded, setImagesLoaded] = useState(false);
-  const [loadedCount, setLoadedCount] = useState(0);
-  const totalImages = 4;
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetStatus, setResetStatus] = useState("");
-
-  // Track image loading
-  const handleImageLoad = () => {
-    setLoadedCount(prev => {
-      const newCount = prev + 1;
-      if (newCount === totalImages) {
-        setTimeout(() => setImagesLoaded(true), 100);
-      }
-      return newCount;
-    });
-  };
-
-  // Preload images immediately with WebP support
-  useEffect(() => {
-    const images = [
-      '/images/students/IMG_0778.JPG',
-      '/images/students/IMG_1194.JPG',
-      '/images/students/IMG_1221.JPG',
-      '/images/students/std 2.JPG'
-    ];
-    
-    // Preload both WebP and original formats
-    images.forEach(src => {
-      const img = new Image();
-      img.src = src;
-      
-      // Also try WebP version
-      const webpSrc = src.replace(/\.(jpe?g|png)$/i, '.webp');
-      const webpImg = new Image();
-      webpImg.src = webpSrc;
-    });
-  }, []);
 
   /**
    * Handle form submit
@@ -92,19 +55,19 @@ export default function Login({ onAuth, navigate }) {
 
     switch (role) {
       case "admin":
-        navigate("/admin/dashboard");
+        navigate("admin");
         break;
       case "teacher":
-        navigate("/teacher/dashboard");
+        navigate("teacher");
         break;
       case "student":
-        navigate("/student/dashboard");
+        navigate("student");
         break;
       case "staff":
-        navigate("/staff/dashboard");
+        navigate("staff");
         break;
       default:
-        navigate("/");
+        navigate("home");
     }
   }
 
@@ -134,161 +97,63 @@ export default function Login({ onAuth, navigate }) {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
       padding: '20px',
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* Animated background circles */}
-      <div style={{
-        position: 'absolute',
-        top: '-10%',
-        right: '-5%',
-        width: '500px',
-        height: '500px',
-        borderRadius: '50%',
-        background: 'rgba(255, 255, 255, 0.1)',
-        filter: 'blur(60px)',
-        animation: 'float 8s ease-in-out infinite'
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: '-10%',
-        left: '-5%',
-        width: '400px',
-        height: '400px',
-        borderRadius: '50%',
-        background: 'rgba(255, 255, 255, 0.1)',
-        filter: 'blur(60px)',
-        animation: 'float 6s ease-in-out infinite reverse'
-      }} />
-
-      {/* Student Image Shapes - Top Right */}
-      <div className="auth-shape" style={{
-        position: 'absolute',
-        top: '10%',
-        right: '8%',
-        width: '180px',
-        height: '180px',
-        borderRadius: '50%',
-        overflow: 'hidden',
-        border: '4px solid rgba(255, 255, 255, 0.3)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-        animation: 'slideIn 15s infinite',
-        opacity: imagesLoaded ? 1 : 0,
-        transition: 'opacity 1.5s ease-in-out'
-      }}>
-        <OptimizedImage 
-          src="/images/students/IMG_0778.JPG" 
-          alt="Student" 
-          priority={true}
-          onLoad={handleImageLoad}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-        />
-      </div>
-
-      {/* Student Image Shapes - Bottom Right */}
-      <div className="auth-shape" style={{
-        position: 'absolute',
-        bottom: '15%',
-        right: '5%',
-        width: '140px',
-        height: '140px',
-        borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
-        overflow: 'hidden',
-        border: '4px solid rgba(255, 255, 255, 0.3)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-        animation: 'slideIn 18s infinite 2s',
-        opacity: imagesLoaded ? 1 : 0,
-        transition: 'opacity 1.8s ease-in-out 0.3s'
-      }}>
-        <OptimizedImage 
-          src="/images/students/IMG_1194.JPG" 
-          alt="Student" 
-          priority={true}
-          onLoad={handleImageLoad}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-        />
-      </div>
-
-      {/* Student Image Shapes - Top Left */}
-      <div className="auth-shape" style={{
-        position: 'absolute',
-        top: '20%',
-        left: '6%',
-        width: '160px',
-        height: '160px',
-        borderRadius: '20px',
-        overflow: 'hidden',
-        border: '4px solid rgba(255, 255, 255, 0.3)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-        transform: 'rotate(15deg)',
-        animation: 'slideIn 20s infinite 4s',
-        opacity: imagesLoaded ? 1 : 0,
-        transition: 'opacity 2s ease-in-out 0.6s'
-      }}>
-        <OptimizedImage 
-          src="/images/students/IMG_1221.JPG" 
-          alt="Student" 
-          priority={true}
-          onLoad={handleImageLoad}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-        />
-      </div>
-
-      {/* Student Image Shapes - Middle Left */}
-      <div className="auth-shape" style={{
-        position: 'absolute',
-        bottom: '25%',
-        left: '10%',
-        width: '120px',
-        height: '120px',
-        borderRadius: '50%',
-        overflow: 'hidden',
-        border: '4px solid rgba(255, 255, 255, 0.3)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-        animation: 'slideIn 16s infinite 6s',
-        opacity: imagesLoaded ? 1 : 0,
-        transition: 'opacity 2.2s ease-in-out 0.9s'
-      }}>
-        <OptimizedImage 
-          src="/images/students/std 2.JPG" 
-          alt="Student" 
-          priority={true}
-          onLoad={handleImageLoad}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-        />
-      </div>
-
       <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0) translateX(0); }
-          50% { transform: translateY(-20px) translateX(20px); }
+        @keyframes login-orbit {
+          0%   { transform: rotate(0deg) translateX(var(--r)) rotate(0deg); }
+          100% { transform: rotate(360deg) translateX(var(--r)) rotate(-360deg); }
         }
-        @keyframes slideIn {
-          0% { opacity: 0; transform: scale(0.8) rotate(0deg); }
-          10% { opacity: 1; transform: scale(1) rotate(5deg); }
-          90% { opacity: 1; transform: scale(1) rotate(-5deg); }
-          100% { opacity: 0; transform: scale(0.8) rotate(0deg); }
+        @keyframes login-pulse {
+          0%, 100% { transform: scale(1); opacity: 0.6; }
+          50%       { transform: scale(1.15); opacity: 1; }
+        }
+        @keyframes login-drift {
+          0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.5; }
+          33%  { transform: translateY(-40px) translateX(30px) rotate(120deg); opacity: 0.8; }
+          66%  { transform: translateY(20px) translateX(-20px) rotate(240deg); opacity: 0.6; }
+          100% { transform: translateY(0) translateX(0) rotate(360deg); opacity: 0.5; }
+        }
+        @keyframes login-shimmer {
+          0%, 100% { opacity: 0.15; }
+          50%       { opacity: 0.45; }
+        }
+        @keyframes login-spin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+        @keyframes login-counter-spin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(-360deg); }
+        }
+        .login-particle {
+          position: absolute;
+          border-radius: 50%;
+          pointer-events: none;
         }
         .classic-input {
           width: 100%;
           padding: 14px 18px;
-          border: 2px solid rgba(255, 255, 255, 0.2);
+          border: 2px solid #e2e8f0;
           border-radius: 12px;
-          background: rgba(255, 255, 255, 0.95);
+          background: #f8fafc;
           font-size: 15px;
           transition: all 0.3s ease;
           outline: none;
+          box-sizing: border-box;
+          color: #1e293b;
         }
         .classic-input:focus {
           border-color: #667eea;
           background: #ffffff;
-          box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+          box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
         }
         .classic-btn {
           width: 100%;
-          padding: 14px;
+          padding: 15px;
           border: none;
           border-radius: 12px;
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -297,235 +162,229 @@ export default function Login({ onAuth, navigate }) {
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+          box-shadow: 0 4px 20px rgba(102, 126, 234, 0.45);
+          letter-spacing: 0.3px;
         }
-        .classic-btn:hover {
+        .classic-btn:hover:not(:disabled) {
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+          box-shadow: 0 8px 28px rgba(102, 126, 234, 0.7);
         }
-        .classic-btn:active {
-          transform: translateY(0);
-        }
+        .classic-btn:active { transform: translateY(0); }
+        .classic-btn:disabled { opacity: 0.65; cursor: not-allowed; }
       `}</style>
 
+      {/* ── Animated geometric rings ── */}
+      {[200, 340, 480, 620].map((size, i) => (
+        <div key={i} style={{
+          position: 'absolute',
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          border: `1.5px solid rgba(${i % 2 === 0 ? '102,126,234' : '118,75,162'},${0.18 - i * 0.03})`,
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%,-50%)',
+          animation: `${i % 2 === 0 ? 'login-spin' : 'login-counter-spin'} ${22 + i * 8}s linear infinite`,
+          pointerEvents: 'none',
+        }} />
+      ))}
+
+      {/* ── Floating orbs ── */}
+      {[
+        { size: 180, top: '8%',  left: '6%',  color: '102,126,234', dur: '9s',  delay: '0s'  },
+        { size: 120, top: '72%', left: '4%',  color: '118,75,162',  dur: '13s', delay: '2s'  },
+        { size: 90,  top: '15%', left: '82%', color: '79,209,197',  dur: '11s', delay: '1s'  },
+        { size: 140, top: '65%', left: '76%', color: '102,126,234', dur: '15s', delay: '3s'  },
+        { size: 70,  top: '42%', left: '90%', color: '240,147,251', dur: '7s',  delay: '0.5s'},
+        { size: 50,  top: '88%', left: '55%', color: '118,75,162',  dur: '10s', delay: '4s'  },
+      ].map((o, i) => (
+        <div key={i} className="login-particle" style={{
+          width: o.size,
+          height: o.size,
+          top: o.top,
+          left: o.left,
+          background: `radial-gradient(circle, rgba(${o.color},0.22) 0%, rgba(${o.color},0) 70%)`,
+          animation: `login-drift ${o.dur} ease-in-out infinite ${o.delay}`,
+          filter: 'blur(2px)',
+        }} />
+      ))}
+
+      {/* ── Glowing diamond shapes ── */}
+      {[
+        { size: 14, top: '18%', left: '20%', dur: '4s',  delay: '0s'   },
+        { size: 10, top: '34%', left: '88%', dur: '6s',  delay: '1s'   },
+        { size: 18, top: '78%', left: '15%', dur: '5s',  delay: '2.5s' },
+        { size: 12, top: '58%', left: '92%', dur: '7s',  delay: '0.5s' },
+        { size: 8,  top: '90%', left: '38%', dur: '4.5s',delay: '3s'   },
+        { size: 16, top: '12%', left: '60%', dur: '6.5s',delay: '1.5s' },
+      ].map((d, i) => (
+        <div key={i} style={{
+          position: 'absolute',
+          width: d.size,
+          height: d.size,
+          top: d.top,
+          left: d.left,
+          background: 'linear-gradient(135deg, #a78bfa, #60a5fa)',
+          borderRadius: '3px',
+          transform: 'rotate(45deg)',
+          animation: `login-pulse ${d.dur} ease-in-out infinite ${d.delay}`,
+          boxShadow: '0 0 12px rgba(167,139,250,0.7)',
+          pointerEvents: 'none',
+        }} />
+      ))}
+
+      {/* ── Orbit dots around card center ── */}
+      {[0,60,120,180,240,300].map((deg, i) => (
+        <div key={i} style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: 8,
+          height: 8,
+          marginTop: -4,
+          marginLeft: -4,
+          borderRadius: '50%',
+          background: i % 2 === 0 ? '#818cf8' : '#c084fc',
+          boxShadow: `0 0 8px ${i % 2 === 0 ? '#818cf8' : '#c084fc'}`,
+          '--r': '260px',
+          animation: `login-orbit ${16 + i * 2}s linear infinite ${i * -2.5}s`,
+          transformOrigin: '0 0',
+          opacity: 0.55,
+          pointerEvents: 'none',
+        }} />
+      ))}
+
+      {/* ── Card ── */}
       <section style={{
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
+        background: 'rgba(255, 255, 255, 0.97)',
+        backdropFilter: 'blur(24px)',
         borderRadius: '24px',
         padding: '48px 40px',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+        boxShadow: '0 25px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.15)',
         maxWidth: '440px',
         width: '100%',
         position: 'relative',
-        zIndex: 1,
-        border: '1px solid rgba(255, 255, 255, 0.3)'
+        zIndex: 10,
       }}>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h2 style={{
-            fontSize: '32px',
-            fontWeight: '700',
+        {/* School logo / icon */}
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            width: 64, height: 64, borderRadius: '50%',
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            marginBottom: '8px'
+            boxShadow: '0 8px 24px rgba(102,126,234,0.4)',
+            marginBottom: 14,
+          }}>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z" fill="white" opacity="0.9"/>
+              <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" fill="white"/>
+            </svg>
+          </div>
+          <h2 style={{
+            fontSize: '28px', fontWeight: '700',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            marginBottom: '6px', marginTop: 0,
           }}>Welcome Back</h2>
-          <p style={{ color: '#64748b', fontSize: '15px' }}>Sign in to continue to your account</p>
+          <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>
+            Sign in to your Kangaru Girls account
+          </p>
         </div>
 
-        <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <input
-            name="email"
-            type="email"
-            placeholder="Email address"
-            required
-            className="classic-input"
-          />
-
-          <input
-            name="password"
-            type="password"
-            placeholder="Password"
-            required
-            className="classic-input"
-          />
-
-          <select name="role" required className="classic-input" style={{ cursor: 'pointer' }}>
-            <option value="">Select your role</option>
-            <option value="admin">Admin</option>
-            <option value="teacher">Teacher</option>
-            <option value="student">Student</option>
-            <option value="staff">Staff</option>
-          </select>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <label style={{ 
-              display: 'flex', 
-              gap: '10px', 
-              alignItems: 'center',
-              fontSize: '14px',
-              color: '#64748b',
-              cursor: 'pointer'
-            }}>
-              <input
-                type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-              />
-              Remember me
+        <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              Email Address
             </label>
-            <a 
-              href="#" 
-              onClick={(e) => { e.preventDefault(); setShowForgotPassword(true); }}
-              style={{
-                fontSize: '14px',
-                color: '#667eea',
-                fontWeight: '600',
-                textDecoration: 'none'
-              }}
-            >
-              Forgot Password?
-            </a>
+            <input name="email" type="email" placeholder="your@email.com" required className="classic-input" />
           </div>
 
-          <button className="classic-btn" type="submit">
-            Sign In
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              Password
+            </label>
+            <input name="password" type="password" placeholder="Enter your password" required className="classic-input" />
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <label style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '14px', color: '#64748b', cursor: 'pointer' }}>
+              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)}
+                style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#667eea' }} />
+              Remember me
+            </label>
+            <button type="button" onClick={() => setShowForgotPassword(true)}
+              style={{ background: 'none', border: 'none', color: '#667eea', fontWeight: 600, cursor: 'pointer', fontSize: '13px', padding: 0 }}>
+              Forgot Password?
+            </button>
+          </div>
+
+          <button className="classic-btn" type="submit" disabled={status === "Logging in..."}>
+            {status === "Logging in..." ? "Signing in…" : "Sign In"}
           </button>
         </form>
 
         {status && (
           <p style={{
-            marginTop: '20px',
-            padding: '12px',
-            borderRadius: '8px',
-            background: status.includes('failed') || status.includes('Error') 
-              ? 'rgba(239, 68, 68, 0.1)' 
-              : 'rgba(34, 197, 94, 0.1)',
-            color: status.includes('failed') || status.includes('Error') 
-              ? '#dc2626' 
-              : '#16a34a',
-            textAlign: 'center',
-            fontSize: '14px',
-            fontWeight: '500'
+            marginTop: '16px', padding: '11px 14px', borderRadius: '10px',
+            background: status.includes('failed') || status.includes('Error') || status.includes('Invalid')
+              ? 'rgba(239,68,68,0.09)' : 'rgba(34,197,94,0.09)',
+            color: status.includes('failed') || status.includes('Error') || status.includes('Invalid')
+              ? '#dc2626' : '#16a34a',
+            textAlign: 'center', fontSize: '14px', fontWeight: 500, margin: '16px 0 0',
           }}>
             {status}
           </p>
         )}
 
-        <p style={{
-          textAlign: 'center',
-          marginTop: '24px',
-          color: '#64748b',
-          fontSize: '14px'
-        }}>
-          Don't have an account? <a href="#/signup" style={{
-            color: '#667eea',
-            fontWeight: '600',
-            textDecoration: 'none'
-          }}>Sign up</a>
+        <p style={{ textAlign: 'center', marginTop: '20px', color: '#64748b', fontSize: '14px' }}>
+          Don't have an account?{' '}
+          <button type="button" onClick={() => navigate && navigate('signup')}
+            style={{ background: 'none', border: 'none', color: '#667eea', fontWeight: 600, cursor: 'pointer', fontSize: '14px', padding: 0 }}>
+            Sign up
+          </button>
         </p>
       </section>
 
       {/* Forgot Password Modal */}
       {showForgotPassword && (
         <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          padding: '20px'
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 1000, padding: '20px'
         }} onClick={() => setShowForgotPassword(false)}>
           <div style={{
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '20px',
-            padding: '40px',
-            maxWidth: '440px',
-            width: '100%',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-            border: '1px solid rgba(255, 255, 255, 0.3)'
+            background: '#ffffff', borderRadius: '20px', padding: '40px',
+            maxWidth: '420px', width: '100%',
+            boxShadow: '0 25px 80px rgba(0,0,0,0.35)',
           }} onClick={(e) => e.stopPropagation()}>
             <h3 style={{
-              fontSize: '24px',
-              fontWeight: '700',
+              fontSize: '22px', fontWeight: 700,
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              marginBottom: '12px',
-              textAlign: 'center'
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              marginBottom: '10px', textAlign: 'center', marginTop: 0,
             }}>Reset Password</h3>
-            <p style={{ 
-              color: '#64748b', 
-              fontSize: '14px', 
-              textAlign: 'center', 
-              marginBottom: '24px' 
-            }}>
-              Enter your email address and we'll send you a link to reset your password.
+            <p style={{ color: '#64748b', fontSize: '14px', textAlign: 'center', marginBottom: '24px' }}>
+              Enter your email and we'll send you a reset link.
             </p>
-            
-            <form onSubmit={handleForgotPassword} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <input
-                type="email"
-                placeholder="Enter your email"
-                value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-                required
-                className="classic-input"
-              />
-              
+            <form onSubmit={handleForgotPassword} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <input type="email" placeholder="Enter your email" value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)} required className="classic-input" />
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button 
-                  type="button" 
+                <button type="button"
                   onClick={() => { setShowForgotPassword(false); setResetEmail(""); setResetStatus(""); }}
-                  style={{
-                    flex: 1,
-                    padding: '14px',
-                    border: '2px solid #e2e8f0',
-                    borderRadius: '12px',
-                    background: 'white',
-                    color: '#64748b',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                >
+                  style={{ flex: 1, padding: '13px', border: '2px solid #e2e8f0', borderRadius: '12px', background: 'white', color: '#64748b', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
-                  className="classic-btn"
-                  style={{ flex: 1 }}
-                >
-                  Send Reset Link
-                </button>
+                <button type="submit" className="classic-btn" style={{ flex: 1 }}>Send Link</button>
               </div>
             </form>
-
             {resetStatus && (
               <p style={{
-                marginTop: '20px',
-                padding: '12px',
-                borderRadius: '8px',
-                background: resetStatus.includes('Failed') || resetStatus.includes('Error') 
-                  ? 'rgba(239, 68, 68, 0.1)' 
-                  : 'rgba(34, 197, 94, 0.1)',
-                color: resetStatus.includes('Failed') || resetStatus.includes('Error') 
-                  ? '#dc2626' 
-                  : '#16a34a',
-                textAlign: 'center',
-                fontSize: '14px',
-                fontWeight: '500'
-              }}>
-                {resetStatus}
-              </p>
+                marginTop: '16px', padding: '11px', borderRadius: '8px',
+                background: resetStatus.includes('Failed') ? 'rgba(239,68,68,0.09)' : 'rgba(34,197,94,0.09)',
+                color: resetStatus.includes('Failed') ? '#dc2626' : '#16a34a',
+                textAlign: 'center', fontSize: '14px', fontWeight: 500,
+              }}>{resetStatus}</p>
             )}
           </div>
         </div>

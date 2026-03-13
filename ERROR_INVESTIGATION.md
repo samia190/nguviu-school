@@ -43,7 +43,7 @@ Decoded:     https://kangaru girls-school.onrender.com/api/home-news
 - 🔴 **Deployed version:** Missing latest changes
 
 ### Investigation Result
-- Current index.html has: `/header/logo.PNG` preload only ✅
+- Current index.html has: `/header/logo new.PNG` preload only ✅
 - Current index.html **does NOT** have `/images/Principal.png` preload ✅
 - Therefore: **Render is running old index.html**
 

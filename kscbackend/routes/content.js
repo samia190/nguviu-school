@@ -244,7 +244,7 @@ router.post("/", async (req, res) => {
     return res.status(201).json(newContent);
   } catch (err) {
     console.error("Error creating content:", err);
-    return res.status(400).json({ error: "Invalid content data", details: err.message });
+    return res.status(400).json({ error: "Invalid content data" });
   }
 });
 
@@ -283,7 +283,7 @@ router.put("/:id", async (req, res) => {
     return res.json(updatedContent);
   } catch (err) {
     console.error("Error updating content:", err);
-    return res.status(400).json({ error: "Invalid content data", details: err.message });
+    return res.status(400).json({ error: "Invalid content data" });
   }
 });
 

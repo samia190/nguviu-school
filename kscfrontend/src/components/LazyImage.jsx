@@ -25,7 +25,7 @@ export default function LazyImage({
     
     return { 
       srcSet: undefined, 
-      sizes: defaultSizes 
+      sizes: undefined 
     };
   };
 

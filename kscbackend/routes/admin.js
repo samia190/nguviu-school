@@ -4,9 +4,14 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 import Content from "../models/Content.js";
 import User from "../models/User.js";
 import AuditLog from "../models/AuditLog.js";
+import StudentProfile from "../models/StudentProfile.js";
+import TeacherProfile from "../models/TeacherProfile.js";
+import StaffProfile from "../models/StaffProfile.js";
+import ParentProfile from "../models/ParentProfile.js";
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const { sendEmail } = require('../utils/email-sender-fallback.js');
@@ -267,24 +272,6 @@ router.put("/content/:contentId/media/:mediaId", upload.single("file"), optimize
   }
 });
 
-/**
- * GET /api/admin/users
- * List all users with filtering and pagination
- */
-router.get("/users", async (req, res) => {
-  try {
-    const page = Math.max(0, parseInt(req.query.page || "0", 10));
-    const limit = Math.min(200, parseInt(req.query.limit || "50", 10));
-    const q = req.query.q ? { $or: [ { email: new RegExp(req.query.q, 'i') }, { name: new RegExp(req.query.q, 'i') } ] } : {};
-    const total = await User.countDocuments(q);
-    const users = await User.find(q).sort({ createdAt: -1 }).skip(page * limit).limit(limit).select("name email role createdAt");
-    res.json({ ok: true, users, total, page, limit });
-  } catch (err) {
-    console.error("Failed to list users:", err);
-    res.status(500).json({ ok: false, error: "Failed to list users" });
-  }
-});
-
 router.put("/users/:id/role", async (req, res) => {
   try {
     const { id } = req.params;
@@ -328,6 +315,177 @@ router.put("/users/:id/role", async (req, res) => {
   } catch (err) {
     console.error("Failed to update user role:", err);
     res.status(500).json({ ok: false, error: "Failed to update role" });
+  }
+});
+
+// ============================================================
+// USER MANAGEMENT
+// ============================================================
+
+// GET /api/admin/users
+// List all registered users with optional role filter
+router.get("/users", async (req, res) => {
+  try {
+    const { role, search } = req.query;
+    const query = {};
+    if (role) query.role = role;
+    if (search) {
+      const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      query.$or = [{ name: rx }, { email: rx }];
+    }
+
+    const users = await User.find(query)
+      .select("-passwordHash -resetTokenHash -accessTokenHash")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.json({ ok: true, users });
+  } catch (err) {
+    console.error("List users error:", err);
+    return res.status(500).json({ ok: false, error: "Failed to list users" });
+  }
+});
+
+// GET /api/admin/users/:id/profile
+// Get a user + their role-specific profile
+router.get("/users/:id/profile", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .select("-passwordHash -resetTokenHash -accessTokenHash")
+      .lean();
+    if (!user) return res.status(404).json({ ok: false, error: "User not found" });
+
+    let profile = null;
+    if (user.role === "student") {
+      profile = await StudentProfile.findOne({ user: user._id }).lean();
+    } else if (user.role === "teacher") {
+      profile = await TeacherProfile.findOne({ user: user._id }).lean();
+    } else if (user.role === "staff") {
+      profile = await StaffProfile.findOne({ user: user._id }).lean();
+    } else if (user.role === "parent") {
+      profile = await ParentProfile.findOne({ user: user._id })
+        .populate("linkedStudents", "name email admissionNumber")
+        .lean();
+    }
+
+    return res.json({ ok: true, user, profile });
+  } catch (err) {
+    console.error("Get user profile error:", err);
+    return res.status(500).json({ ok: false, error: "Failed to get user profile" });
+  }
+});
+
+// POST /api/admin/users/create
+// Admin directly creates a teacher or parent account (no invite link needed)
+// Body: { name, email, password, role, ...profileFields }
+router.post("/users/create", async (req, res) => {
+  try {
+    const {
+      name, email, password, role,
+      // teacher fields
+      staffId, subjects, department, qualifications,
+      // staff fields
+      position,
+      // parent fields
+      occupation, providedAdmissionNumbers,
+      // shared
+      phone,
+    } = req.body;
+
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ ok: false, error: "name, email, password and role are required" });
+    }
+
+    const allowed = ["teacher", "staff", "parent"];
+    if (!allowed.includes(role)) {
+      return res.status(400).json({ ok: false, error: `Role must be one of: ${allowed.join(", ")}` });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ ok: false, error: "Password must be at least 8 characters" });
+    }
+
+    const existing = await User.findOne({ email });
+    if (existing) return res.status(409).json({ ok: false, error: "An account with this email already exists" });
+
+    const hash = await bcrypt.hash(password, 10);
+    const user = new User({ name, email, passwordHash: hash, role });
+    await user.save();
+
+    if (role === "teacher") {
+      await TeacherProfile.create({
+        user: user._id,
+        staffId: staffId || undefined,
+        subjects: subjects ? (Array.isArray(subjects) ? subjects : [subjects]) : [],
+        department: department || undefined,
+        qualifications: qualifications || undefined,
+        phone: phone || undefined,
+      });
+    } else if (role === "staff") {
+      await StaffProfile.create({
+        user: user._id,
+        staffId: staffId || undefined,
+        position: position || undefined,
+        department: department || undefined,
+        phone: phone || undefined,
+      });
+    } else if (role === "parent") {
+      const admNums = providedAdmissionNumbers
+        ? (Array.isArray(providedAdmissionNumbers) ? providedAdmissionNumbers : [providedAdmissionNumbers]).filter(Boolean)
+        : [];
+      await ParentProfile.create({
+        user: user._id,
+        phone: phone || undefined,
+        occupation: occupation || undefined,
+        providedAdmissionNumbers: admNums,
+      });
+    }
+
+    return res.status(201).json({
+      ok: true,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+    });
+  } catch (err) {
+    console.error("Admin create user error:", err);
+    return res.status(500).json({ ok: false, error: "Failed to create account" });
+  }
+});
+
+// POST /api/admin/users/:id/link-student
+// Manually link a parent to a student by admission number
+router.post("/users/:id/link-student", async (req, res) => {
+  try {
+    const parent = await User.findById(req.params.id);
+    if (!parent || parent.role !== "parent") {
+      return res.status(404).json({ ok: false, error: "Parent user not found" });
+    }
+
+    const { admissionNumber } = req.body;
+    if (!admissionNumber) {
+      return res.status(400).json({ ok: false, error: "admissionNumber is required" });
+    }
+
+    const student = await User.findOne({ admissionNumber, role: "student" });
+    if (!student) {
+      return res.status(404).json({ ok: false, error: `No student found with admission number ${admissionNumber}` });
+    }
+
+    const profile = await ParentProfile.findOne({ user: parent._id });
+    if (!profile) {
+      return res.status(404).json({ ok: false, error: "Parent profile not found" });
+    }
+
+    if (profile.linkedStudents.some((id) => id.equals(student._id))) {
+      return res.status(409).json({ ok: false, error: "Student already linked to this parent" });
+    }
+
+    profile.linkedStudents.push(student._id);
+    await profile.save();
+
+    return res.json({ ok: true, message: `Linked ${student.name} to ${parent.name}` });
+  } catch (err) {
+    console.error("Link student error:", err);
+    return res.status(500).json({ ok: false, error: "Failed to link student" });
   }
 });
 

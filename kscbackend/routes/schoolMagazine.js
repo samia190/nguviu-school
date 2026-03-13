@@ -1,6 +1,7 @@
 // routes/schoolMagazine.js
 import express from "express";
 import mongoose from "mongoose";
+import { requireRole } from "../middleware/requireAuth.js";
 
 const router = express.Router();
 
@@ -65,12 +66,8 @@ router.get("/all", async (req, res) => {
  * POST /api/school-magazine
  * Create or update school magazine
  */
-router.post("/", async (req, res) => {
+router.post("/", requireRole(['admin']), async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({ error: "Database unavailable" });
-    }
-
     const { title, issue, date, description, pdfUrl, coverImage, _id } = req.body;
 
     if (!pdfUrl) {
@@ -116,14 +113,10 @@ router.post("/", async (req, res) => {
  * DELETE /api/school-magazine/:id
  * Delete a magazine
  */
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireRole(['admin']), async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({ error: "Database unavailable" });
-    }
-
     const { id } = req.params;
-    
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ error: "Invalid magazine ID" });
     }

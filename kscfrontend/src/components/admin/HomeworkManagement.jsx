@@ -90,7 +90,7 @@ export default function HomeworkManagement({ user }) {
           const fd = new FormData();
           Object.entries(data).forEach(([k, v]) => { if (v) fd.append(k, v); });
           attachmentFiles.forEach(file => fd.append("attachments", file));
-          await upload(`/api/homework/${editingId}`, fd, { method: "PUT" });
+          await upload(`/api/homework/${editingId}`, fd, {}, { method: "PUT" });
         } else {
           await put(`/api/homework/${editingId}`, data);
         }

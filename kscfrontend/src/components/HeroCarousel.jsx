@@ -14,6 +14,11 @@ export default function HeroCarousel({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoplay, setIsAutoplay] = useState(true);
 
+  // Responsive height: clamp half the given height at minimum on small screens
+  const responsiveHeight = typeof height === "number"
+    ? `clamp(${Math.floor(height / 2)}px, 50vw, ${height}px)`
+    : height;
+
   // Filter for active slides
   const activeSlides = slides.filter(s => s.active !== false);
 
@@ -58,7 +63,7 @@ export default function HeroCarousel({
         width: "100vw",
         marginLeft: "50%",
         transform: "translateX(-50%)",
-        height,
+        height: responsiveHeight,
         overflow: "hidden",
         background: "#f0f0f0",
       }}

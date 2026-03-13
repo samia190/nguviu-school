@@ -96,8 +96,7 @@ router.post("/apply", admissionUploadFields, async (req, res) => {
     
     return res.status(500).json({ 
       ok: false,
-      error: "Failed to submit application",
-      message: err.message
+      error: "Failed to submit application"
     });
   }
 });

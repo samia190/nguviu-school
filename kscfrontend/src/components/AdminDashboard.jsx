@@ -29,7 +29,14 @@ import StudentAdminManagement from "./StudentAdminManagement";
 import RoleManagement from "./RoleManagement";
 import MagazineManagement from "./MagazineManagement";
 import HomeworkManagement from "./admin/HomeworkManagement";
+import InviteManagement from "./admin/InviteManagement";
+import UserList from "./admin/UserList";
+import DirectAccountCreate from "./admin/DirectAccountCreate";
 import ChatManagement from "./ChatManagement";
+import ResultsManagement from "./ResultsManagement";
+import AnalyticsDashboard from "./AnalyticsDashboard";
+import ParentPortalManagement from "./ParentPortalManagement";
+import EngagementCampaigns from "./EngagementCampaigns";
 
 // Universal subpage management component
 import SubpageManagement from "./SubpageManagement";
@@ -77,6 +84,7 @@ export default function AdminDashboard({ user }) {
   }, [activeSection, content]);
 
   useEffect(() => {
+    setLoading(true);
     get("/api/content/admin")
       .then((data) => {
         setContent(data || {});
@@ -86,7 +94,8 @@ export default function AdminDashboard({ user }) {
         console.error("Failed to load admin content:", err);
         setError("Failed to load admin content: " + (err?.message || "Unknown error"));
         setContent({});
-      });
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   function updateSection(section, value) {
@@ -99,8 +108,12 @@ export default function AdminDashboard({ user }) {
     setLoading(true);
     setSuccess("");
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     patch(`/api/content/admin/${section}`, { value })
       .then(() => {
+        clearTimeout(timeoutId);
         // update nested state to reflect saved change (store under data for typed content)
         setContent((prev) => {
           const next = { ...prev };
@@ -123,8 +136,12 @@ export default function AdminDashboard({ user }) {
         setError("");
       })
       .catch((err) => {
+        clearTimeout(timeoutId);
         console.error("Failed to save:", err);
-        setError("Failed to save content: " + (err?.message || "Unknown error"));
+        const msg = controller.signal.aborted
+          ? "Save request timed out. Please try again."
+          : "Failed to save content: " + (err?.message || "Unknown error");
+        setError(msg);
       })
       .finally(() => setLoading(false));
   }
@@ -168,6 +185,17 @@ export default function AdminDashboard({ user }) {
     { key: "studentAdmin", label: "Student Admin", icon: "🛠️", color: "#8b5cf6" },
     { key: "pagebackground", label: "Backgrounds", icon: "🎨", color: "#db2777" },
     { key: "chat", label: "Chat System", icon: "💬", color: "#0d9488" },
+    // Phase 2: Student Results System
+    { key: "studentResults", label: "Student Results", icon: "📊", color: "#06b6d4" },
+    // Phase 3: Analytics Dashboard
+    { key: "analytics", label: "Analytics Dashboard", icon: "📈", color: "#8b5cf6" },
+    // Phase 4: Parent Portal & Engagement
+    { key: "parentPortal", label: "Parent Portal", icon: "👨‍👩‍👧", color: "#3b82f6" },
+    { key: "engagement", label: "Engagement Campaigns", icon: "📧", color: "#10b981" },
+    // Phase 5: Role-Based Registration
+    { key: "invites", label: "Invite Links", icon: "🔗", color: "#0ea5e9" },
+    { key: "users", label: "Registered Users", icon: "👥", color: "#6366f1" },
+    { key: "create-account", label: "Create Account", icon: "➕", color: "#059669" },
   ];
 
   const subSections = [
@@ -358,6 +386,23 @@ export default function AdminDashboard({ user }) {
         {activeSection === "pagebackground" && <PageBackgroundManagement />}
 
         {activeSection === "chat" && <ChatManagement />}
+
+        {/* Phase 2: Student Results Management */}
+        {activeSection === "studentResults" && <ResultsManagement />}
+
+        {/* Phase 3: Analytics Dashboard */}
+        {activeSection === "analytics" && <AnalyticsDashboard />}
+
+        {/* Phase 4: Parent Portal Management */}
+        {activeSection === "parentPortal" && <ParentPortalManagement user={user} />}
+
+        {/* Phase 4: Engagement Campaigns */}
+        {activeSection === "engagement" && <EngagementCampaigns user={user} />}
+
+        {/* Phase 5: Role-Based Registration */}
+        {activeSection === "invites" && <InviteManagement />}
+        {activeSection === "users" && <UserList />}
+        {activeSection === "create-account" && <DirectAccountCreate />}
       </main>
     </section>
   );

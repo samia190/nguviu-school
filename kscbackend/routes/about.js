@@ -144,7 +144,7 @@ router.put("/", requireAuth, async (req, res) => {
     res.json(aboutpage.toObject());
   } catch (err) {
     console.error("❌ Error updating about page:", err.message);
-    res.status(500).json({ error: "Failed to update about page: " + err.message });
+    res.status(500).json({ error: "Failed to update about page" });
   }
 });
 
@@ -174,7 +174,7 @@ router.post("/hero-upload", requireAuth, upload.single("file"), async (req, res)
     res.json({ url: imageUrl });
   } catch (err) {
     console.error("❌ Upload failed:", err.message);
-    res.status(500).json({ error: "Upload failed: " + err.message });
+    res.status(500).json({ error: "Upload failed" });
   }
 });
 

@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./styles.css";
 import "./responsive.css";
+import "./styles/mobile-optimization.css";
 import { BrowserRouter } from "react-router-dom";
 import { registerServiceWorker } from "./utils/serviceWorkerRegistration";
 import { initPerformanceMonitoring } from "./utils/performance";

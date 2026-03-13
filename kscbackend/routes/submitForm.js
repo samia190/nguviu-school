@@ -66,7 +66,7 @@ router.post("/", upload.fields([ { name: "applicationForm", maxCount: 1 }, { nam
     return res.json({ success: true, items: created });
   } catch (err) {
     console.error("submit-form error:", err);
-    return res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ success: false, error: "Form submission failed" });
   }
 });
 

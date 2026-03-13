@@ -119,11 +119,11 @@ Service worker knows about `/uploads/` but if it can't fetch from it (CORS), it 
 
 ---
 
-## ERROR 4: `/header/logo.PNG 404`
+## ERROR 4: `/header/logo new.PNG 404`
 
 ### What's Happening
 ```
-GET https://kangarugirlsschool-sc-ke.onrender.com/header/logo.PNG  [HTTP/3 404]
+GET https://kangarugirlsschool-sc-ke.onrender.com/header/logo new.PNG  [HTTP/3 404]
 ```
 
 ### Root Cause
@@ -140,12 +140,12 @@ Frontend structure (static site):
 
 Backend structure:
   /public/header/
-    logo.PNG   ← Lives here
+    logo new.PNG   ← Lives here
 ```
 
-When frontend tries relative path `/header/logo.PNG`, it looks in:
+When frontend tries relative path `/header/logo new.PNG`, it looks in:
 ```
-https://kangarugirlsschool-sc-ke.onrender.com/header/logo.PNG
+https://kangarugirlsschool-sc-ke.onrender.com/header/logo new.PNG
                                               ^^^^^^^^^ NOT FOUND
                                               (should be on backend domain)
 ```
@@ -153,12 +153,12 @@ https://kangarugirlsschool-sc-ke.onrender.com/header/logo.PNG
 ### Current index.html References
 From [kscfrontend/index.html](../kscfrontend/index.html#L54):
 ```html
-<link rel="preload" href="/header/logo.PNG" as="image" />
+<link rel="preload" href="/header/logo new.PNG" as="image" />
 ```
 
 This file should be:
 1. Copied into frontend `public/header/`
-2. OR fetched from backend with full URL: `https://kangarugirlsschool.onrender.com/header/logo.PNG`
+2. OR fetched from backend with full URL: `https://kangarugirlsschool.onrender.com/header/logo new.PNG`
 
 ---
 
@@ -169,7 +169,7 @@ This file should be:
 | TypeError currentTarget | Runtime | 🔴 CRITICAL | Page crashes on image load |
 | OpaqueResponseBlocking | CORS | 🔴 CRITICAL | Gallery images won't display |
 | NS_BINDING_ABORTED | CORS/CSP | 🔴 CRITICAL | Upload images fail to load |
-| /header/logo.PNG 404 | Path | 🟡 MEDIUM | Logo not showing in header |
+| /header/logo new.PNG 404 | Path | 🟡 MEDIUM | Logo not showing in header |
 
 ---
 
@@ -207,10 +207,10 @@ if (contentType.includes('image') && response.status !== 200) {
 Update index.html to use correct domain:
 ```html
 <!-- Change from: -->
-<link rel="preload" href="/header/logo.PNG" />
+<link rel="preload" href="/header/logo new.PNG" />
 
 <!-- To: -->
-<link rel="preload" href="https://kangarugirlsschool.onrender.com/header/logo.PNG" />
+<link rel="preload" href="https://kangarugirlsschool.onrender.com/header/logo new.PNG" />
 ```
 
 ---

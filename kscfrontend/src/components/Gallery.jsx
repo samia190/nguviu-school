@@ -110,7 +110,7 @@ export default function Gallery() {
             minHeight: 380,
             overflow: "hidden",
             marginBottom: 30,
-            background: `url('${heroImage}') center/cover no-repeat, linear-gradient(135deg, #667eea, #764ba2)`,
+            background: `url('${encodeURI(heroImage)}') center/cover no-repeat, linear-gradient(135deg, #667eea, #764ba2)`,
           }}
         >
           <div

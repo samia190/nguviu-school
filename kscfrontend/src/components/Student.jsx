@@ -101,7 +101,7 @@ export default function Student({ user, subRoute, setRoute }) {
           transform: "translateX(-50%)",
           minHeight: 320,
           background: heroImage
-            ? `url(${heroImage}) center/cover no-repeat`
+            ? `url(${encodeURI(heroImage)}) center/cover no-repeat`
             : "linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)",
           display: "flex",
           alignItems: "center",

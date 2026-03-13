@@ -30,9 +30,8 @@ export default function OptimizedImage({
 
   // Generate WebP version if image is JPG/PNG
   const getWebPSrc = (originalSrc) => {
-    if (!originalSrc || originalSrc.endsWith('.webp') || originalSrc.endsWith('.svg')) {
-      return null;
-    }
+    if (!originalSrc) return null;
+    if (!/(\.(jpg|jpeg|png))$/i.test(originalSrc)) return null;
     return originalSrc.replace(/\\.(jpg|jpeg|png)$/i, '.webp');
   };
 
@@ -56,8 +55,11 @@ export default function OptimizedImage({
   const webpSrc = getWebPSrc(src);
   const shouldLoad = priority || inView;
 
+  // Separate image-specific style props from container layout props
+  const { objectFit, objectPosition, objectPosX, ...containerStyle } = style;
+
   return (
-    <div ref={ref} className={className} style={{ display: "block", position: "relative", ...style }}>
+    <div ref={ref} className={className} style={{ display: "block", position: "relative", ...containerStyle }}>
       {shouldLoad ? (
         <picture>
           {/* WebP source for modern browsers */}
@@ -69,12 +71,12 @@ export default function OptimizedImage({
           <img 
             src={src} 
             srcSet={generateSrcSet(src)}
-            sizes={sizes || "(max-width: 768px) 100vw, 50vw"}
+            sizes={generateSrcSet(src) ? (sizes || "(max-width: 768px) 100vw, 50vw") : undefined}
             alt={alt}
             width={width}
             height={height}
             loading={priority ? "eager" : "lazy"}
-            fetchPriority={priority ? "high" : fetchPriority}
+            fetchpriority={priority ? "high" : fetchPriority}
             decoding={priority ? "sync" : "async"}
             onLoad={handleLoad}
             onError={handleError}
@@ -82,6 +84,8 @@ export default function OptimizedImage({
               width: "100%", 
               height: "100%", 
               display: "block",
+              objectFit: objectFit || "cover",
+              objectPosition: objectPosition || "center",
               opacity: priority ? 1 : (isLoaded ? 1 : 0),
               transition: priority ? 'none' : 'opacity 0.2s ease-in',
             }} 

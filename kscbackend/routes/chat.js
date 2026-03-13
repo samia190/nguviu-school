@@ -1,7 +1,7 @@
 // routes/chat.js  — Chat‑bot API (ESM)
 import express from "express";
 import mongoose from "mongoose";
-import { requireAuth } from "../middleware/requireAuth.js";
+import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 import { ChatConfig, defaultCategories } from "../models/ChatConfig.js";
 import ChatMessage from "../models/ChatMessage.js";
 
@@ -249,7 +249,7 @@ router.post("/message", async (req, res) => {
 /**
  * GET /admin  — Full config for admin panel
  */
-router.get("/admin", requireAuth, async (_req, res) => {
+router.get("/admin", requireRole(['admin']), async (_req, res) => {
   try {
     const config = await getOrCreateConfig();
     res.json(config.toObject());
@@ -261,7 +261,7 @@ router.get("/admin", requireAuth, async (_req, res) => {
 /**
  * PUT /  — Update chat config
  */
-router.put("/", requireAuth, async (req, res) => {
+router.put("/", requireRole(['admin']), async (req, res) => {
   try {
     const config = await getOrCreateConfig();
     const fields = [
@@ -284,7 +284,7 @@ router.put("/", requireAuth, async (req, res) => {
 /**
  * POST /reset-defaults  — Reset categories to defaults
  */
-router.post("/reset-defaults", requireAuth, async (_req, res) => {
+router.post("/reset-defaults", requireRole(['admin']), async (_req, res) => {
   try {
     const config = await getOrCreateConfig();
     config.categories = defaultCategories;
@@ -301,7 +301,7 @@ router.post("/reset-defaults", requireAuth, async (_req, res) => {
  * GET /messages  — List messages with filters
  * Query: ?status=new&page=1&limit=20
  */
-router.get("/messages", requireAuth, async (req, res) => {
+router.get("/messages", requireRole(['admin']), async (req, res) => {
   try {
     const { status, page = 1, limit = 20 } = req.query;
     const filter = {};
@@ -323,7 +323,7 @@ router.get("/messages", requireAuth, async (req, res) => {
 /**
  * GET /messages/stats  — Quick counts
  */
-router.get("/messages/stats", requireAuth, async (_req, res) => {
+router.get("/messages/stats", requireRole(['admin']), async (_req, res) => {
   try {
     const [total, newCount, readCount, repliedCount] = await Promise.all([
       ChatMessage.countDocuments(),
@@ -340,7 +340,7 @@ router.get("/messages/stats", requireAuth, async (_req, res) => {
 /**
  * PUT /messages/:id  — Update message status / add reply
  */
-router.put("/messages/:id", requireAuth, async (req, res) => {
+router.put("/messages/:id", requireRole(['admin']), async (req, res) => {
   try {
     const { status, adminReply } = req.body;
     const update = {};

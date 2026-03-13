@@ -56,7 +56,12 @@ const StudentResults = ({ user }) => {
       }
 
     } catch (err) {
-      setError(err.message || "Failed to verify student details");
+      // Handle detailed error responses with field-specific details
+      if (err.details) {
+        setError(`${err.message}\n\n${err.details}`);
+      } else {
+        setError(err.message || "Failed to verify student details");
+      }
     } finally {
       setLoading(false);
     }
@@ -74,8 +79,8 @@ const StudentResults = ({ user }) => {
     
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
-    doc.text("P.O. Box 123, kangaru girls - Kenya", pageWidth / 2, 28, { align: "center" });
-    doc.text("Tel: 0712-345-678 | Email: info@kangaru girls.ac.ke", pageWidth / 2, 35, { align: "center" });
+    doc.text("P.O. BOX 1094-60100, EMBU, KENYA", pageWidth / 2, 28, { align: "center" });
+    doc.text("Tel: +254796214804 | Email: kangarugirls@yahoo.com", pageWidth / 2, 35, { align: "center" });
 
     // Line separator
     doc.setLineWidth(0.5);
@@ -304,7 +309,15 @@ const StudentResults = ({ user }) => {
               marginBottom: "20px",
               color: "#c33"
             }}>
-              <strong>Error:</strong> {error}
+              <strong>Error:</strong> 
+              <div style={{ 
+                whiteSpace: "pre-wrap", 
+                marginTop: "8px",
+                lineHeight: "1.6",
+                fontSize: "14px"
+              }}>
+                {error}
+              </div>
             </div>
           )}
 

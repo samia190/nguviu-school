@@ -31,17 +31,17 @@
 ```jsx
 ❌ WRONG:
 <OptimizedImage
-  src="/header/logo.PNG"  // 404 - file is lowercase
+  src="/header/logo new.PNG"  // 404 - file is lowercase
   ...
 />
 
 ✅ FILE EXISTS:
-/header/logo.png (lowercase)
+/header/logo new.PNG (lowercase)
 
 ⚠️ PROBLEM:
 - Linux/Render filesystem is case-sensitive
-- Current code tries to load /header/logo.PNG (uppercase PNG)
-- Actual file is /header/logo.png (lowercase png)
+- Current code tries to load /header/logo new.PNG (uppercase PNG)
+- Actual file is /header/logo new.PNG (lowercase png)
 - Result: 404 Not Found, images disappear from page
 ```
 
@@ -77,9 +77,9 @@ photoUrl: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto
 #### 1.4 index.html - Meta Tags (Lines 21, 28, 52)
 ```html
 ❌ WRONG:
-<meta property="og:image" content="https://kangarugirlssseniorschool.co.ke/header/logo.PNG" />
-<meta name="twitter:image" content="...logo.PNG" />
-"logo": "https://kangarugirlssseniorschool.co.ke/header/logo.PNG"
+<meta property="og:image" content="https://kangarugirlssseniorschool.co.ke/header/logo new.PNG" />
+<meta name="twitter:image" content="...logo new.PNG" />
+"logo": "https://kangarugirlssseniorschool.co.ke/header/logo new.PNG"
 
 ✅ CORRECT:
 All should be .png (lowercase)
@@ -662,7 +662,7 @@ items.forEach((section) => {
 ## ACTION ITEMS (NOT IMPLEMENTED)
 
 ### Tier 1 - Critical (Production blocking)
-- [ ] Fix Header.jsx line 93: logo.PNG → logo.png
+- [ ] Fix Header.jsx line 93: logo new.PNG → logo new.PNG
 - [ ] Fix all image paths for case-sensitivity
 - [ ] Add file extension validation on uploads
 - [ ] Migrate database gallery URLs to include extensions
@@ -690,7 +690,7 @@ items.forEach((section) => {
 **To verify fixes:**
 ```bash
 # Test image loading
-curl -I https://kangarugirlsschool-sc-ke.onrender.com/header/logo.png
+curl -I https://kangarugirlsschool-sc-ke.onrender.com/header/logo new.PNG
 # Should return 200, not 404
 
 # Test srcset parsing

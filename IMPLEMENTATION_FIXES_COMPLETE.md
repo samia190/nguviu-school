@@ -19,8 +19,8 @@
 
 **Changes**:
 ```diff
-- src="/header/logo.PNG"
-+ src="/header/logo.png"
+- src="/header/logo new.PNG"
++ src="/header/logo new.PNG"
 
 - photoUrl: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/Principal.PNG'
 + photoUrl: 'https://res.cloudinary.com/ddm1dgws8/image/upload/w_400,q_auto,f_auto/kangaru/Principal.jpg'
@@ -371,7 +371,7 @@ node audit-orphaned-urls.mjs
 ## ✅ VERIFICATION CHECKLIST
 
 ### Frontend Verification
-- [ ] Header logo loads correctly (check Network tab for /header/logo.png 200 OK)
+- [ ] Header logo loads correctly (check Network tab for /header/logo new.PNG 200 OK)
 - [ ] About page principal image displays
 - [ ] AdmissionForm accepts .png files
 - [ ] Gallery images don't disappear after loading

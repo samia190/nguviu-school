@@ -4,6 +4,7 @@ import Staff from "../models/Staff.js";
 import { uploadBuffer } from "../utils/storage.js";
 import path from "path";
 import fs from "fs";
+import { requireAuth } from "../middleware/requireAuth.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -78,7 +79,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST create new staff member (requires admin)
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, isAdmin, async (req, res) => {
   try {
     const { fullName, title, type, department, remarks, email, phone, qualifications, experience, displayOrder } = req.body;
 
@@ -118,7 +119,7 @@ router.post("/", async (req, res) => {
 });
 
 // PUT update staff member
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireAuth, isAdmin, async (req, res) => {
   try {
     const staff = await Staff.findById(req.params.id);
     if (!staff) {
@@ -162,7 +163,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // DELETE staff member
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAuth, isAdmin, async (req, res) => {
   try {
     const staff = await Staff.findByIdAndDelete(req.params.id);
     if (!staff) {

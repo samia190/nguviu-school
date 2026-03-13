@@ -9,10 +9,15 @@ export default function StudentVerification() {
   const [token, setToken] = useState("");
 
   useEffect(() => {
-    // Extract token from URL hash
-    const hash = window.location.hash;
-    const params = new URLSearchParams(hash.split('?')[1]);
-    const tokenParam = params.get('t') || params.get('token');
+    // Extract token from URL — support both standard query string (?t=TOKEN)
+    // and legacy hash-based format (#...?t=TOKEN).
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
+    const tokenParam =
+      searchParams.get('t') ||
+      searchParams.get('token') ||
+      hashParams.get('t') ||
+      hashParams.get('token');
     
     if (tokenParam) {
       setToken(tokenParam);
@@ -22,36 +27,24 @@ export default function StudentVerification() {
       setLoading(false);
     }
 
-    // Prevent navigation
-    const preventNavigation = (e) => {
-      if (!e.target.closest('.allow-click')) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    };
-
-    document.addEventListener('click', preventNavigation, true);
-    
-    // Prevent right-click
+    // Anti-copy protection: block right-click and developer shortcuts.
+    // Uses named function references so cleanup is guaranteed.
     const preventRightClick = (e) => e.preventDefault();
-    document.addEventListener('contextmenu', preventRightClick);
-
-    // Prevent keyboard shortcuts
     const preventShortcuts = (e) => {
-      // Block F12, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+U
       if (
-        e.keyCode === 123 || // F12
-        (e.ctrlKey && e.shiftKey && e.keyCode === 73) || // Ctrl+Shift+I
-        (e.ctrlKey && e.shiftKey && e.keyCode === 67) || // Ctrl+Shift+C
-        (e.ctrlKey && e.keyCode === 85) // Ctrl+U
+        e.keyCode === 123 ||                                  // F12
+        (e.ctrlKey && e.shiftKey && e.keyCode === 73) ||     // Ctrl+Shift+I
+        (e.ctrlKey && e.shiftKey && e.keyCode === 67) ||     // Ctrl+Shift+C
+        (e.ctrlKey && e.keyCode === 85)                       // Ctrl+U
       ) {
         e.preventDefault();
       }
     };
+
+    document.addEventListener('contextmenu', preventRightClick);
     document.addEventListener('keydown', preventShortcuts);
 
     return () => {
-      document.removeEventListener('click', preventNavigation, true);
       document.removeEventListener('contextmenu', preventRightClick);
       document.removeEventListener('keydown', preventShortcuts);
     };

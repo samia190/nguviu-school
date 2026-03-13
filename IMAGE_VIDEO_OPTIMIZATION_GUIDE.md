@@ -188,7 +188,7 @@ CSS/JS: Cache-Control: public, max-age=31536000, immutable
 ### **Critical Image (Above Fold)**
 ```jsx
 <OptimizedImage 
-  src="/header/logo.PNG"
+  src="/header/logo new.PNG"
   alt="School Logo"
   priority={true}
   loading="eager"

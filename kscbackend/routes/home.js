@@ -184,7 +184,7 @@ router.put("/", requireAuth, async (req, res) => {
     res.json(response);
   } catch (err) {
     console.error("🔴 Error updating home page:", err);
-    res.status(400).json({ error: "Failed to update home page: " + err.message });
+    res.status(400).json({ error: "Failed to update home page" });
   }
 });
 
@@ -225,7 +225,7 @@ router.post("/hero-upload", requireAuth, upload.single("file"), async (req, res)
     });
   } catch (err) {
     console.error("🔴 Error uploading hero image:", err);
-    res.status(500).json({ error: "Failed to upload image: " + err.message });
+    res.status(500).json({ error: "Failed to upload image" });
   }
 });
 
@@ -264,7 +264,7 @@ router.post("/reset-defaults", requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error("🔴 Error resetting home page:", err);
-    res.status(500).json({ error: "Failed to reset: " + err.message });
+    res.status(500).json({ error: "Failed to reset" });
   }
 });
 

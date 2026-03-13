@@ -4,42 +4,40 @@
   "name": "KANGARU GIRLS SENIOR School",
   "alternateName": "KANGARU GIRLS",
   "description": "Excellence in Education - A leading girls' school offering quality education with comprehensive curriculum, dedicated staff, excellent facilities, and strong academic performance.",
-  "url": "https://kangarugirlssseniorschool.co.ke",
-  "logo": "https://kangarugirlssseniorschool.co.ke/header/logo.PNG",
-  "image": "https://kangarugirlssseniorschool.co.ke/header/logo.PNG",
+  "url": "https://kangarugirlsschool-sc-ke.onrender.com",
+  "logo": "https://kangarugirlsschool-sc-ke.onrender.com/header/logo new.PNG",
+  "image": "https://kangarugirlsschool-sc-ke.onrender.com/header/logo new.PNG",
   "email": "kangarugirls@yahoo.com",
-  "telephone": "+254-113688538",
+  "telephone": "+254796214804",
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "kangaru girls",
-    "addressLocality": "embu",
-    "addressRegion": "embu north",
-    "postalCode": "10001",
+    "streetAddress": "P.O. BOX 1094-60100",
+    "addressLocality": "Embu",
+    "addressRegion": "Embu County",
+    "postalCode": "60100",
     "addressCountry": "Kenya"
   },
   "geo": {
     "@type": "GeoCoordinates",
-    "latitude": "0.0000000",
-    "longitude": "0.0000000"
+    "latitude": "-0.5160",
+    "longitude": "37.4590"
   },
   "sameAs": [
-    "https://facebook.com/kangarugirls",
-    "https://twitter.com/kangarugirls",
-    "https://instagram.com/kangarugirls"
+    "https://kangarugirlsschool-sc-ke.onrender.com"
   ],
   "contactPoint": [
     {
       "@type": "ContactPoint",
       "contactType": "Admissions",
       "email": "kangarugirls@yahoo.com",
-      "telephone": "+254-113688538",
+      "telephone": "+254796214804",
       "availableLanguage": "English, Kiswahili"
     },
     {
       "@type": "ContactPoint",
       "contactType": "General Inquiries",
       "email": "kangarugirls@yahoo.com",
-      "telephone": "+254-113688538",
+      "telephone": "+254796214804",
       "availableLanguage": "English, Kiswahili"
     }
   ],

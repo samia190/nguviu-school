@@ -1,6 +1,6 @@
 // components/ResultsManagement.jsx
 import React, { useState, useEffect } from "react";
-import { get } from "../utils/api";
+import { get, getToken } from "../utils/api";
 
 const ResultsManagement = ({ user }) => {
   const [results, setResults] = useState([]);
@@ -10,7 +10,14 @@ const ResultsManagement = ({ user }) => {
   const [success, setSuccess] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [showPdfUpload, setShowPdfUpload] = useState(false);
+  const [showPreview, setShowPreview] = useState(false); // Preview modal state
+  const [showTemplateManager, setShowTemplateManager] = useState(false); // Template manager state
+  const [showCSVImport, setShowCSVImport] = useState(false); // CSV import state
+  const [csvResults, setCSVResults] = useState([]); // Store parsed CSV results
   const [editingResult, setEditingResult] = useState(null);
+  const [selectedResults, setSelectedResults] = useState(new Set()); // Track selected result IDs
+  const [templates, setTemplates] = useState([]); // Store subject templates
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 });
   const [filters, setFilters] = useState({
     term: "",
     year: "",
@@ -59,7 +66,7 @@ const ResultsManagement = ({ user }) => {
   useEffect(() => {
     fetchResults();
     fetchStudents();
-  }, [filters]);
+  }, [filters, pagination.page, pagination.limit]);
 
   const fetchResults = async () => {
     setLoading(true);
@@ -68,10 +75,16 @@ const ResultsManagement = ({ user }) => {
       if (filters.term) params.append("term", filters.term);
       if (filters.year) params.append("year", filters.year);
       if (filters.published) params.append("published", filters.published);
+      params.append("page", pagination.page);
+      params.append("limit", pagination.limit);
 
       const data = await get(`/api/results/admin/all?${params}`);
       if (data && (data.results || Array.isArray(data))) {
         setResults(data.results || data || []);
+        // Update pagination info if available
+        if (data.pagination) {
+          setPagination(data.pagination);
+        }
       } else {
         setResults([]);
       }
@@ -112,6 +125,39 @@ const ResultsManagement = ({ user }) => {
         assessmentNumber: student.assessmentNumber || ""
       });
     }
+  };
+
+  const handleAttendanceChange = (field, value) => {
+    const daysPresent = field === 'daysPresent' ? parseInt(value) : parseInt(formData.attendance.daysPresent) || 0;
+    const daysAbsent = field === 'daysAbsent' ? parseInt(value) : parseInt(formData.attendance.daysAbsent) || 0;
+    const totalDays = field === 'totalDays' ? parseInt(value) : parseInt(formData.attendance.totalDays) || 0;
+
+    let updatedAttendance = { ...formData.attendance };
+    updatedAttendance[field] = value;
+
+    // Auto-calculate total days if both present and absent are provided
+    if (field === 'daysPresent' || field === 'daysAbsent') {
+      if (daysPresent > 0 && daysAbsent > 0) {
+        updatedAttendance.totalDays = daysPresent + daysAbsent;
+      }
+    }
+
+    // Auto-calculate daysAbsent if totalDays and daysPresent are provided
+    if (field === 'totalDays' && daysPresent > 0) {
+      updatedAttendance.daysAbsent = Math.max(0, totalDays - daysPresent);
+    }
+
+    setFormData({
+      ...formData,
+      attendance: updatedAttendance
+    });
+  };
+
+  const handlePositionChange = (newPosition) => {
+    setFormData({
+      ...formData,
+      position: newPosition
+    });
   };
 
   const addSubject = () => {
@@ -239,6 +285,30 @@ const ResultsManagement = ({ user }) => {
       return;
     }
 
+    // Enhanced: Validate position is not greater than class size
+    if (formData.position && formData.outOf) {
+      const position = parseInt(formData.position);
+      const outOf = parseInt(formData.outOf);
+      if (position > outOf) {
+        setError(`Position (${position}) cannot be greater than class size (${outOf})`);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Enhanced: Validate attendance consistency
+    const daysPresent = formData.attendance.daysPresent ? parseInt(formData.attendance.daysPresent) : null;
+    const daysAbsent = formData.attendance.daysAbsent ? parseInt(formData.attendance.daysAbsent) : null;
+    const totalDays = formData.attendance.totalDays ? parseInt(formData.attendance.totalDays) : null;
+
+    if (daysPresent !== null && daysAbsent !== null && totalDays !== null) {
+      if (daysPresent + daysAbsent !== totalDays) {
+        setError(`Attendance error: Days Present (${daysPresent}) + Days Absent (${daysAbsent}) = ${daysPresent + daysAbsent}, but Total Days is ${totalDays}`);
+        setLoading(false);
+        return;
+      }
+    }
+
     if (formData.year < 2000 || formData.year > new Date().getFullYear() + 1) {
       setError("Year must be between 2000 and next year");
       setLoading(false);
@@ -246,10 +316,10 @@ const ResultsManagement = ({ user }) => {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const url = editingResult
-        ? `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/results/admin/${editingResult._id}`
-        : `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/results/admin/create`;
+        ? `/api/results/admin/${editingResult._id}`
+        : `/api/results/admin/create`;
 
       const method = editingResult ? "PUT" : "POST";
 
@@ -308,7 +378,7 @@ const ResultsManagement = ({ user }) => {
     }
 
     const uploadFormData = new FormData();
-    uploadFormData.append('pdfFile', file);
+    uploadFormData.append('pdf', file);
     uploadFormData.append('admissionNumber', formData.admissionNumber);
     uploadFormData.append('studentName', formData.studentName);
     uploadFormData.append('class', formData.class);
@@ -323,9 +393,9 @@ const ResultsManagement = ({ user }) => {
     uploadFormData.append('published', formData.published);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/results/admin/upload-pdf`,
+        `/api/results/admin/upload-pdf`,
         {
           method: "POST",
           headers: {
@@ -354,9 +424,9 @@ const ResultsManagement = ({ user }) => {
 
   const togglePublish = async (resultId, currentStatus) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/results/admin/${resultId}/publish`,
+        `/api/results/admin/${resultId}/publish`,
         {
           method: "PATCH",
           headers: {
@@ -382,9 +452,9 @@ const ResultsManagement = ({ user }) => {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/results/admin/${resultId}`,
+        `/api/results/admin/${resultId}`,
         {
           method: "DELETE",
           headers: {
@@ -399,6 +469,222 @@ const ResultsManagement = ({ user }) => {
       }
     } catch (err) {
       setError("Failed to delete result");
+    }
+  };
+
+  const handleResultSelect = (resultId) => {
+    const newSelected = new Set(selectedResults);
+    if (newSelected.has(resultId)) {
+      newSelected.delete(resultId);
+    } else {
+      newSelected.add(resultId);
+    }
+    setSelectedResults(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedResults.size === results.length) {
+      setSelectedResults(new Set());
+    } else {
+      setSelectedResults(new Set(results.map(r => r._id)));
+    }
+  };
+
+  const applyTemplate = (templateSubjects) => {
+    // Apply template subjects to the form
+    setFormData({
+      ...formData,
+      subjects: templateSubjects.map(t => ({ ...t, marks: "", grade: ""  }))
+    });
+    setSuccess("Template applied! Now enter marks and grades for each subject.");
+  };
+
+  const saveAsTemplate = () => {
+    if (formData.subjects.length === 0) {
+      setError("Please add subjects first");
+      return;
+    }
+    
+    const templateName = prompt(`Save template as:`, `${formData.curriculum} - ${formData.term}`);
+    if (templateName) {
+      const newTemplate = {
+        id: Date.now(),
+        name: templateName,
+        curriculum: formData.curriculum,
+        subjects: formData.subjects.map(s => ({
+          subjectName: s.subjectName,
+          competencyLevel: s.competencyLevel
+        }))
+      };
+      setTemplates([...templates, newTemplate]);
+      setSuccess(`Template "${templateName}" saved!`);
+    }
+  };
+
+  const batchPublish = async () => {
+    if (selectedResults.size === 0) {
+      setError("Please select at least one result to publish");
+      return;
+    }
+
+    if (!confirm(`Publish ${selectedResults.size} selected result(s)?`)) {
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const token = getToken();
+      const response = await fetch(
+        `/api/results/admin/batch-publish`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ resultIds: Array.from(selectedResults) })
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok) {
+        setSuccess(`Successfully published ${data.published} result(s)!`);
+        setSelectedResults(new Set());
+        fetchResults();
+      } else {
+        setError(data.error || "Failed to batch publish results");
+      }
+    } catch (err) {
+      setError("Failed to batch publish results: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCSVImport = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.csv')) {
+      setError("Please select a CSV file");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const csv = event.target.result;
+        const lines = csv.split('\n').filter(line => line.trim());
+        
+        if (lines.length < 2) {
+          setError("CSV file must have headers and at least one data row");
+          setLoading(false);
+          return;
+        }
+
+        // Parse header
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+        const requiredFields = ['admissionnumber', 'studentname', 'class'];
+        const missingFields = requiredFields.filter(field => !headers.includes(field));
+        
+        if (missingFields.length > 0) {
+          setError(`CSV must contain columns: ${missingFields.join(', ')}`);
+          setLoading(false);
+          return;
+        }
+
+        // Parse data rows
+        const parsed = [];
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',').map(v => v.trim());
+          if (values.filter(v => v).length === 0) continue; // Skip empty rows
+
+          const row = {};
+          headers.forEach((header, idx) => {
+            row[header] = values[idx] || '';
+          });
+
+          parsed.push({
+            admissionNumber: row.admissionnumber,
+            studentName: row.studentname,
+            class: row.class,
+            stream: row.stream || '',
+            term: row.term || formData.term,
+            year: row.year || formData.year,
+            examType: row.examtype || 'End of Term',
+            curriculum: row.curriculum || formData.curriculum,
+            subjects: [], // Will be populated from CSV
+            totalMarks: 0,
+            averageMarks: 0,
+            overallGrade: '',
+            position: row.position || '',
+            outOf: row.outof || '',
+            published: row.published === 'true' || row.published === '1'
+          });
+        }
+
+        if (parsed.length === 0) {
+          setError("No valid data rows found in CSV");
+          setLoading(false);
+          return;
+        }
+
+        setCSVResults(parsed);
+        setShowCSVImport(true);
+        setSuccess(`Parsed ${parsed.length} results from CSV. Ready to import!`);
+      } catch (err) {
+        setError("Failed to parse CSV: " + err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const confirmCSVImport = async () => {
+    if (csvResults.length === 0) {
+      setError("No results to import");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const token = getToken();
+      const response = await fetch(
+        `/api/results/admin/bulk-import`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ results: csvResults })
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok) {
+        setSuccess(`Successfully imported ${data.imported || data.created || csvResults.length} result(s)!`);
+        setShowCSVImport(false);
+        setCSVResults([]);
+        fetchResults();
+        document.getElementById('csvFileInput').value = '';
+      } else {
+        setError(data.error || "Failed to import results");
+      }
+    } catch (err) {
+      setError("Failed to import results: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -447,6 +733,305 @@ const ResultsManagement = ({ user }) => {
   if (!user || user.role !== "admin") {
     return <div style={{ padding: "40px", textAlign: "center" }}>Access denied - Admin only</div>;
   }
+
+  // CSV Import Modal Component
+  const CSVImportModal = () => {
+    if (!showCSVImport) return null;
+    return (
+      <div style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: "rgba(0,0,0,0.7)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1001
+      }}>
+        <div style={{
+          background: "white",
+          borderRadius: "12px",
+          padding: "30px",
+          maxWidth: "700px",
+          maxHeight: "80vh",
+          overflow: "auto",
+          boxShadow: "0 10px 40px rgba(0,0,0,0.3)"
+        }}>
+          <h2 style={{ marginTop: 0 }}>📊 CSV Import Preview</h2>
+          <p style={{ color: "#666", marginBottom: "20px" }}>
+            Review the {csvResults.length} result(s) parsed from your CSV file below. Click "Import All" to add them to the system.
+          </p>
+
+          {csvResults.length > 0 && (
+            <div style={{
+              border: "1px solid #e0e0e0",
+              borderRadius: "8px",
+              overflow: "auto",
+              marginBottom: "20px",
+              maxHeight: "400px",
+            }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                <thead style={{ background: "#f8f9fa", position: "sticky", top: 0 }}>
+                  <tr>
+                    <th style={{ padding: "10px", textAlign: "left", borderBottom: "2px solid #e0e0e0" }}>#</th>
+                    <th style={{ padding: "10px", textAlign: "left", borderBottom: "2px solid #e0e0e0" }}>Student Name</th>
+                    <th style={{ padding: "10px", textAlign: "left", borderBottom: "2px solid #e0e0e0" }}>Admission #</th>
+                    <th style={{ padding: "10px", textAlign: "left", borderBottom: "2px solid #e0e0e0" }}>Class</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {csvResults.map((result, idx) => (
+                    <tr key={idx} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                      <td style={{ padding: "10px" }}>{idx + 1}</td>
+                      <td style={{ padding: "10px" }}>{result.studentName}</td>
+                      <td style={{ padding: "10px" }}>{result.admissionNumber}</td>
+                      <td style={{ padding: "10px" }}>{result.class} {result.stream}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+            <button
+              onClick={() => {
+                setShowCSVImport(false);
+                setCSVResults([]);
+              }}
+              disabled={loading}
+              style={{
+                padding: "10px 20px",
+                background: "#ccc",
+                color: "#333",
+                border: "none",
+                borderRadius: "6px",
+                cursor: loading ? "not-allowed" : "pointer",
+                fontWeight: "600"
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmCSVImport}
+              disabled={loading || csvResults.length === 0}
+              style={{
+                padding: "10px 20px",
+                background: loading || csvResults.length === 0 ? "#ccc" : "#28a745",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                cursor: loading || csvResults.length === 0 ? "not-allowed" : "pointer",
+                fontWeight: "600"
+              }}
+            >
+              {loading ? "Importing..." : "✓ Import All"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Preview Modal Component
+  const PreviewModal = () => {
+    if (!showPreview) return null;
+    return (
+      <div style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: "rgba(0,0,0,0.7)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000
+      }}>
+        <div style={{
+          background: "white",
+          borderRadius: "12px",
+          padding: "30px",
+          maxWidth: "600px",
+          maxHeight: "80vh",
+          overflow: "auto",
+          boxShadow: "0 10px 40px rgba(0,0,0,0.3)"
+        }}>
+          <h2 style={{ marginTop: 0 }}>📋 Preview Result</h2>
+          <div style={{ background: "#f8f9fa", padding: "20px", borderRadius: "8px", marginBottom: "20px" }}>
+            <div style={{ marginBottom: "15px" }}>
+              <strong>Student:</strong> {formData.studentName} ({formData.admissionNumber})
+            </div>
+            <div style={{ marginBottom: "15px" }}>
+              <strong>Class:</strong> {formData.class} {formData.stream}
+            </div>
+            <div style={{ marginBottom: "15px" }}>
+              <strong>Term/Year:</strong> {formData.term} {formData.year}
+            </div>
+            <div style={{ marginBottom: "15px" }}>
+              <strong>Overall Grade:</strong> <span style={{ fontSize: "20px", fontWeight: "bold" }}>{formData.overallGrade}</span>
+            </div>
+            <div style={{ marginBottom: "15px" }}>
+              <strong>Average:</strong> {formData.averageMarks.toFixed(2)}%
+            </div>
+            {formData.position && <div style={{ marginBottom: "15px" }}>
+              <strong>Position:</strong> {formData.position} of {formData.outOf}
+            </div>}
+          </div>
+
+          <div style={{ marginBottom: "20px" }}>
+            <h4>📚 Subjects ({formData.subjects.length})</h4>
+            {formData.subjects.length > 0 ? (
+              <div style={{ 
+                border: "1px solid #e0e0e0", 
+                borderRadius: "6px",
+                overflow: "hidden"
+              }}>
+                {formData.subjects.map((subj, idx) => (
+                  <div key={idx} style={{
+                    padding: "10px",
+                    borderBottom: idx < formData.subjects.length - 1 ? "1px solid #f0f0f0" : "none",
+                    display: "grid",
+                    gridTemplateColumns: "2fr 1fr 1fr",
+                    gap: "10px"
+                  }}>
+                    <div>{subj.subjectName}</div>
+                    <div style={{ textAlign: "center" }}>{subj.marks}</div>
+                    <div style={{ textAlign: "center", fontWeight: "600" }}>{subj.grade}</div>
+                  </div>
+                ))}
+              </div>
+            ) : <div style={{ color: "#999" }}>No subjects added</div>}
+          </div>
+
+          <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+            <button
+              onClick={() => setShowPreview(false)}
+              style={{
+                padding: "10px 20px",
+                background: "#ccc",
+                color: "#333",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: "600"
+              }}
+            >
+              ← Back to Edit
+            </button>
+            <button
+              onClick={() => {
+                handleSubmit({ preventDefault: () => {} });
+                setShowPreview(false);
+              }}
+              style={{
+                padding: "10px 20px",
+                background: "#28a745",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: "600"
+              }}
+            >
+              ✓ Confirm & Save
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Template Manager Component
+  const TemplateManager = () => {
+    if (!showTemplateManager) return null;
+    return (
+      <div style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: "rgba(0,0,0,0.7)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 999
+      }}>
+        <div style={{
+          background: "white",
+          borderRadius: "12px",
+          padding: "30px",
+          maxWidth: "500px",
+          maxHeight: "80vh",
+          overflow: "auto",
+          boxShadow: "0 10px 40px rgba(0,0,0,0.3)"
+        }}>
+          <h2 style={{ marginTop: 0 }}>📋 Subject Templates</h2>
+          {templates.length === 0 ? (
+            <div style={{ color: "#999", padding: "20px", textAlign: "center" }}>
+              No templates saved yet. Create one from your form first!
+            </div>
+          ) : (
+            <div style={{ marginBottom: "20px" }}>
+              {templates.map(template => (
+                <div key={template.id} style={{
+                  padding: "12px",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "6px",
+                  marginBottom: "10px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center"
+                }}>
+                  <div>
+                    <div style={{ fontWeight: "600" }}>{template.name}</div>
+                    <div style={{ fontSize: "12px", color: "#666" }}>
+                      {template.subjects.length} subjects
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      applyTemplate(template.subjects);
+                      setShowTemplateManager(false);
+                    }}
+                    style={{
+                      padding: "6px 12px",
+                      background: "#007bff",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "12px"
+                    }}
+                  >
+                    Apply
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <button
+            onClick={() => setShowTemplateManager(false)}
+            style={{
+              width: "100%",
+              padding: "10px",
+              background: "#6c757d",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer"
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div style={{ padding: "20px", maxWidth: "1400px", margin: "0 auto" }}>
@@ -502,6 +1087,28 @@ const ResultsManagement = ({ user }) => {
             }}
           >
             {showPdfUpload ? "✖ Cancel" : "📄 Upload PDF Result"}
+          </button>
+
+          <button
+            onClick={() => {
+              const fileInput = document.createElement("input");
+              fileInput.type = "file";
+              fileInput.accept = ".csv";
+              fileInput.onchange = handleCSVImport;
+              fileInput.click();
+            }}
+            style={{
+              padding: "12px 24px",
+              background: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "16px",
+              fontWeight: "600",
+              cursor: "pointer"
+            }}
+          >
+            📥 Import from CSV
           </button>
         </div>
       </div>
@@ -814,11 +1421,18 @@ const ResultsManagement = ({ user }) => {
                 <input
                   type="number"
                   value={formData.attendance.daysPresent}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    attendance: { ...formData.attendance, daysPresent: e.target.value }
-                  })}
+                  onChange={(e) => handleAttendanceChange('daysPresent', e.target.value)}
                   style={{ width: "100%", padding: "10px", border: "2px solid #e0e0e0", borderRadius: "6px" }}
+                />
+              </div>
+              <div>
+                <label style={{ display: "block", marginBottom: "8px", fontWeight: "600" }}>Days Absent</label>
+                <input
+                  type="number"
+                  value={formData.attendance.daysAbsent}
+                  onChange={(e) => handleAttendanceChange('daysAbsent', e.target.value)}
+                  style={{ width: "100%", padding: "10px", border: "2px solid #e0e0e0", borderRadius: "6px" }}
+                  placeholder="Auto-calculated if Present + Absent provided"
                 />
               </div>
               <div>
@@ -826,11 +1440,9 @@ const ResultsManagement = ({ user }) => {
                 <input
                   type="number"
                   value={formData.attendance.totalDays}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    attendance: { ...formData.attendance, totalDays: e.target.value }
-                  })}
+                  onChange={(e) => handleAttendanceChange('totalDays', e.target.value)}
                   style={{ width: "100%", padding: "10px", border: "2px solid #e0e0e0", borderRadius: "6px" }}
+                  placeholder="Auto-calculated from Present + Absent"
                 />
               </div>
             </div>
@@ -867,22 +1479,79 @@ const ResultsManagement = ({ user }) => {
               </label>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading || formData.subjects.length === 0}
-              style={{
-                padding: "14px 32px",
-                background: loading || formData.subjects.length === 0 ? "#ccc" : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                fontSize: "16px",
-                fontWeight: "600",
-                cursor: loading || formData.subjects.length === 0 ? "not-allowed" : "pointer"
-              }}
-            >
-              {loading ? "Saving..." : editingResult ? "Update Result" : "Create Result"}
-            </button>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", gap: "10px" }}>
+                {formData.subjects.length > 0 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setShowPreview(true)}
+                      style={{
+                        padding: "12px 20px",
+                        background: "#17a2b8",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "8px",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        cursor: "pointer"
+                      }}
+                    >
+                      👁️ Preview
+                    </button>
+                    <button
+                      type="button"
+                      onClick={saveAsTemplate}
+                      style={{
+                        padding: "12px 20px",
+                        background: "#6c757d",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "8px",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        cursor: "pointer"
+                      }}
+                    >
+                      💾 Save as Template
+                    </button>
+                  </>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowTemplateManager(true)}
+                  style={{
+                    padding: "12px 20px",
+                    background: "#ffc107",
+                    color: "#333",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    cursor: "pointer"
+                  }}
+                >
+                  📋 Load Template
+                </button>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || formData.subjects.length === 0}
+                style={{
+                  padding: "12px 32px",
+                  background: loading || formData.subjects.length === 0 ? "#ccc" : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  cursor: loading || formData.subjects.length === 0 ? "not-allowed" : "pointer"
+                }}
+              >
+                {loading ? "Saving..." : editingResult ? "Update Result" : "Create Result"}
+              </button>
+            </div>
           </form>
         </div>
       )}
@@ -1189,9 +1858,46 @@ const ResultsManagement = ({ user }) => {
 
       {/* Results List */}
       <div style={{ background: "white", borderRadius: "12px", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+        {selectedResults.size > 0 && (
+          <div style={{
+            padding: "15px 20px",
+            background: "#e3f2fd",
+            borderBottom: "1px solid #e0e0e0",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
+          }}>
+            <span style={{ fontWeight: "600", color: "#1976d2" }}>
+              {selectedResults.size} result(s) selected
+            </span>
+            <button
+              onClick={batchPublish}
+              disabled={loading}
+              style={{
+                padding: "10px 20px",
+                background: "#4caf50",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                cursor: loading ? "not-allowed" : "pointer",
+                fontWeight: "600"
+              }}
+            >
+              {loading ? "Publishing..." : "🚀 Publish Selected"}
+            </button>
+          </div>
+        )}
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead style={{ background: "#f8f9fa" }}>
             <tr>
+              <th style={{ padding: "15px", textAlign: "center", borderBottom: "2px solid #e0e0e0", width: "50px" }}>
+                <input
+                  type="checkbox"
+                  checked={selectedResults.size === results.length && results.length > 0}
+                  onChange={handleSelectAll}
+                  style={{ cursor: "pointer", width: "18px", height: "18px" }}
+                />
+              </th>
               <th style={{ padding: "15px", textAlign: "left", borderBottom: "2px solid #e0e0e0" }}>Student</th>
               <th style={{ padding: "15px", textAlign: "left", borderBottom: "2px solid #e0e0e0" }}>Class</th>
               <th style={{ padding: "15px", textAlign: "left", borderBottom: "2px solid #e0e0e0" }}>Curriculum</th>
@@ -1206,19 +1912,30 @@ const ResultsManagement = ({ user }) => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="9" style={{ padding: "40px", textAlign: "center", color: "#999" }}>
+                <td colSpan="10" style={{ padding: "40px", textAlign: "center", color: "#999" }}>
                   Loading results...
                 </td>
               </tr>
             ) : results.length === 0 ? (
               <tr>
-                <td colSpan="9" style={{ padding: "40px", textAlign: "center", color: "#999" }}>
+                <td colSpan="10" style={{ padding: "40px", textAlign: "center", color: "#999" }}>
                   No results found
                 </td>
               </tr>
             ) : (
               results.map((result) => (
-                <tr key={result._id} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                <tr key={result._id} style={{ 
+                  borderBottom: "1px solid #f0f0f0",
+                  background: selectedResults.has(result._id) ? "#f5f5f5" : "white"
+                }}>
+                  <td style={{ padding: "15px", textAlign: "center" }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedResults.has(result._id)}
+                      onChange={() => handleResultSelect(result._id)}
+                      style={{ cursor: "pointer", width: "18px", height: "18px" }}
+                    />
+                  </td>
                   <td style={{ padding: "15px" }}>
                     <div style={{ fontWeight: "600" }}>{result.studentName}</div>
                     <div style={{ fontSize: "12px", color: "#666" }}>{result.admissionNumber}</div>
@@ -1323,6 +2040,60 @@ const ResultsManagement = ({ user }) => {
             )}
           </tbody>
         </table>
+        
+        {/* Pagination Controls */}
+        {pagination.pages > 1 && (
+          <div style={{
+            padding: "20px",
+            borderTop: "1px solid #e0e0e0",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            background: "#f8f9fa"
+          }}>
+            <div style={{ fontSize: "14px", color: "#666" }}>
+              Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
+            </div>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <button
+                onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
+                disabled={pagination.page === 1}
+                style={{
+                  padding: "8px 12px",
+                  background: pagination.page === 1 ? "#ccc" : "#667eea",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: pagination.page === 1 ? "not-allowed" : "pointer"
+                }}
+              >
+                ← Previous
+              </button>
+              <span style={{ fontSize: "14px", fontWeight: "600" }}>
+                Page {pagination.page} of {pagination.pages}
+              </span>
+              <button
+                onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
+                disabled={pagination.page === pagination.pages}
+                style={{
+                  padding: "8px 12px",
+                  background: pagination.page === pagination.pages ? "#ccc" : "#667eea",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: pagination.page === pagination.pages ? "not-allowed" : "pointer"
+                }}
+              >
+                Next →
+              </button>
+            </div>
+          </div>
+        )}
+
+      {/* Render modals */}
+      <PreviewModal />
+      <TemplateManager />
+      <CSVImportModal />
       </div>
     </div>
   );

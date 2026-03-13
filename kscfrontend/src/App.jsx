@@ -1,10 +1,12 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
-import './App.css'; 
+import './App.css';
+import './styles/mobile-optimization.css';
 import Header from "./components/Header";
 import Home from "./components/Home";
 import Footer from "./components/Footer";
 import Loader from "./components/Loader";
 import ChatWidget from "./components/ChatWidget";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Lazy-load all pages except Home (first paint)
 const About = lazy(() => import("./components/About"));
@@ -19,7 +21,6 @@ const Login = lazy(() => import("./components/Login"));
 const SignUp = lazy(() => import("./components/SignUp"));
 const ResetPassword = lazy(() => import("./components/ResetPassword"));
 const AdminDashboard = lazy(() => import("./components/AdminDashboard"));
-const DevLogin = lazy(() => import("./components/DevLogin"));
 const Curriculum = lazy(() => import("./components/Curriculum"));
 const Performance = lazy(() => import("./components/Performance"));
 const Policies = lazy(() => import("./components/Policies"));
@@ -32,13 +33,15 @@ const TeacherHomework = lazy(() => import("./components/TeacherHomework"));
 const StudentVerification = lazy(() => import("./components/StudentVerification"));
 const StudentResults = lazy(() => import("./components/StudentResults"));
 const ResultsManagement = lazy(() => import("./components/ResultsManagement"));
+const ParentLogin = lazy(() => import("./components/ParentLogin"));
+const ParentDashboard = lazy(() => import("./components/ParentDashboard"));
+const StudentDashboard = lazy(() => import("./components/StudentDashboard"));
 // SchoolPerformance and SchoolPerformanceAdmin removed — absorbed into unified Performance page
 
 
 const StudentFees = lazy(() => import("./components/subpages/StudentFees.jsx"));
 const StudentExams = lazy(() => import("./components/subpages/StudentExams.jsx"));
 const StudentClubs = lazy(() => import("./components/subpages/StudentClubs.jsx"));
-const StudentSupportServices = lazy(() => import("./components/subpages/StudentSupportServices.jsx"));
 
 const PageBackgroundManagement = lazy(() => import("./components/PageBackgroundManagement"));
 
@@ -239,28 +242,30 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Fast loader - optimized for sub-500ms load
+  // Initial page load — run ONCE to dismiss the loader when the document is ready.
+  // Separated from the route-change effect so it doesn't re-run on every navigation.
   useEffect(() => {
-    const handleLoad = () => {
-      // Immediate hide for faster perceived performance
-      requestAnimationFrame(() => {
-        setLoading(false);
-      });
+    const clearLoading = () => {
+      requestAnimationFrame(() => setLoading(false));
     };
 
-    if (document.readyState === "complete") {
-      handleLoad();
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+      clearLoading();
     } else {
-      // Use DOMContentLoaded for faster initial render
-      if (document.readyState === "interactive") {
-        handleLoad();
-      } else {
-        window.addEventListener("DOMContentLoaded", handleLoad, { once: true });
-        window.addEventListener("load", handleLoad, { once: true });
-      }
+      // Page not yet parsed — wait for the load event
+      window.addEventListener("load", clearLoading, { once: true });
+      return () => window.removeEventListener("load", clearLoading);
     }
+  }, []); // empty deps — fires exactly once on mount
 
-    // make router globally available and maintain a simple in-memory route stack
+  // Route change side-effects: clear navigation loading and keep window globals fresh.
+  // Does NOT touch the document-ready listener — that is handled by the effect above.
+  useEffect(() => {
+    // After each navigation Header/MenuButton sets loading=true; clear it now that
+    // the new page component has rendered.
+    requestAnimationFrame(() => setLoading(false));
+
+    // Keep window helpers in sync with current route
     window.__routeStack = window.__routeStack || [];
     window.setRoute = setRoute;
     window.__goBack = () => {
@@ -279,11 +284,6 @@ export default function App() {
       }
     };
     window.__route = route;
-
-    return () => {
-      window.removeEventListener("DOMContentLoaded", handleLoad);
-      window.removeEventListener("load", handleLoad);
-    };
   }, [route]);
 
   // Scroll to top when route changes
@@ -291,12 +291,13 @@ export default function App() {
     window.scrollTo(0, 0);
   }, [route]);
 
-  // Decode user from token (if any)
+  // Decode user from token (if any).
+  // Checks both localStorage (remember me) and sessionStorage (session-only login).
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
     if (token) {
       try {
-        const [header, payload] = token.split(".");
+        const [, payload] = token.split(".");
         if (payload) {
           const data = JSON.parse(atob(payload));
           setUser({ email: data.email, role: data.role, id: data.id });
@@ -305,29 +306,6 @@ export default function App() {
         console.error("Failed to decode token", err);
       }
     }
-  }, []);
-
-  // Listen for dev auto-login events (dev helper)
-  useEffect(() => {
-    function onDevLogin(e) {
-      try {
-        const token = e?.detail?.token;
-        if (!token) return;
-        localStorage.setItem("token", token);
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        const u = { email: payload.email, role: payload.role, id: payload.id };
-        setUser(u);
-        if (u?.role === "admin") setRoute("admin");
-        else if (u?.role === "teacher") setRoute("teacher");
-        else if (u?.role === "student") setRoute("student");
-        else setRoute("staff");
-      } catch (err) {
-        console.error("Dev login failed", err);
-      }
-    }
-
-    window.addEventListener("kangaru girls:dev-login", onDevLogin);
-    return () => window.removeEventListener("kangaru girls:dev-login", onDevLogin);
   }, []);
 
   function handleAuth(u) {
@@ -340,6 +318,7 @@ export default function App() {
 
   function logout() {
     localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
     setUser(null);
     setRoute("home");
   }
@@ -375,8 +354,8 @@ export default function App() {
       <MenuButton route={route} setRoute={setRoute} setLoading={setLoading} user={user} />
 
       <main
+        className="app-main-content"
         style={{
-          padding: "140px 16px 20px 16px",
           minHeight: "60vh",
           opacity: loading ? 0 : 1,
           transition: "opacity 0.15s ease-in",
@@ -386,6 +365,7 @@ export default function App() {
         }} 
       >
        
+      <ErrorBoundary>
       <Suspense fallback={<div style={{ textAlign: "center", padding: "60px 20px" }}><Loader size={80} /></div>}>
         {(() => {
           const [mainRoute, subRoute] = route.split("/");
@@ -440,7 +420,7 @@ export default function App() {
                 return (
                   <div style={{ textAlign: "center", padding: "60px 20px" }}>
                     <h2>🔒 Access Restricted</h2>
-                    <p>The Homework Portal is only available to registered students, teachers, and administrators.</p>
+                    <p>Only Varified Student have access to this Portal.</p>
                     <button onClick={() => setRoute("login")} style={{ padding: "10px 24px", background: "#667eea", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "16px", marginTop: "16px" }}>Log In</button>
                   </div>
                 );
@@ -475,11 +455,8 @@ export default function App() {
             case "reset-password":
               return <ResetPassword navigate={setRoute} user={user} />;
 
-            case "dev-login":
-              return <DevLogin />;
-
             case "signup":
-              return <SignUp onAuth={handleAuth} user={user} />;
+              return <SignUp onAuth={handleAuth} navigate={setRoute} user={user} />;
 
             case "verify-student":
               // Hidden route - only accessible via QR code scan
@@ -492,13 +469,29 @@ export default function App() {
               return <div>Access denied — student only</div>;
 
             case "results-management":
-              // Admin-only route for managing student results
-              if (user?.role === "admin")
-                return <ResultsManagement user={user} />;
-              return <div>Access denied — admin only</div>;
+              // Manage student results
+              if (user?.role !== "admin") return <div>Access denied — admin only</div>;
+              return <ResultsManagement user={user} />;
+
+            case "parent-login":
+              // Parent portal login page
+              return <ParentLogin onAuth={handleAuth} navigate={setRoute} />;
+
+            case "parent-dashboard":
+              // Parent-only route for viewing child's results and recommendations
+              if (user?.role === "parent")
+                return <ParentDashboard user={user} />;
+              return <div>Access denied — parent only</div>;
+
+            case "student-dashboard":
+              // Student-only route for viewing personal academic performance
+              if (user?.role === "student")
+                return <StudentDashboard user={user} />;
+              return <div>Access denied — student only</div>;
 
             case "performance-management":
               // Redirect to admin dashboard performance tab
+              if (user?.role !== "admin") return <div>Access denied — admin only</div>;
               return <AdminDashboard user={user} />;
 
             case "admin":
@@ -508,19 +501,11 @@ export default function App() {
 
             default:
               return <Home user={user} setRoute={setRoute} />;
-            
-            
-               
-               
-
-               case "page-backgrounds":
-              if (user?.role === "admin")
-                return <PageBackgroundManagement user={user} />;
-              return <div>Access denied — admin only</div>;
 
           }
         })()}
       </Suspense>
+      </ErrorBoundary>
       </main>
 
       <Footer />

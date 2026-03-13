@@ -90,7 +90,7 @@ Create `public/schema.json` with:
   "name": "KANGARU GIRLS School",
   "description": "Excellence in Education - A leading girls' school",
   "url": "https://your-domain.com",
-  "logo": "https://your-domain.com/header/logo.PNG",
+  "logo": "https://your-domain.com/header/logo new.PNG",
   "contactPoint": {
     "@type": "ContactPoint",
     "contactType": "Admissions",

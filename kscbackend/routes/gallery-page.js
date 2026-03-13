@@ -6,7 +6,7 @@ import GalleryPage, {
   defaultAlbums,
   defaultImages,
 } from "../models/GalleryPage.js";
-import { requireAuth } from "../middleware/requireAuth.js";
+import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 import { uploadBuffer, deleteFile } from "../utils/storage.js";
 
 const router = express.Router();
@@ -73,7 +73,7 @@ router.get("/", async (req, res) => {
 });
 
 // ─── GET /admin — full data for admin panel ─────────────────────────────────
-router.get("/admin", requireAuth, async (req, res) => {
+router.get("/admin", requireRole(['admin']), async (req, res) => {
   try {
     const page = await getOrCreateGalleryPage();
     res.json(page);
@@ -84,7 +84,7 @@ router.get("/admin", requireAuth, async (req, res) => {
 });
 
 // ─── PUT / — update gallery page ────────────────────────────────────────────
-router.put("/", requireAuth, async (req, res) => {
+router.put("/", requireRole(['admin']), async (req, res) => {
   try {
     const page = await getOrCreateGalleryPage();
 
@@ -126,7 +126,7 @@ router.put("/", requireAuth, async (req, res) => {
 // ─── POST /upload — upload images to Cloudinary (parallel batches) ───────────
 router.post(
   "/upload",
-  requireAuth,
+  requireRole(['admin']),
   mem.array("images", 250),
   async (req, res) => {
     try {
@@ -174,7 +174,7 @@ router.post(
 );
 
 // ─── POST /reset-defaults — reset to default data ──────────────────────────
-router.post("/reset-defaults", requireAuth, async (req, res) => {
+router.post("/reset-defaults", requireRole(['admin']), async (req, res) => {
   try {
     await GalleryPage.deleteOne({ _id: "gallery-page-singleton" });
     const page = await getOrCreateGalleryPage();

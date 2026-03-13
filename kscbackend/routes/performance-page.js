@@ -152,7 +152,7 @@ router.put("/", requireAuth, async (req, res) => {
     res.json(updated.toObject ? updated.toObject() : updated);
   } catch (err) {
     console.error("🔴 Error updating performance page:", err);
-    res.status(400).json({ error: "Failed to update performance page: " + err.message });
+    res.status(400).json({ error: "Failed to update performance page" });
   }
 });
 
@@ -187,7 +187,7 @@ router.post("/reset-defaults", requireAuth, async (req, res) => {
     res.json({ message: "Performance page reset to defaults", data: page.toObject() });
   } catch (err) {
     console.error("🔴 Error resetting performance page:", err);
-    res.status(500).json({ error: "Failed to reset: " + err.message });
+    res.status(500).json({ error: "Failed to reset" });
   }
 });
 

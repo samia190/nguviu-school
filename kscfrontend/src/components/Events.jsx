@@ -83,7 +83,7 @@ export default function Events() {
             minHeight: 380,
             overflow: "hidden",
             marginBottom: 30,
-            background: `url('${heroImage}') center/cover no-repeat, linear-gradient(135deg, #667eea 0%, #764ba2 100%)`,
+            background: `url('${encodeURI(heroImage)}') center/cover no-repeat, linear-gradient(135deg, #667eea 0%, #764ba2 100%)`,
           }}
         >
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.65))" }} />
