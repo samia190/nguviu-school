@@ -313,7 +313,8 @@ export default function App() {
     if (u?.role === "admin") setRoute("admin");
     else if (u?.role === "teacher") setRoute("teacher");
     else if (u?.role === "student") setRoute("student");
-    else setRoute("staff");
+    else if (u?.role === "parent") setRoute("parent-dashboard");
+    else setRoute("home");
   }
 
   function logout() {
