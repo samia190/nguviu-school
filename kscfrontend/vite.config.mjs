@@ -36,6 +36,7 @@ export default defineConfig({
       },
     },
   },
+  appType: "spa",
   build: {
     // Optimize production build for speed
     minify: "esbuild", // Fast and efficient minification

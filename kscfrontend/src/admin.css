@@ -76,8 +76,8 @@ body {
 /* HORIZONTAL NAVIGATION GRID */
 .admin-nav-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+  gap: 8px;
   max-width: 100%;
 }
 
@@ -86,13 +86,13 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 16px 8px;
+  padding: 10px 6px;
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.25s ease;
-  min-height: 80px;
+  min-height: 64px;
 }
 
 .admin-nav-card:hover {
@@ -109,13 +109,13 @@ body {
 }
 
 .nav-card-icon {
-  font-size: 1.75rem;
-  margin-bottom: 6px;
+  font-size: 1.4rem;
+  margin-bottom: 4px;
 }
 
 .nav-card-label {
   color: #fff;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 500;
   text-align: center;
   line-height: 1.2;
@@ -151,7 +151,7 @@ body {
 
 /* MAIN CONTENT AREA */
 .admin-main-content {
-  padding: 24px;
+  padding: 16px;
   background: #f8fafc;
   min-height: calc(100vh - 200px);
 }
@@ -159,29 +159,29 @@ body {
 .admin-main-bg {
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   min-height: 100%;
-  padding: 24px;
+  padding: 16px;
   width: 100%;
   box-sizing: border-box;
 }
 
 @media (max-width:900px){
-  .admin-main-bg { padding: 16px; }
-  .admin-nav-grid { grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 8px; }
-  .admin-nav-card { padding: 12px 6px; min-height: 70px; }
-  .nav-card-icon { font-size: 1.5rem; }
-  .nav-card-label { font-size: 0.65rem; }
-  .admin-main-content { padding: 16px; }
+  .admin-main-bg { padding: 12px; }
+  .admin-nav-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
+  .admin-nav-card { padding: 8px 4px; min-height: 56px; }
+  .nav-card-icon { font-size: 1.25rem; }
+  .nav-card-label { font-size: 0.6rem; }
+  .admin-main-content { padding: 12px; }
 }
 
 @media (max-width:600px){
-  .admin-main-bg { padding: 12px; }
-  .admin-nav-container { padding: 16px; }
-  .admin-title { font-size: 1.25rem; }
-  .admin-nav-grid { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px; }
-  .admin-nav-card { padding: 10px 4px; min-height: 60px; border-radius: 8px; }
-  .nav-card-icon { font-size: 1.25rem; margin-bottom: 4px; }
-  .nav-card-label { font-size: 0.6rem; }
-  .admin-main-content { padding: 12px; }
+  .admin-main-bg { padding: 10px; }
+  .admin-nav-container { padding: 12px; }
+  .admin-title { font-size: 1.1rem; }
+  .admin-nav-grid { grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 5px; }
+  .admin-nav-card { padding: 7px 3px; min-height: 50px; border-radius: 8px; }
+  .nav-card-icon { font-size: 1.1rem; margin-bottom: 3px; }
+  .nav-card-label { font-size: 0.55rem; }
+  .admin-main-content { padding: 10px; }
 }
 
 /* Legacy sidebar styles - keeping for backward compatibility */

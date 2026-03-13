@@ -39,9 +39,12 @@ router.post("/admin/generate-parent-link", requireRole('admin'), async (req, res
     });
 
     if (!parentUser) {
+      // Parents authenticate via token link, not password, but passwordHash is required by schema
+      const randomPasswordHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
       parentUser = new User({
         email: parentEmail.toLowerCase(),
         name: `Parent of ${student.name}`,
+        passwordHash: randomPasswordHash,
         role: 'parent',
         accessTokenHash,
         accessTokenExpires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days

@@ -77,5 +77,7 @@ services:
         value: https://kangarugirlsschool.onrender.com
       - key: VITE_BACKEND_URL
         value: https://kangarugirlsschool.onrender.com
+      - key: VITE_FRONTEND_URL
+        value: https://kangarugirlsschool-sc-ke.onrender.com
       - key: NODE_VERSION
         value: "18"

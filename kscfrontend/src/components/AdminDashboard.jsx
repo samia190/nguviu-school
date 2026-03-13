@@ -159,43 +159,42 @@ export default function AdminDashboard({ user }) {
   }
 
   const sections = [
-    { key: "dashboard", label: "Dashboard", icon: "🏠", color: "#3b82f6" },
-    { key: "home", label: "Home Page", icon: "🏡", color: "#14b8a6" },
-    { key: "submissions", label: "Submissions", icon: "📬", color: "#8b5cf6" },
-    { key: "roles", label: "Roles", icon: "👥", color: "#ec4899" },
-    { key: "admissions", label: "Admissions", icon: "📝", color: "#10b981" },
-    { key: "feeStructure", label: "Fee Structure", icon: "💰", color: "#f59e0b" },
-    { key: "newsletters", label: "Newsletters", icon: "📰", color: "#06b6d4" },
-    { key: "magazine", label: "Magazine", icon: "📖", color: "#6366f1" },
-    { key: "events", label: "Events", icon: "📅", color: "#ef4444" },
-    { key: "studentLife", label: "Student Life", icon: "🎓", color: "#059669" },
-    { key: "gallery", label: "Gallery", icon: "🖼️", color: "#14b8a6" },
-    { key: "legal", label: "Legal", icon: "⚖️", color: "#64748b" },
     { key: "about", label: "About", icon: "ℹ️", color: "#0ea5e9" },
+    { key: "admissions", label: "Admissions", icon: "📝", color: "#10b981" },
+    { key: "chat", label: "Chat System", icon: "💬", color: "#0d9488" },
     { key: "contact", label: "Contact", icon: "📞", color: "#22c55e" },
+    { key: "create-account", label: "Create Account", icon: "➕", color: "#059669" },
     { key: "curriculum", label: "Curriculum", icon: "📚", color: "#a855f7" },
+    { key: "dashboard", label: "Dashboard", icon: "🏠", color: "#3b82f6" },
+    { key: "events", label: "Events", icon: "📅", color: "#ef4444" },
+    { key: "feeStructure", label: "Fee Structure", icon: "💰", color: "#f59e0b" },
+    { key: "gallery", label: "Gallery", icon: "🖼️", color: "#14b8a6" },
+    { key: "homeNews", label: "Home News", icon: "📣", color: "#06b6d4" },
+    { key: "home", label: "Home Page", icon: "🏡", color: "#14b8a6" },
+    { key: "homework", label: "Homework & Notes", icon: "📚", color: "#FF6B6B" },
+    { key: "invites", label: "Invite Links", icon: "🔗", color: "#0ea5e9" },
+    { key: "legal", label: "Legal", icon: "⚖️", color: "#64748b" },
+    { key: "magazine", label: "Magazine", icon: "📖", color: "#6366f1" },
+    { key: "newsletters", label: "Newsletters", icon: "📰", color: "#06b6d4" },
+    { key: "parents", label: "Parents", icon: "👨‍👩‍👧", color: "#e11d48" },
     { key: "performance", label: "Performance", icon: "📊", color: "#f97316" },
     { key: "policies", label: "Policies", icon: "📋", color: "#84cc16" },
-    { key: "parents", label: "Parents", icon: "👨‍👩‍👧", color: "#e11d48" },
-    { key: "staff", label: "Staff", icon: "👔", color: "#7c3aed" },
-    { key: "heroContent", label: "Hero Content (Legacy)", icon: "🎬", color: "#f43f5e" },
-    { key: "homeNews", label: "Home News", icon: "📣", color: "#06b6d4" },
-    { key: "homework", label: "Homework & Notes", icon: "📚", color: "#FF6B6B" },
-    { key: "students", label: "Student Page", icon: "🎓", color: "#0891b2" },
-    { key: "studentAdmin", label: "Student Admin", icon: "🛠️", color: "#8b5cf6" },
-    { key: "pagebackground", label: "Backgrounds", icon: "🎨", color: "#db2777" },
-    { key: "chat", label: "Chat System", icon: "💬", color: "#0d9488" },
-    // Phase 2: Student Results System
-    { key: "studentResults", label: "Student Results", icon: "📊", color: "#06b6d4" },
-    // Phase 3: Analytics Dashboard
-    { key: "analytics", label: "Analytics Dashboard", icon: "📈", color: "#8b5cf6" },
-    // Phase 4: Parent Portal & Engagement
-    { key: "parentPortal", label: "Parent Portal", icon: "👨‍👩‍👧", color: "#3b82f6" },
-    { key: "engagement", label: "Engagement Campaigns", icon: "📧", color: "#10b981" },
-    // Phase 5: Role-Based Registration
-    { key: "invites", label: "Invite Links", icon: "🔗", color: "#0ea5e9" },
     { key: "users", label: "Registered Users", icon: "👥", color: "#6366f1" },
-    { key: "create-account", label: "Create Account", icon: "➕", color: "#059669" },
+    { key: "roles", label: "Roles", icon: "👥", color: "#ec4899" },
+    { key: "staff", label: "Staff", icon: "👔", color: "#7c3aed" },
+    { key: "studentAdmin", label: "Student Admin", icon: "🛠️", color: "#8b5cf6" },
+    { key: "studentLife", label: "Student Life", icon: "🎓", color: "#059669" },
+    { key: "students", label: "Student Page", icon: "🎓", color: "#0891b2" },
+    { key: "submissions", label: "Submissions", icon: "📬", color: "#8b5cf6" },
+    // NOTE: The sections below require additional setup (SMTP + student data) before enabling.
+    // Uncomment when ready:
+    // { key: "studentResults", label: "Student Results", icon: "📊", color: "#06b6d4" },
+    // { key: "analytics", label: "Analytics Dashboard", icon: "📈", color: "#8b5cf6" },
+    // { key: "parentPortal", label: "Parent Portal", icon: "👨‍👩‍👧", color: "#3b82f6" },
+    // { key: "engagement", label: "Engagement Campaigns", icon: "📧", color: "#10b981" },
+    // Hidden until needed:
+    // { key: "heroContent", label: "Hero Content (Legacy)", icon: "🎬", color: "#f43f5e" },
+    // { key: "pagebackground", label: "Backgrounds", icon: "🎨", color: "#db2777" },
   ];
 
   const subSections = [

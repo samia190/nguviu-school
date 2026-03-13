@@ -23,13 +23,12 @@ export default function EngagementCampaigns({ user }) {
 
   const fetchCampaignStats = async () => {
     try {
-      // This would call backend endpoint to get stats
-      // For now, we'll set placeholder data
+      const data = await get("/api/engagement/admin/stats");
       setCampaignStats({
-        totalStudents: 245,
-        atRiskStudents: 18,
-        publishedResults: 189,
-        recentImprovements: 12
+        totalStudents: data.totalStudents || 0,
+        atRiskStudents: data.atRiskStudents || 0,
+        publishedResults: data.publishedResults || 0,
+        recentImprovements: data.recentImprovements || 0
       });
     } catch (err) {
       console.error("Failed to fetch campaign stats:", err);

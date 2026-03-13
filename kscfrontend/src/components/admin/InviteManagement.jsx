@@ -26,7 +26,9 @@ function copyToClipboard(text) {
 }
 
 function buildInviteUrl(token) {
-  return `${window.location.origin}/signup?invite=${token}`;
+  // Use the configured frontend URL (so invite links work even when admin is on localhost)
+  const base = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
+  return `${base}/signup?invite=${token}`;
 }
 
 export default function InviteManagement() {
