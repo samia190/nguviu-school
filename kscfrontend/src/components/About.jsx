@@ -50,7 +50,7 @@ export default function About({ user }) {
           transform: "translateX(-50%)",
           maxHeight: 1000,
           overflow: "hidden",
-          height: window.innerWidth <= 480 ? 300 : 500,
+          height: 500,
           backgroundImage: hero?.imageUrl ? `url(${encodeURI(hero.imageUrl)})` : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           backgroundSize: "cover",
           backgroundPosition: "center",

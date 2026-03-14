@@ -139,7 +139,7 @@ export default function Footer() {
       <footer
         style={{
           background: "skyblue",
-          padding: window.innerWidth <= 480 ? "16px 12px" : "20px 40px",
+          padding: "clamp(12px, 3vw, 20px) clamp(12px, 4vw, 40px)",
           borderTop: "1px solid #5a3fd2ff",
         }}
       >

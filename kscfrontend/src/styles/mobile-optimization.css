@@ -1,21 +1,31 @@
 /* Mobile Optimization Styles */
 
 /* =========================================================
-   Main content area — responsive top padding for fixed header
+   Main content area — dynamic top padding tracks real header height
+   via --header-h CSS custom property written by Header's ResizeObserver.
+   Fallback values ensure layout works even before JS fires.
    ========================================================= */
 .app-main-content {
-  padding: 140px 16px 20px 16px;
+  padding-top: calc(var(--header-h, 64px) + 8px);
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 20px;
 }
 
 @media (max-width: 768px) {
   .app-main-content {
-    padding: 80px 12px 20px 12px;
+    padding-top: calc(var(--header-h, 56px) + 8px);
+    padding-left: 12px;
+    padding-right: 12px;
   }
 }
 
 @media (max-width: 480px) {
   .app-main-content {
-    padding: 70px 8px 16px 8px;
+    padding-top: calc(var(--header-h, 48px) + 6px);
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-bottom: 16px;
   }
 }
 
@@ -428,9 +438,157 @@
 /* Safe area (notch support) */
 @supports (padding: max(0px)) {
   body {
-    padding-left: max(12px, env(safe-area-inset-left));
-    padding-right: max(12px, env(safe-area-inset-right));
-    padding-top: max(12px, env(safe-area-inset-top));
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+    /* Note: top safe-area is handled by the fixed header via ResizeObserver;
+       bottom safe-area applied to footer instead of body to avoid double-padding */
+  }
+
+  /* Footer accounts for iPhone home-indicator bar */
+  footer {
+    padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
   }
 }
+
+/* =====================================================
+   SMART CONTENT ARRANGEMENT — responsive layout utils
+   ===================================================== */
+
+/* 2-col auto-filling card grid: ≥2 wide on mobile, fills up on larger screens */
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 45%), 1fr));
+  gap: 12px;
+}
+@media (max-width: 480px) {
+  .content-grid { gap: 8px; }
+}
+
+/* 3-col grid collapses to 2 on tablet and 1 on tiny mobile */
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 768px) {
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 360px) {
+  .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* Aspect-ratio video wrapper — replaces all fixed-height video containers */
+.video-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 6px;
+}
+.video-wrap video,
+.video-wrap iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@media (max-width: 480px) {
+  .video-wrap {
+    aspect-ratio: 4 / 3;
+    border-radius: 4px;
+  }
+}
+
+/* Aspect-ratio image card */
+.img-card {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.img-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* File / document list row */
+.file-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+.file-row .file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+/* Scrollable table wrapper — table scrolls horizontally, page stays put */
+.tbl-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 6px;
+}
+.tbl-scroll table { min-width: 420px; }
+
+/* Hero full-bleed section (breaks out of container padding) */
+.hero-bleed {
+  width: 100vw;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  overflow: hidden;
+  aspect-ratio: 16 / 6;
+  max-height: 520px;
+  min-height: 200px;
+}
+@media (max-width: 480px) {
+  .hero-bleed {
+    aspect-ratio: 4 / 3;
+    max-height: 320px;
+    min-height: 180px;
+  }
+}
+
+/* Touch-friendly minimum tap target */
+.tap-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Two-column info layout: side-by-side on tablet+, stacked on mobile */
+.split-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 600px) {
+  .split-layout {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* Responsive page section container */
+.page-section {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+@media (max-width: 480px) {
+  .page-section { padding: 12px 0; }
+}
+

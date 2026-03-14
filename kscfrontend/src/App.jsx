@@ -99,7 +99,7 @@ function MenuButton({ route, setRoute, setLoading, user }) {
         style={{
           position: "fixed",
           left: 5,
-          top: 68,
+          top: 'calc(var(--header-h, 52px) + 4px)',
           zIndex: 1000,
           width: 44,
           height: 44,
@@ -138,7 +138,7 @@ function MenuButton({ route, setRoute, setLoading, user }) {
             style={{
               position: "fixed",
               left: 0,
-              top: 110,
+              top: 'calc(var(--header-h, 52px) + 52px)',
               bottom: 0,
               width: 280,
               background: "blue",

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { safePath } from "../utils/paths";
 import OptimizedImage from "./OptimizedImage";
 
@@ -23,6 +23,23 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
 
   const [openSubmenu, setOpenSubmenu] = useState(null);
 
+  // Measure header height and write to CSS custom property so all layout
+  // elements (main content, hamburger button, drawer) always clear the header
+  // regardless of screen size, font-load, or orientation change.
+  const headerRef = useRef(null);
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const update = () => {
+      const h = el.getBoundingClientRect().height;
+      document.documentElement.style.setProperty('--header-h', Math.ceil(h) + 'px');
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const subLinks = {
     curriculum: [
       { key: "curriculum/overview", label: "Overview" },
@@ -44,11 +61,12 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
 
   return (
     <header
+      ref={headerRef}
       style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "8px 16px",
+        padding: "6px 12px",
         borderBottom: "1px solid rgba(0,0,0,0.06)",
         background: "blue",
         position: "fixed",
@@ -58,77 +76,62 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
         width: "100%",
         boxSizing: "border-box",
         zIndex: 500,
-        gap: 15,
-        minHeight: "fit-content",
+        gap: 8,
+        flexWrap: "nowrap",
       }}
       className="main-header"
     >
-      {/* Logo + School Name + Tagline */}
+      {/* Logo + School Name + Tagline — always a single row */}
       <div
         onClick={() => go("home")}
-        style={{ display: "flex", flexDirection: "column", gap: 2, cursor: "pointer", flex: "0 0 auto", minWidth: "fit-content" }}
+        style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", flex: "0 0 auto" }}
       >
-        {/* Top: Logo + Name */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {/* Back button: appears when not on home */}
-          {route && route !== "home" && (
-            <button
-              onClick={() => {
-                if (window && typeof window.__goBack === "function") window.__goBack();
-                else go("home");
-              }}
-              aria-label="Go back"
-              style={{
-                marginRight: 4,
-                padding: "4px 6px",
-                borderRadius: 6,
-                border: "none",
-                background: "rgba(255,255,255,0.9)",
-                cursor: "pointer",
-                fontSize: "14px",
-              }}
-            >
-              ←
-            </button>
-          )}
-          <OptimizedImage
-            alt="KANGARU GIRLS Logo"
-            src="/header/logo new.PNG"
-            priority={true}
-            style={{
-              width: 50,
-              height: 50,
-              objectFit: "contain",
-              borderRadius: 0,
+        {/* Back button: appears when not on home */}
+        {route && route !== "home" && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (window && typeof window.__goBack === "function") window.__goBack();
+              else go("home");
             }}
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = "";
-            }}
-          />
-          <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
-            <strong style={{ fontSize: 12, color: "#fff" }}>KANGARU GIRLS' SENIOR SCHOOL</strong>
-            
-          </div>
-        </div>
-        
-        {/* Tagline */}
-        <div style={{ display: "flex", flexDirection: "column", paddingLeft: route && route !== "home" ? 62 : 58 }}>
-          <small
+            aria-label="Go back"
             style={{
-              color: "skyblue",
-              fontSize: 11,
-              fontStyle: "italic",
-              fontWeight: "bold",
+              marginRight: 2,
+              padding: "4px 6px",
+              borderRadius: 6,
+              border: "none",
+              background: "rgba(255,255,255,0.9)",
+              cursor: "pointer",
+              fontSize: "14px",
+              flexShrink: 0,
             }}
           >
+            ←
+          </button>
+        )}
+        <OptimizedImage
+          alt="KANGARU GIRLS Logo"
+          src="/header/logo new.PNG"
+          priority={true}
+          className="header-logo"
+          style={{ objectFit: "contain", borderRadius: 0, flexShrink: 0 }}
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = "";
+          }}
+        />
+        <div style={{ lineHeight: 1.2 }}>
+          <strong className="header-school-name" style={{ color: "#fff", display: "block" }}>
+            KANGARU GIRLS' SENIOR SCHOOL
+          </strong>
+          <small className="header-tagline" style={{ color: "skyblue", fontStyle: "italic", fontWeight: "bold" }}>
             Grow in Grace
           </small>
         </div>
       </div>
 
       {/* Navigation — hidden on mobile; MenuButton (hamburger) handles mobile nav */}
-      <nav className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "nowrap", flex: 1, justifyContent: "flex-end" }}>
+      <nav className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", flex: 1, justifyContent: "flex-end" }}>
         {/* Quick access buttons */}
         <button onClick={() => go("home")} style={navButtonStyle(route === "home")}>
           Home
@@ -288,71 +291,47 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
         )}
       </nav>
       
-      {/* Responsive styles */}
+      {/* Responsive header styles */}
       <style>{`
+        /* Nav button base */
         .main-header nav button,
-        .main-header nav > div {
-          flex-shrink: 0;
-          white-space: nowrap;
+        .main-header nav > div { white-space: nowrap; }
+
+        /* Logo — default (mobile-first, smallest) */
+        .header-logo { width: 34px !important; height: 34px !important; }
+        .header-school-name { font-size: 10px !important; max-width: 130px; }
+        .header-tagline { display: none !important; }
+
+        /* >=481px: show tagline, slightly larger logo */
+        @media (min-width: 481px) {
+          .header-logo { width: 42px !important; height: 42px !important; }
+          .header-school-name { font-size: 11px !important; max-width: 200px; }
+          .header-tagline { display: block !important; font-size: 10px !important; }
         }
-        
-        /* Desktop: Full layout */
+
+        /* >=769px: desktop logo + full tagline */
+        @media (min-width: 769px) {
+          .header-logo { width: 46px !important; height: 46px !important; }
+          .header-school-name { font-size: 12px !important; max-width: none; }
+          .header-tagline { font-size: 11px !important; }
+        }
+
+        /* Desktop nav buttons — full size */
         @media (min-width: 1200px) {
           .main-header nav button,
           .main-header nav > div button {
-            font-size: 0.9rem;
+            font-size: 0.9rem !important;
+            padding: 6px 10px !important;
           }
         }
-        
-        /* Tablet: logo + name on single line, nav on second line */
-        @media (min-width: 481px) and (max-width: 1199px) {
-          .main-header {
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            padding: 8px 12px !important;
-            gap: 8px;
-          }
-          
-          .main-header nav {
-            width: 100%;
-            display: flex !important;
-            flex-wrap: wrap !important;
-            overflow-x: hidden !important;
-            gap: 6px !important;
-          }
 
+        /* Tablet nav buttons — compact to fit one row */
+        @media (min-width: 769px) and (max-width: 1199px) {
           .main-header nav button,
           .main-header nav > div button {
-            font-size: 0.8rem !important;
-            padding: 5px 8px !important;
+            font-size: 0.72rem !important;
+            padding: 4px 6px !important;
             flex-shrink: 1 !important;
-          }
-        }
-        
-        /* Mobile: Compact layout */
-        @media (max-width: 480px) {
-          .main-header {
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            padding: 8px 12px !important;
-            gap: 8px;
-          }
-          
-          .main-header nav {
-            width: 100%;
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 4px !important;
-          }
-          
-          .main-header nav button {
-            font-size: 0.75rem !important;
-            padding: 4px 8px !important;
-          }
-          
-          .main-header nav > div button {
-            font-size: 0.75rem !important;
-            padding: 4px 8px !important;
           }
         }
       `}</style>
