@@ -1,30 +1,35 @@
-// utils/email.js
-import nodemailer from "nodemailer";
+// utils/email.js — uses Resend HTTP API (no SMTP, works from any cloud provider)
+// Docs: https://resend.com/docs/api-reference/emails/send-email
 
 export async function sendEmail(to, subject, text, html) {
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-
-  if (!user || !pass) {
-    throw new Error(`Email not configured — SMTP_USER and SMTP_PASS must be set (SMTP_USER=${user || 'missing'})`);
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("Email not configured — RESEND_API_KEY must be set in environment");
   }
 
-  const host = process.env.SMTP_HOST || "smtp-relay.brevo.com";
-  const port = Number(process.env.SMTP_PORT || 587);
-  console.log(`[email] Connecting to ${host}:${port} as ${user}`);
+  // from must be a verified sender on Resend.
+  // Until you verify a domain, use: onboarding@resend.dev (sends only to your own account email)
+  // After verifying a domain: "Kangaru Girls School <noreply@yourdomain.com>"
+  const from = process.env.SMTP_FROM || "Kangaru Girls School <onboarding@resend.dev>";
 
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: false, // STARTTLS on 587
-    auth: { user, pass },
-    connectionTimeout: 20000,
-    greetingTimeout: 20000,
-    socketTimeout: 20000,
+  console.log(`[email] Sending via Resend to ${to}`);
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ from, to, subject, text, html })
   });
 
-  const from = process.env.SMTP_FROM || user;
-  const info = await transporter.sendMail({ from, to, subject, text, html });
-  console.log(`[email] sent to ${to} — messageId: ${info.messageId}`);
-  return info;
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(`Resend error ${res.status}: ${data?.message || JSON.stringify(data)}`);
+  }
+
+  console.log(`[email] sent to ${to} — id: ${data.id}`);
+  return data;
 }
+
