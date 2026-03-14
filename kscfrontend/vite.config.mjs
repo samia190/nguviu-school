@@ -14,14 +14,14 @@ export default defineConfig({
     // Brotli compression for production
     compression({
       algorithm: "brotliCompress",
-      exclude: [/\.(br)$/, /\.(gz)$/],
+      exclude: [/\.br$/, /\.gz$/, /sitemap\.xml$/, /robots\.txt$/],
       threshold: 1024,
       deleteOriginFile: false,
     }),
     // Gzip compression as fallback
     compression({
       algorithm: "gzip",
-      exclude: [/\.(br)$/, /\.(gz)$/],
+      exclude: [/\.br$/, /\.gz$/, /sitemap\.xml$/, /robots\.txt$/],
       threshold: 1024,
       deleteOriginFile: false,
     }),
