@@ -34,7 +34,6 @@ import UserList from "./admin/UserList";
 import DirectAccountCreate from "./admin/DirectAccountCreate";
 import ChatManagement from "./ChatManagement";
 import ResultsManagement from "./ResultsManagement";
-import ResultsBulkUpload from "./ResultsBulkUpload";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 import ParentPortalManagement from "./ParentPortalManagement";
 import EngagementCampaigns from "./EngagementCampaigns";
@@ -413,10 +412,7 @@ export default function AdminDashboard({ user }) {
 
         {/* Phase 2: Student Results Management */}
         {activeSection === "studentResults" && (
-          <>
-            <ResultsBulkUpload />
-            <ResultsManagement />
-          </>
+          <ResultsManagement />
         )}
 
         {/* Phase 3: Analytics Dashboard */}

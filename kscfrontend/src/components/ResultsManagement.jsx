@@ -1,6 +1,7 @@
 // components/ResultsManagement.jsx
 import React, { useState, useEffect } from "react";
 import { get, getToken } from "../utils/api";
+import ResultsBulkUpload from "./ResultsBulkUpload";
 
 const ResultsManagement = ({ user }) => {
   const [results, setResults] = useState([]);
@@ -12,8 +13,7 @@ const ResultsManagement = ({ user }) => {
   const [showPdfUpload, setShowPdfUpload] = useState(false);
   const [showPreview, setShowPreview] = useState(false); // Preview modal state
   const [showTemplateManager, setShowTemplateManager] = useState(false); // Template manager state
-  const [showCSVImport, setShowCSVImport] = useState(false); // CSV import state
-  const [csvResults, setCSVResults] = useState([]); // Store parsed CSV results
+  const [showBulkImport, setShowBulkImport] = useState(false); // Bulk CSV import panel
   const [editingResult, setEditingResult] = useState(null);
   const [selectedResults, setSelectedResults] = useState(new Set()); // Track selected result IDs
   const [templates, setTemplates] = useState([]); // Store subject templates
@@ -564,129 +564,7 @@ const ResultsManagement = ({ user }) => {
     }
   };
 
-  const handleCSVImport = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
 
-    if (!file.name.endsWith('.csv')) {
-      setError("Please select a CSV file");
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const csv = event.target.result;
-        const lines = csv.split('\n').filter(line => line.trim());
-        
-        if (lines.length < 2) {
-          setError("CSV file must have headers and at least one data row");
-          setLoading(false);
-          return;
-        }
-
-        // Parse header
-        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-        const requiredFields = ['admissionnumber', 'studentname', 'class'];
-        const missingFields = requiredFields.filter(field => !headers.includes(field));
-        
-        if (missingFields.length > 0) {
-          setError(`CSV must contain columns: ${missingFields.join(', ')}`);
-          setLoading(false);
-          return;
-        }
-
-        // Parse data rows
-        const parsed = [];
-        for (let i = 1; i < lines.length; i++) {
-          const values = lines[i].split(',').map(v => v.trim());
-          if (values.filter(v => v).length === 0) continue; // Skip empty rows
-
-          const row = {};
-          headers.forEach((header, idx) => {
-            row[header] = values[idx] || '';
-          });
-
-          parsed.push({
-            admissionNumber: row.admissionnumber,
-            studentName: row.studentname,
-            class: row.class,
-            stream: row.stream || '',
-            term: row.term || formData.term,
-            year: row.year || formData.year,
-            examType: row.examtype || 'End of Term',
-            curriculum: row.curriculum || formData.curriculum,
-            subjects: [], // Will be populated from CSV
-            totalMarks: 0,
-            averageMarks: 0,
-            overallGrade: '',
-            position: row.position || '',
-            outOf: row.outof || '',
-            published: row.published === 'true' || row.published === '1'
-          });
-        }
-
-        if (parsed.length === 0) {
-          setError("No valid data rows found in CSV");
-          setLoading(false);
-          return;
-        }
-
-        setCSVResults(parsed);
-        setShowCSVImport(true);
-        setSuccess(`Parsed ${parsed.length} results from CSV. Ready to import!`);
-      } catch (err) {
-        setError("Failed to parse CSV: " + err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  const confirmCSVImport = async () => {
-    if (csvResults.length === 0) {
-      setError("No results to import");
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const token = getToken();
-      const response = await fetch(
-        `/api/results/admin/bulk-import`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({ results: csvResults })
-        }
-      );
-
-      const data = await response.json();
-      if (response.ok) {
-        setSuccess(`Successfully imported ${data.imported || data.created || csvResults.length} result(s)!`);
-        setShowCSVImport(false);
-        setCSVResults([]);
-        fetchResults();
-        document.getElementById('csvFileInput').value = '';
-      } else {
-        setError(data.error || "Failed to import results");
-      }
-    } catch (err) {
-      setError("Failed to import results: " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const resetForm = () => {
     setFormData({
@@ -733,107 +611,6 @@ const ResultsManagement = ({ user }) => {
   if (!user || user.role !== "admin") {
     return <div style={{ padding: "40px", textAlign: "center" }}>Access denied - Admin only</div>;
   }
-
-  // CSV Import Modal Component
-  const CSVImportModal = () => {
-    if (!showCSVImport) return null;
-    return (
-      <div style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: "rgba(0,0,0,0.7)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1001
-      }}>
-        <div style={{
-          background: "white",
-          borderRadius: "12px",
-          padding: "30px",
-          maxWidth: "700px",
-          maxHeight: "80vh",
-          overflow: "auto",
-          boxShadow: "0 10px 40px rgba(0,0,0,0.3)"
-        }}>
-          <h2 style={{ marginTop: 0 }}>📊 CSV Import Preview</h2>
-          <p style={{ color: "#666", marginBottom: "20px" }}>
-            Review the {csvResults.length} result(s) parsed from your CSV file below. Click "Import All" to add them to the system.
-          </p>
-
-          {csvResults.length > 0 && (
-            <div style={{
-              border: "1px solid #e0e0e0",
-              borderRadius: "8px",
-              overflow: "auto",
-              marginBottom: "20px",
-              maxHeight: "400px",
-            }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
-                <thead style={{ background: "#f8f9fa", position: "sticky", top: 0 }}>
-                  <tr>
-                    <th style={{ padding: "10px", textAlign: "left", borderBottom: "2px solid #e0e0e0" }}>#</th>
-                    <th style={{ padding: "10px", textAlign: "left", borderBottom: "2px solid #e0e0e0" }}>Student Name</th>
-                    <th style={{ padding: "10px", textAlign: "left", borderBottom: "2px solid #e0e0e0" }}>Admission #</th>
-                    <th style={{ padding: "10px", textAlign: "left", borderBottom: "2px solid #e0e0e0" }}>Class</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {csvResults.map((result, idx) => (
-                    <tr key={idx} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                      <td style={{ padding: "10px" }}>{idx + 1}</td>
-                      <td style={{ padding: "10px" }}>{result.studentName}</td>
-                      <td style={{ padding: "10px" }}>{result.admissionNumber}</td>
-                      <td style={{ padding: "10px" }}>{result.class} {result.stream}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-            <button
-              onClick={() => {
-                setShowCSVImport(false);
-                setCSVResults([]);
-              }}
-              disabled={loading}
-              style={{
-                padding: "10px 20px",
-                background: "#ccc",
-                color: "#333",
-                border: "none",
-                borderRadius: "6px",
-                cursor: loading ? "not-allowed" : "pointer",
-                fontWeight: "600"
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={confirmCSVImport}
-              disabled={loading || csvResults.length === 0}
-              style={{
-                padding: "10px 20px",
-                background: loading || csvResults.length === 0 ? "#ccc" : "#28a745",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                cursor: loading || csvResults.length === 0 ? "not-allowed" : "pointer",
-                fontWeight: "600"
-              }}
-            >
-              {loading ? "Importing..." : "✓ Import All"}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   // Preview Modal Component
   const PreviewModal = () => {
@@ -1047,6 +824,7 @@ const ResultsManagement = ({ user }) => {
             onClick={() => {
               setShowForm(!showForm);
               setShowPdfUpload(false);
+              setShowBulkImport(false);
               if (!showForm) {
                 setEditingResult(null);
                 resetForm();
@@ -1070,6 +848,7 @@ const ResultsManagement = ({ user }) => {
             onClick={() => {
               setShowPdfUpload(!showPdfUpload);
               setShowForm(false);
+              setShowBulkImport(false);
               if (!showPdfUpload) {
                 setEditingResult(null);
                 resetForm();
@@ -1091,11 +870,9 @@ const ResultsManagement = ({ user }) => {
 
           <button
             onClick={() => {
-              const fileInput = document.createElement("input");
-              fileInput.type = "file";
-              fileInput.accept = ".csv";
-              fileInput.onchange = handleCSVImport;
-              fileInput.click();
+              setShowBulkImport(!showBulkImport);
+              setShowForm(false);
+              setShowPdfUpload(false);
             }}
             style={{
               padding: "12px 24px",
@@ -1108,7 +885,7 @@ const ResultsManagement = ({ user }) => {
               cursor: "pointer"
             }}
           >
-            📥 Import from CSV
+            {showBulkImport ? "✖ Cancel" : "📤 Bulk CSV Import"}
           </button>
         </div>
       </div>
@@ -1788,6 +1565,13 @@ const ResultsManagement = ({ user }) => {
         </div>
       )}
 
+      {/* Bulk CSV Import Panel */}
+      {showBulkImport && (
+        <div style={{ marginBottom: "30px" }}>
+          <ResultsBulkUpload />
+        </div>
+      )}
+
       {/* Filters */}
       <div style={{
         display: "flex",
@@ -2093,7 +1877,6 @@ const ResultsManagement = ({ user }) => {
       {/* Render modals */}
       <PreviewModal />
       <TemplateManager />
-      <CSVImportModal />
       </div>
     </div>
   );
