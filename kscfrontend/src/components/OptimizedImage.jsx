@@ -64,7 +64,7 @@ export default function OptimizedImage({
         <picture>
           {/* WebP source for modern browsers */}
           {webpSrc && !hasError && (
-            <source srcSet={webpSrc} type="image/webp" />
+            <source srcSet={encodeURI(webpSrc)} type="image/webp" />
           )}
           
           {/* Original format as fallback */}

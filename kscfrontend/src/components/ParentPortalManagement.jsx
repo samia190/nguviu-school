@@ -234,7 +234,7 @@ export default function ParentPortalManagement({ user }) {
                       <ul style={styles.studentList}>
                         {parent.linkedStudents.map((student, sidx) => (
                           <li key={sidx} style={styles.studentItem}>
-                            <span>{student.name || student}</span>
+                            <span>{typeof student === 'object' ? (student.name || [student.firstName, student.lastName].filter(Boolean).join(' ') || student.admissionNumber || student._id) : student}</span>
                             <button
                               onClick={() => handleRevokeAccess(student._id || student, parent._id)}
                               style={styles.revokeButton}
