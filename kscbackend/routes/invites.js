@@ -101,10 +101,12 @@ function serializeInvite(invite) {
   const now = new Date();
   const expired = invite.expiresAt < now;
   const exhausted = invite.maxUses !== null && invite.useCount >= invite.maxUses;
+  const frontendUrl = (process.env.FRONTEND_URL || "").replace(/\/$/, "");
 
   return {
     id: invite._id,
     token: invite.token,
+    url: `${frontendUrl}/signup#invite=${invite.token}`,
     linkType: invite.linkType,
     role: invite.role,
     label: invite.label,

@@ -25,14 +25,6 @@ function copyToClipboard(text) {
   }
 }
 
-function buildInviteUrl(token) {
-  // Use hash fragment (#invite=TOKEN) instead of query string so Render's CDN
-  // only ever sees the path "/signup" — hash is never sent to the server,
-  // preventing CDN 404 caching for unique token URLs.
-  const base = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
-  return `${base}/signup#invite=${token}`;
-}
-
 export default function InviteManagement() {
   const [invites, setInvites] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -100,7 +92,7 @@ export default function InviteManagement() {
   }
 
   function handleCopy(invite) {
-    copyToClipboard(buildInviteUrl(invite.token));
+    copyToClipboard(invite.url);
     setCopiedId(invite.id);
     setTimeout(() => setCopiedId(null), 2000);
   }
@@ -178,7 +170,7 @@ export default function InviteManagement() {
       ) : (
         invites.map((inv) => {
           const type = typeInfo(inv.linkType);
-          const url = buildInviteUrl(inv.token);
+          const url = inv.url;
           const isCopied = copiedId === inv.id;
           const statusColor = inv.isValid ? "#16a34a" : "#dc2626";
           const statusLabel = inv.revoked ? "Revoked" : inv.expired ? "Expired" : inv.exhausted ? "Exhausted" : "Active";
