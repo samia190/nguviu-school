@@ -162,8 +162,8 @@ function UploadForm({ curriculum }) {
             <p style={{ fontWeight: 600, fontSize: "14px", marginBottom: "6px" }}>📥 Download CSV Template</p>
             <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "12px" }}>
               {isCBC
-                ? <>First column: <strong>admissionNumber</strong>. Then one column per learning area with values <strong>EE / ME / AE / BE</strong>. Add or remove subjects freely. No position column — CBC doesn't rank students.</>
-                : <>First column: <strong>admissionNumber</strong>. Then subject columns with marks <strong>0–100</strong>. Optional: <strong>position</strong>, <strong>outOf</strong>, <strong>teacherRemarks</strong>. Grades are auto-calculated.</>
+                ? <>First column: <strong>admissionNumber</strong>. Then one column per learning area with values <strong>EE / ME / AE / BE</strong>. <strong>Add any extra learning area columns</strong> in Excel — the system will pick them up automatically. No position column (CBC doesn't rank students).</>
+                : <>First column: <strong>admissionNumber</strong>. Then subject columns with marks <strong>0–100</strong>. <strong>Add, remove, or rename subject columns freely</strong> in Excel — every column that isn't <em>admissionNumber / position / outOf / teacherRemarks / stream</em> is treated as a subject automatically. Grades are calculated from marks.</>
               }
             </p>
             <button style={btnSecondary} onClick={() => isCBC
