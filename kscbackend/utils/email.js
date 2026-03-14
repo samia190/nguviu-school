@@ -9,23 +9,21 @@ export async function sendEmail(to, subject, text, html) {
     throw new Error(`Email not configured — SMTP_USER and SMTP_PASS must be set (SMTP_USER=${user || 'missing'})`);
   }
 
-  console.log(`[email] Attempting send to ${to} via ${user}`);
+  const host = process.env.SMTP_HOST || "smtp-relay.brevo.com";
+  const port = Number(process.env.SMTP_PORT || 587);
+  console.log(`[email] Connecting to ${host}:${port} as ${user}`);
 
-  // Use nodemailer's built-in 'gmail' service config:
-  // - port 465, secure SSL (avoids port 587 which cloud providers often block)
-  // - Gmail app password auth (not OAuth2)
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host,
+    port,
+    secure: false, // STARTTLS on 587
     auth: { user, pass },
-    // Give up after 20s — Gmail on cloud can be slow on first connection
     connectionTimeout: 20000,
     greetingTimeout: 20000,
     socketTimeout: 20000,
   });
 
-  // Gmail requires From to match the authenticated account
   const from = process.env.SMTP_FROM || user;
-
   const info = await transporter.sendMail({ from, to, subject, text, html });
   console.log(`[email] sent to ${to} — messageId: ${info.messageId}`);
   return info;

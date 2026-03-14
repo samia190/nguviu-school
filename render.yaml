@@ -42,7 +42,7 @@ services:
       - key: CLOUDINARY_FOLDER
         value: kangaru
       - key: SMTP_HOST
-        value: smtp.gmail.com
+        value: smtp-relay.brevo.com
       - key: SMTP_PORT
         value: "587"
       - key: SMTP_SECURE
@@ -50,9 +50,9 @@ services:
       - key: SMTP_FROM
         value: mukundisam19@gmail.com
       - key: SMTP_USER
-        sync: false  # Set in Render dashboard: mukundisam19@gmail.com
+        sync: false  # Set in Render dashboard: your Brevo login email
       - key: SMTP_PASS
-        sync: false  # Set in Render dashboard: Gmail app password (16 chars, no spaces)
+        sync: false  # Set in Render dashboard: Brevo SMTP key (from Account > SMTP & API)
 
   # ── Frontend (Static Site) ─────────────────────────────────
   - type: web
