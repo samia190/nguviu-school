@@ -54,7 +54,7 @@ services:
 
   # ── Frontend (Static Site) ─────────────────────────────────
   - type: web
-    name: kangarugirlsschool-sc-ke
+    name: kangarugirlsseniorschool-sc-ke
     env: static
     region: oregon
     plan: free

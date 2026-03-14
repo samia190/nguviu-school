@@ -199,24 +199,23 @@ export default function AdminDashboard({ user }) {
     { key: "magazine", label: "Magazine", icon: "📖", color: "#6366f1" },
     { key: "newsletters", label: "Newsletters", icon: "📰", color: "#06b6d4" },
     { key: "parents", label: "Parents", icon: "👨‍👩‍👧", color: "#e11d48" },
+    { key: "parentPortal", label: "Parent Portal", icon: "🏠", color: "#3b82f6" },
     { key: "performance", label: "Performance", icon: "📊", color: "#f97316" },
     { key: "policies", label: "Policies", icon: "📋", color: "#84cc16" },
     { key: "users", label: "Registered Users", icon: "👥", color: "#6366f1" },
     { key: "roles", label: "Roles", icon: "👥", color: "#ec4899" },
+    { key: "staff", label: "Staff", icon: "👔", color: "#7c3aed" },
     { key: "studentAdmin", label: "Student Admin", icon: "🛠️", color: "#8b5cf6" },
     { key: "studentLife", label: "Student Life", icon: "🎓", color: "#059669" },
     { key: "students", label: "Student Page", icon: "🎓", color: "#0891b2" },
     { key: "submissions", label: "Submissions", icon: "📬", color: "#8b5cf6" },
-    // NOTE: The sections below require additional setup (SMTP + student data) before enabling.
-    // Uncomment when ready:
+    // NOTE: The sections below require additional setup before enabling:
     // { key: "studentResults", label: "Student Results", icon: "📊", color: "#06b6d4" },
     // { key: "analytics", label: "Analytics Dashboard", icon: "📈", color: "#8b5cf6" },
-    // { key: "parentPortal", label: "Parent Portal", icon: "👨‍👩‍👧", color: "#3b82f6" },
     // { key: "engagement", label: "Engagement Campaigns", icon: "📧", color: "#10b981" },
     // Hidden until needed:
     // { key: "heroContent", label: "Hero Content (Legacy)", icon: "🎬", color: "#f43f5e" },
     // { key: "pagebackground", label: "Backgrounds", icon: "🎨", color: "#db2777" },
-    // { key: "staff", label: "Staff", icon: "👔", color: "#7c3aed" },
   ];
 
   const subSections = [
