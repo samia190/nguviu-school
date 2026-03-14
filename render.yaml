@@ -42,15 +42,17 @@ services:
       - key: CLOUDINARY_FOLDER
         value: kangaru
       - key: SMTP_HOST
-        sync: false
+        value: smtp.gmail.com
       - key: SMTP_PORT
         value: "587"
       - key: SMTP_SECURE
         value: "false"
+      - key: SMTP_FROM
+        value: mukundisam19@gmail.com
       - key: SMTP_USER
-        sync: false
+        sync: false  # Set in Render dashboard: mukundisam19@gmail.com
       - key: SMTP_PASS
-        sync: false
+        sync: false  # Set in Render dashboard: Gmail app password (16 chars, no spaces)
 
   # ── Frontend (Static Site) ─────────────────────────────────
   - type: web
