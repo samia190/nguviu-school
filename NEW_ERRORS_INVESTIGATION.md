@@ -7,7 +7,7 @@ Your app is **now running the latest code** (MOF_E.PNG, SignUp fixes applied), b
 ---
 
 ## ERROR 1: `TypeError: can't access property "currentTarget", o is undefined`
-
+#
 ### What's Happening
 ```
 Uncaught TypeError: can't access property "currentTarget", o is undefined
