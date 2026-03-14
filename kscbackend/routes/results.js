@@ -1198,6 +1198,28 @@ function calcSubjectGrade(marks) {
 }
 function calcOverallGrade(avg) { return calcSubjectGrade(avg); }
 
+// ─── CBC competency helpers ───────────────────────────────────────────────────
+// Accepts short (EE/ME/AE/BE) or long form, returns canonical short form or null
+const CBC_ALIASES = {
+  'EE': 'EE', 'EXCEEDING EXPECTATIONS': 'EE', 'EXCEEDING': 'EE',
+  'ME': 'ME', 'MEETING EXPECTATIONS': 'ME', 'MEETING': 'ME',
+  'AE': 'AE', 'APPROACHING EXPECTATIONS': 'AE', 'APPROACHING': 'AE',
+  'BE': 'BE', 'BELOW EXPECTATIONS': 'BE', 'BELOW': 'BE'
+};
+const CBC_FULL = { EE: 'Exceeding Expectations', ME: 'Meeting Expectations', AE: 'Approaching Expectations', BE: 'Below Expectations' };
+// Scale to 0-100 for compatibility with performance analysis maths
+const CBC_SCORE = { EE: 100, ME: 75, AE: 50, BE: 25 };
+// Map average score back to competency label
+function scoreToCompetency(avg) {
+  if (avg >= 87.5) return 'EE';
+  if (avg >= 62.5) return 'ME';
+  if (avg >= 37.5) return 'AE';
+  return 'BE';
+}
+function parseCBCLevel(val) {
+  return CBC_ALIASES[(val || '').toString().trim().toUpperCase()] || null;
+}
+
 // Simple CSV parser (handles quoted fields + CRLF)
 function parseCSV(text) {
   const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n');
@@ -1216,10 +1238,12 @@ function parseCSV(text) {
 
 // CSV bulk import (ADMIN only)
 // Body: { csv: "...", term, year, examType, curriculum }
-// CSV columns: admissionNumber, [position], [outOf], [teacherRemarks], SubjectName1, SubjectName2, ...
+// 8-4-4 columns: admissionNumber, [subjects with 0-100 marks], [position], [outOf], [teacherRemarks]
+// CBC columns:   admissionNumber, [subjects with EE/ME/AE/BE], [teacherRemarks]
 router.post("/admin/csv-import", requireRole('admin'), async (req, res) => {
   try {
     const { csv, term, year, examType = 'End of Term', curriculum = '8-4-4' } = req.body;
+    const isCBC = curriculum === 'CBC';
 
     if (!csv || !term || !year) {
       return res.status(400).json({ error: "csv, term and year are required" });
@@ -1247,7 +1271,7 @@ router.post("/admin/csv-import", requireRole('admin'), async (req, res) => {
 
     for (let ri = 1; ri < rows.length; ri++) {
       const row = rows[ri];
-      if (row.every(v => !v)) continue; // skip blank lines
+      if (row.every(v => !v)) continue;
 
       const admissionNumber = row[admIdx];
       if (!admissionNumber) { errors.push({ row: ri + 1, error: 'Missing admissionNumber' }); continue; }
@@ -1272,26 +1296,57 @@ router.post("/admin/csv-import", requireRole('admin'), async (req, res) => {
           continue;
         }
 
-        const subjects = subjectCols
-          .filter(({ i }) => row[i] !== '' && !isNaN(parseFloat(row[i])))
-          .map(({ h, i }) => {
-            const marks = Math.min(100, Math.max(0, parseFloat(row[i])));
-            return { subjectName: h, marks, grade: calcSubjectGrade(marks) };
-          });
+        let subjects, totalMarks, averageMarks, overallGrade;
 
-        if (subjects.length === 0) {
-          errors.push({ row: ri + 1, admissionNumber, error: 'No valid subject marks found' });
-          continue;
+        if (isCBC) {
+          // ── CBC: parse competency levels ──────────────────────────────
+          subjects = subjectCols
+            .map(({ h, i }) => {
+              const level = parseCBCLevel(row[i]);
+              if (!level) return null;
+              return {
+                subjectName: h,
+                marks: CBC_SCORE[level],
+                grade: level,
+                competencyLevel: CBC_FULL[level],
+                remarks: CBC_FULL[level]
+              };
+            })
+            .filter(Boolean);
+
+          if (subjects.length === 0) {
+            errors.push({ row: ri + 1, admissionNumber, error: 'No valid competency levels found (use EE, ME, AE or BE)' });
+            continue;
+          }
+
+          totalMarks = subjects.reduce((s, sub) => s + sub.marks, 0);
+          averageMarks = parseFloat((totalMarks / subjects.length).toFixed(2));
+          const overallLevel = scoreToCompetency(averageMarks);
+          overallGrade = overallLevel; // e.g. "ME"
+
+        } else {
+          // ── 8-4-4: parse numeric marks ────────────────────────────────
+          subjects = subjectCols
+            .filter(({ i }) => row[i] !== '' && !isNaN(parseFloat(row[i])))
+            .map(({ h, i }) => {
+              const marks = Math.min(100, Math.max(0, parseFloat(row[i])));
+              return { subjectName: h, marks, grade: calcSubjectGrade(marks) };
+            });
+
+          if (subjects.length === 0) {
+            errors.push({ row: ri + 1, admissionNumber, error: 'No valid subject marks found' });
+            continue;
+          }
+
+          totalMarks = subjects.reduce((s, sub) => s + sub.marks, 0);
+          averageMarks = parseFloat((totalMarks / subjects.length).toFixed(2));
+          overallGrade = calcOverallGrade(averageMarks);
         }
-
-        const totalMarks = subjects.reduce((s, sub) => s + sub.marks, 0);
-        const averageMarks = parseFloat((totalMarks / subjects.length).toFixed(2));
-        const overallGrade = calcOverallGrade(averageMarks);
 
         const posStr = getCol('position');
         const outOfStr = getCol('outOf');
-        const position = posStr ? parseInt(posStr) : undefined;
-        const outOf = outOfStr ? parseInt(outOfStr) : undefined;
+        const position = (!isCBC && posStr) ? parseInt(posStr) : undefined;
+        const outOf = (!isCBC && outOfStr) ? parseInt(outOfStr) : undefined;
 
         const result = new Result({
           studentId: student._id,
