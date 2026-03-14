@@ -178,10 +178,10 @@ router.post("/verify-and-fetch", requireAuth, async (req, res) => {
     return res.json({
       success: true,
       student: {
-        name: student.fullName,
+        name: student.name || student.fullName || `${student.firstName} ${student.lastName}`.trim(),
         admissionNumber: student.admissionNumber,
-        class: student.class,
-        stream: student.stream
+        class: student.class || student.stream || "",
+        stream: student.stream || ""
       },
       latestResult,
       results,
@@ -264,12 +264,13 @@ router.get("/:resultId", requireAuth, async (req, res) => {
 // Get all results (ADMIN only)
 router.get("/admin/all", requireRole('admin'), async (req, res) => {
   try {
-    const { term, year, published, page = 1, limit = 20 } = req.query;
+    const { term, year, published, curriculum, page = 1, limit = 20 } = req.query;
     
     const query = {};
     if (term) query.term = term;
     if (year) query.year = parseInt(year);
-    if (published !== undefined) query.published = published === 'true';
+    if (published !== undefined && published !== '') query.published = published === 'true';
+    if (curriculum) query.curriculum = curriculum;
     
     const pageNum = Math.max(1, parseInt(page));
     const pageLimit = Math.min(100, Math.max(1, parseInt(limit)));
@@ -304,11 +305,11 @@ router.post("/admin/create", requireRole('admin'), async (req, res) => {
   try {
     const resultData = req.body;
     
-    // Verify student exists
-    const student = await Student.findOne({ 
-      admissionNumber: resultData.admissionNumber 
-    });
-    
+    // Verify student exists (check Student collection first, then User collection)
+    let student = await Student.findOne({ admissionNumber: resultData.admissionNumber });
+    if (!student) {
+      student = await User.findOne({ admissionNumber: resultData.admissionNumber, role: "student" });
+    }
     if (!student) {
       return res.status(404).json({ 
         error: "Student not found with admission number: " + resultData.admissionNumber 
@@ -407,9 +408,12 @@ router.post("/admin/upload-pdf", requireRole('admin'), upload.single('pdf'), asy
       assessmentNumber
     } = req.body;
 
-    // Verify student exists
-    const student = await Student.findOne({ admissionNumber });
-    
+    // Verify student exists (check Student collection first, then User collection)
+    let student = await Student.findOne({ admissionNumber });
+    if (!student) {
+      student = await User.findOne({ admissionNumber, role: 'student' });
+    }
+
     if (!student) {
       // Delete uploaded file if student not found
       fs.unlinkSync(req.file.path);
@@ -421,7 +425,7 @@ router.post("/admin/upload-pdf", requireRole('admin'), upload.single('pdf'), asy
     // Create result with PDF reference
     const result = new Result({
       admissionNumber,
-      studentName: studentName || student.fullName,
+      studentName: studentName || student.name || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.fullName,
       class: student.class,
       stream: student.stream,
       assessmentNumber: assessmentNumber || student.assessmentNumber,
@@ -622,8 +626,10 @@ router.post("/admin/bulk-import", requireRole('admin'), async (req, res) => {
         });
 
         // Perform performance analysis
-        await analyzePerformance(newResult);
-        
+        if (newResult.subjects && newResult.subjects.length > 0) {
+          const perf = await analyzePerformance(student._id, newResult);
+          Object.assign(newResult, perf);
+        }
         await newResult.save();
         importedResults.push(newResult._id);
 
@@ -1279,7 +1285,10 @@ router.post("/admin/csv-import", requireRole('admin'), async (req, res) => {
       const getCol = name => { const idx = headers.indexOf(name); return idx !== -1 ? row[idx] : ''; };
 
       try {
-        const student = await Student.findOne({ admissionNumber });
+        let student = await Student.findOne({ admissionNumber });
+        if (!student) {
+          student = await User.findOne({ admissionNumber, role: 'student' });
+        }
         if (!student) {
           errors.push({ row: ri + 1, admissionNumber, error: 'Student not found' });
           continue;
@@ -1351,7 +1360,7 @@ router.post("/admin/csv-import", requireRole('admin'), async (req, res) => {
         const result = new Result({
           studentId: student._id,
           admissionNumber,
-          studentName: `${student.firstName} ${student.lastName}`.trim(),
+          studentName: student.name || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.fullName,
           class: student.class,
           stream: getCol('stream') || student.stream,
           term,

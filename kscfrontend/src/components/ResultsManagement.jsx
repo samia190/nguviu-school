@@ -75,6 +75,7 @@ const ResultsManagement = ({ user }) => {
       if (filters.term) params.append("term", filters.term);
       if (filters.year) params.append("year", filters.year);
       if (filters.published) params.append("published", filters.published);
+      if (filters.curriculum) params.append("curriculum", filters.curriculum);
       params.append("page", pagination.page);
       params.append("limit", pagination.limit);
 

@@ -11,7 +11,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.get("/list/simple", requireRole(['admin']), async (req, res) => {
   try {
     const students = await Student.find({ status: "Active" })
-      .select("_id admissionNumber firstName lastName class stream")
+      .select("_id admissionNumber firstName lastName class stream assessmentNumber")
       .sort({ class: 1, admissionNumber: 1 });
     
     res.json(students);
