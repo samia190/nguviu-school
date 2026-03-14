@@ -12,9 +12,7 @@ import StudentProfile from "../models/StudentProfile.js";
 import TeacherProfile from "../models/TeacherProfile.js";
 import StaffProfile from "../models/StaffProfile.js";
 import ParentProfile from "../models/ParentProfile.js";
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const { sendEmail } = require('../utils/email-sender-fallback.js');
+import { sendEmail } from "../utils/email.js";
 import { uploadBuffer } from "../utils/storage.js";
 // ========== MEDIA OPTIMIZATION ==========
 import { optimizeMedia, mediaFileFilter } from "../middleware/mediaOptimizer.js";
