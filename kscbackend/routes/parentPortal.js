@@ -2,7 +2,6 @@
 // Parent Portal System - Email-based access to student results
 import express from "express";
 import crypto from "crypto";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Result from "../models/Result.js";
 import Student from "../models/Student.js";
@@ -28,9 +27,10 @@ router.post("/admin/generate-parent-link", requireRole('admin'), async (req, res
       return res.status(404).json({ error: "Student not found" });
     }
 
-    // Generate unique parent access token
+    // Generate unique parent access token — SHA-256 is instant and secure enough
+    // for a link-delivered token (never typed by a human, no brute-force risk)
     const accessToken = crypto.randomBytes(32).toString('hex');
-    const accessTokenHash = await bcrypt.hash(accessToken, 10);
+    const accessTokenHash = crypto.createHash('sha256').update(accessToken).digest('hex');
 
     // Check if parent record exists, if not create it
     let parentUser = await User.findOne({ 
@@ -39,12 +39,12 @@ router.post("/admin/generate-parent-link", requireRole('admin'), async (req, res
     });
 
     if (!parentUser) {
-      // Parents authenticate via token link, not password, but passwordHash is required by schema
-      const randomPasswordHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
+      // Use a fixed placeholder hash — parent authenticates via token link, not password
+      const placeholderPasswordHash = crypto.createHash('sha256').update('parent-no-password-' + parentEmail).digest('hex');
       parentUser = new User({
         email: parentEmail.toLowerCase(),
         name: `Parent of ${student.name}`,
-        passwordHash: randomPasswordHash,
+        passwordHash: placeholderPasswordHash,
         role: 'parent',
         accessTokenHash,
         accessTokenExpires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
@@ -97,23 +97,21 @@ router.post("/admin/generate-parent-link", requireRole('admin'), async (req, res
       </div>
     `;
 
-    try {
-      await sendEmail(
-        parentEmail,
-        `Your Child's Results Access - KANGARU GIRLS`,
-        `You have been given access to ${student.name}'s results. Click this link to access: ${accessLink}`,
-        emailHtml
-      );
-    } catch (emailError) {
-      console.error("Email send error:", emailError);
-    }
-
-    return res.json({
+    // Respond immediately — don't wait for email (Gmail SMTP adds 1-3s delay)
+    res.json({
       message: "Parent access link generated and sent to email",
       parentEmail: parentEmail.toLowerCase(),
       student: student.name,
       expiresIn: "30 days"
     });
+
+    // Fire-and-forget email after response is sent
+    sendEmail(
+      parentEmail,
+      `Your Child's Results Access - KANGARU GIRLS`,
+      `You have been given access to ${student.name}'s results. Click this link to access: ${accessLink}`,
+      emailHtml
+    ).catch(emailError => console.error("Email send error:", emailError));
 
   } catch (err) {
     console.error("Generate parent link error:", err);
@@ -148,8 +146,9 @@ router.post("/parent-login", async (req, res) => {
       return res.status(401).json({ error: "Access token has expired" });
     }
 
-    // Verify token
-    const tokenValid = await bcrypt.compare(token, parent.accessTokenHash);
+    // Verify token — SHA-256 comparison (matches generation above)
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const tokenValid = tokenHash === parent.accessTokenHash;
     if (!tokenValid) {
       return res.status(401).json({ error: "Invalid access token" });
     }
