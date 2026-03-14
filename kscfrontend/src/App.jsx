@@ -195,6 +195,62 @@ function MenuButton({ route, setRoute, setLoading, user }) {
 }
 
 // Helper: Get route from URL path
+// ── Per-route SEO metadata ────────────────────────────────────────────────────
+const BASE_URL = "https://kangarugirlsseniorschool-sc-ke.onrender.com";
+const OG_IMAGE = `${BASE_URL}/header/logo-new.png`;
+const SITE_NAME = "Kangaru Girls Senior School";
+
+const ROUTE_META = {
+  home:        { title: "Kangaru Girls Senior School – Excellence in Education", description: "A leading girls' school in Embu, Kenya, offering quality education, comprehensive curriculum, and excellent facilities." },
+  about:       { title: "About Us – Kangaru Girls Senior School",               description: "Learn about Kangaru Girls Senior School's history, mission, vision, staff and values." },
+  admissions:  { title: "Admissions – Kangaru Girls Senior School",              description: "Apply for admission at Kangaru Girls Senior School. Find requirements, procedures and important dates." },
+  events:      { title: "Events – Kangaru Girls Senior School",                  description: "Stay up to date with the latest events and activities at Kangaru Girls Senior School." },
+  feestructure:{ title: "Fee Structure – Kangaru Girls Senior School",           description: "View the current fee structure and payment details for Kangaru Girls Senior School." },
+  curriculum:  { title: "Curriculum – Kangaru Girls Senior School",              description: "Explore the 8-4-4 and CBC curricula offered at Kangaru Girls Senior School." },
+  performance: { title: "Academic Performance – Kangaru Girls Senior School",    description: "View KCSE results, mean scores and historical performance data for Kangaru Girls Senior School." },
+  policies:    { title: "School Policies – Kangaru Girls Senior School",         description: "Read the school rules, policies and guidelines for Kangaru Girls Senior School." },
+  parents:     { title: "Parents & Guardians – Kangaru Girls Senior School",     description: "Information and resources for parents and guardians of Kangaru Girls Senior School students." },
+  "student-life": { title: "Student Life – Kangaru Girls Senior School",         description: "Discover clubs, sports, and co-curricular activities at Kangaru Girls Senior School." },
+  gallery:     { title: "Gallery – Kangaru Girls Senior School",                 description: "Photos and memories from Kangaru Girls Senior School." },
+  newsletter:  { title: "Newsletter – Kangaru Girls Senior School",              description: "Read the latest news and newsletters from Kangaru Girls Senior School." },
+  contact:     { title: "Contact Us – Kangaru Girls Senior School",              description: "Get in touch with Kangaru Girls Senior School. Find our address, phone number and email." },
+  legal:       { title: "Legal – Kangaru Girls Senior School",                   description: "Legal information, terms of use and privacy policy for Kangaru Girls Senior School." },
+};
+
+function updatePageMeta(route) {
+  const mainRoute = route.split("/")[0];
+  const meta = ROUTE_META[mainRoute] || ROUTE_META.home;
+  const canonical = mainRoute === "home" ? BASE_URL + "/" : `${BASE_URL}/${mainRoute}`;
+
+  // Title
+  document.title = meta.title;
+
+  const setMeta = (selector, attr, value) => {
+    let el = document.querySelector(selector);
+    if (el) el.setAttribute(attr, value);
+  };
+  const setLink = (rel, value) => {
+    let el = document.querySelector(`link[rel="${rel}"]`);
+    if (!el) { el = document.createElement("link"); el.rel = rel; document.head.appendChild(el); }
+    el.href = value;
+  };
+
+  // Standard
+  setMeta('meta[name="description"]',    "content", meta.description);
+  // Canonical
+  setLink("canonical", canonical);
+  // OG
+  setMeta('meta[property="og:title"]',       "content", meta.title);
+  setMeta('meta[property="og:description"]', "content", meta.description);
+  setMeta('meta[property="og:url"]',         "content", canonical);
+  setMeta('meta[property="og:image"]',       "content", OG_IMAGE);
+  // Twitter
+  setMeta('meta[name="twitter:title"]',       "content", meta.title);
+  setMeta('meta[name="twitter:description"]', "content", meta.description);
+  setMeta('meta[name="twitter:url"]',         "content", canonical);
+  setMeta('meta[name="twitter:image"]',       "content", OG_IMAGE);
+}
+
 function getRouteFromPath() {
   const path = window.location.pathname;
   // Remove leading slash and return route, default to "home" for root
@@ -264,6 +320,9 @@ export default function App() {
     // After each navigation Header/MenuButton sets loading=true; clear it now that
     // the new page component has rendered.
     requestAnimationFrame(() => setLoading(false));
+
+    // Update canonical URL, page title, and OG/Twitter meta for the current route
+    updatePageMeta(route);
 
     // Keep window helpers in sync with current route
     window.__routeStack = window.__routeStack || [];

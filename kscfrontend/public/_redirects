@@ -1,3 +1,8 @@
+# Static files — must come BEFORE the SPA catch-all
+# Without these, the /* rule would serve index.html instead of the XML/txt files
+/sitemap.xml   /sitemap.xml   200
+/robots.txt    /robots.txt    200
+
 # SPA routing — redirect all non-file routes to index.html
 # This allows React Router to handle all URLs
 /*    /index.html   200
