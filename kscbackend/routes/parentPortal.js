@@ -61,8 +61,10 @@ router.post("/admin/generate-parent-link", requireRole('admin'), async (req, res
 
     await parentUser.save();
 
-    // Create access link
-    const accessLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/#/parent-login?token=${accessToken}&email=${encodeURIComponent(parentEmail)}`;
+    // Create access link — use hash fragment so Render CDN always sees /parent-login
+    // and never caches a 404 for the unique token URL
+    const frontendBase = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
+    const accessLink = `${frontendBase}/parent-login#token=${accessToken}&email=${encodeURIComponent(parentEmail)}`;
 
     // Send email to parent
     const emailHtml = `

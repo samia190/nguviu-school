@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { post, saveToken } from "../utils/api";
 
+function parseHashParams() {
+  // Reads token and email from hash fragment, e.g. /parent-login#token=abc&email=x@y.com
+  const hash = window.location.hash.replace(/^#/, '');
+  const params = new URLSearchParams(hash);
+  return { email: params.get('email') || '', token: params.get('token') || '' };
+}
+
 export default function ParentLogin({ onAuth, navigate }) {
-  const params = new URLSearchParams(window.location.search);
-  const [email, setEmail] = useState(params.get('email') || '');
-  const [token, setToken] = useState(params.get('token') || '');
+  const { email: hashEmail, token: hashToken } = parseHashParams();
+  const [email, setEmail] = useState(hashEmail);
+  const [token, setToken] = useState(hashToken);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
