@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { get, post, saveToken } from "../utils/api";
 
+function friendlySignupError(err) {
+  if (!err?.status) return "Cannot connect to server. Please check your internet connection.";
+  if (err.status === 409) return "An account with this email already exists. Try logging in instead.";
+  if (err.status === 410) return err.body?.error || "This invite link is no longer valid.";
+  if (err.status === 400) return err.body?.error || "Please check your details and try again.";
+  if (err.status === 429) return "Too many attempts. Please wait a moment before trying again.";
+  if (err.status >= 500) return "Server error. Please try again in a moment.";
+  return err.body?.error || "Registration failed. Please try again.";
+}
+
 export default function SignUp({ onAuth, navigate }) {
   const [inviteToken, setInviteToken] = useState(null);
   const [inviteInfo, setInviteInfo] = useState(null);
@@ -98,7 +108,7 @@ export default function SignUp({ onAuth, navigate }) {
         setStatus("Failed to create account. Please try again.");
       }
     } catch (err) {
-      setStatus(err.message || "Registration failed");
+      setStatus(friendlySignupError(err));
     }
   }
 

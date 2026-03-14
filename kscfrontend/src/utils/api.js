@@ -87,7 +87,7 @@ async function apiFetch(url, options = {}) {
   }
 
   if (!res.ok) {
-    const err = new Error(`${data?.error || res.statusText || "Request failed"} (url: ${resolvedUrl})`);
+    const err = new Error(data?.error || res.statusText || "Request failed");
     err.status = res.status;
     err.body = data;
     err.url = resolvedUrl;

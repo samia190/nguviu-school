@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { post } from "../utils/api";
 
+function friendlyLoginError(err) {
+  if (!err?.status) return "Cannot connect to server. Please check your internet connection and try again.";
+  if (err.status === 401) return "Incorrect email or password. Please try again.";
+  if (err.status === 400) return err.body?.error || "Please enter both your email and password.";
+  if (err.status === 429) return "Too many attempts. Please wait a moment before trying again.";
+  if (err.status >= 500) return "Server error. Please try again in a moment.";
+  return err.body?.error || "Login failed. Please try again.";
+}
+
 export default function Login({ onAuth, navigate }) {
   const [status, setStatus] = useState("");
   const [remember, setRemember] = useState(false);
@@ -43,7 +52,7 @@ export default function Login({ onAuth, navigate }) {
         setStatus("Login failed");
       }
     } catch (err) {
-      setStatus(err.message || "Error occurred");
+      setStatus(friendlyLoginError(err));
     }
   }
 
@@ -87,7 +96,13 @@ export default function Login({ onAuth, navigate }) {
         setResetStatus("");
       }, 3000);
     } catch (err) {
-      setResetStatus(err.message || "Failed to send reset link");
+      if (!err?.status) {
+        setResetStatus("Cannot connect to server. Please check your internet connection.");
+      } else if (err.status >= 500) {
+        setResetStatus("Server error. Please try again in a moment.");
+      } else {
+        setResetStatus(err.body?.error || "Failed to send reset link. Please try again.");
+      }
     }
   }
 
