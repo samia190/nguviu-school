@@ -87,12 +87,14 @@ const COMMON_SUBJECTS = [
  * Extract text from PDF buffer
  * Basic implementation - for better results, install pdf-parse: npm install pdf-parse
  */
-export async function extractTextFromPDF(pdfPath) {
+export async function extractTextFromPDF(pdfPathOrBuffer) {
   try {
     // Try to use pdf-parse if available
     try {
       const pdfParse = (await import('pdf-parse')).default;
-      const dataBuffer = fs.readFileSync(pdfPath);
+      const dataBuffer = Buffer.isBuffer(pdfPathOrBuffer)
+        ? pdfPathOrBuffer
+        : fs.readFileSync(pdfPathOrBuffer);
       const data = await pdfParse(dataBuffer);
       return data.text;
     } catch (e) {

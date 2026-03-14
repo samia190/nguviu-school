@@ -33,7 +33,10 @@ if (isCloudinaryEnabled()) {
 async function uploadToCloudinary(buffer, filename, mimetype) {
   const safeName = filename.replace(/\s+/g, "_").replace(/\.[^.]+$/, "");
   const folder = process.env.CLOUDINARY_FOLDER || "kangaru";
-  const resourceType = mimetype?.startsWith("video/") ? "video" : "image";
+  let resourceType;
+  if (mimetype?.startsWith("video/")) resourceType = "video";
+  else if (mimetype === "application/pdf" || mimetype?.startsWith("application/")) resourceType = "raw";
+  else resourceType = "image";
 
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(

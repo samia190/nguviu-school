@@ -5,36 +5,18 @@ import Student from "../models/Student.js";
 import User from "../models/User.js";
 import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { uploadBuffer, deleteFile } from "../utils/storage.js";
 import { performCompleteAnalysis } from "../utils/performanceAnalysis.js";
 import { extractResultFromPDF } from "../utils/pdfExtraction.js";
 
 const router = express.Router();
 
-// Configure multer for PDF uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(process.cwd(), "public", "results");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
-    cb(null, "result-" + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
+// Multer memory storage — files held in buffer, uploaded to Cloudinary
 const upload = multer({
-  storage: storage,
+  storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === "application/pdf") {
-      cb(null, true);
-    } else {
-      cb(new Error("Only PDF files are allowed"));
-    }
+    if (file.mimetype === "application/pdf") cb(null, true);
+    else cb(new Error("Only PDF files are allowed"));
   },
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
@@ -415,12 +397,13 @@ router.post("/admin/upload-pdf", requireRole('admin'), upload.single('pdf'), asy
     }
 
     if (!student) {
-      // Delete uploaded file if student not found
-      fs.unlinkSync(req.file.path);
       return res.status(404).json({ 
         error: "Student not found with admission number: " + admissionNumber 
       });
     }
+
+    // Upload PDF to Cloudinary
+    const uploaded = await uploadBuffer(req.file.buffer, req.file.originalname, req.file.mimetype);
 
     // Create result with PDF reference
     const result = new Result({
@@ -437,7 +420,7 @@ router.post("/admin/upload-pdf", requireRole('admin'), upload.single('pdf'), asy
       averageMarks: parseFloat(averageMarks) || 0,
       totalMarks: 0,
       subjects: [],
-      uploadedPdfUrl: `/results/${req.file.filename}`,
+      uploadedPdfUrl: uploaded.url,
       uploadedPdfFilename: req.file.originalname,
       isUploadedPdf: true,
       studentId: student._id,
@@ -455,15 +438,6 @@ router.post("/admin/upload-pdf", requireRole('admin'), upload.single('pdf'), asy
 
   } catch (err) {
     console.error("Upload PDF error:", err);
-    console.error("Error stack:", err.stack);
-    // Clean up uploaded file on error
-    if (req.file) {
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch (e) {
-        console.error("Failed to delete file:", e);
-      }
-    }
     return res.status(500).json({ 
       error: "Failed to upload PDF result",
       details: process.env.NODE_ENV === 'development' ? err.stack : undefined
@@ -683,18 +657,19 @@ router.post("/admin/extract-pdf", requireRole('admin'), upload.single('pdf'), as
       return res.status(400).json({ error: "No PDF file uploaded" });
     }
 
-    // Extract data from PDF
-    const extractionResult = await extractResultFromPDF(req.file.path);
-    
-    // Keep the file for later use
-    const pdfUrl = `/results/${req.file.filename}`;
-    
+    // Extract data from the in-memory buffer
+    const extractionResult = await extractResultFromPDF(req.file.buffer);
+
+    // Upload PDF to Cloudinary so URL persists across deploys
+    const uploaded = await uploadBuffer(req.file.buffer, req.file.originalname, req.file.mimetype);
+    const pdfUrl = uploaded.url;
+
     return res.json({
       success: true,
       extraction: extractionResult,
       pdfUrl,
       pdfFilename: req.file.originalname,
-      message: extractionResult.confidence === 'high' 
+      message: extractionResult.confidence === 'high'
         ? 'Data extracted successfully with high confidence'
         : extractionResult.confidence === 'medium'
         ? 'Data extracted with medium confidence. Please verify.'
@@ -703,14 +678,6 @@ router.post("/admin/extract-pdf", requireRole('admin'), upload.single('pdf'), as
 
   } catch (err) {
     console.error("PDF extraction error:", err);
-    // Clean up uploaded file on error
-    if (req.file) {
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch (e) {
-        console.error("Failed to delete file:", e);
-      }
-    }
     return res.status(500).json({ 
       error: "Failed to extract data from PDF"
     });
