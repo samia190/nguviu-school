@@ -108,7 +108,7 @@ router.post("/admin/generate-parent-link", requireRole('admin'), async (req, res
           `You have been given access to ${student.name}'s results. Click this link to access: ${accessLink}`,
           emailHtml
         ),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Email timeout after 6s")), 6000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Email timeout after 25s")), 25000))
       ]);
       emailSent = true;
     } catch (err) {
