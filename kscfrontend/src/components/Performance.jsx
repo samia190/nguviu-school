@@ -157,13 +157,13 @@ export default function Performance() {
   if (!data) return null;
 
   return (
-    <section style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 20px", background: "#fff" }}>
+    <section className="perf-page" style={{ maxWidth: 1200, margin: "0 auto", padding: "clamp(16px, 4vw, 40px) clamp(12px, 3vw, 20px)", background: "#fff" }}>
       {/* ===== Header ===== */}
       <div
         style={{
           textAlign: "center",
-          marginBottom: 50,
-          paddingBottom: 30,
+          marginBottom: "clamp(20px, 4vw, 50px)",
+          paddingBottom: "clamp(14px, 3vw, 30px)",
           borderBottom: "3px solid #667eea",
         }}
       >
@@ -390,7 +390,7 @@ export default function Performance() {
             📈 Mean Score Trend
           </h3>
 
-          <ResponsiveContainer width="100%" height={320}>
+          <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={sortedResults} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="meanScoreGrad" x1="0" y1="0" x2="0" y2="1">
@@ -441,7 +441,7 @@ export default function Performance() {
             Green ≥ 8.0 (B-) · Blue ≥ 7.0 (C+) · Amber &lt; 7.0
           </p>
 
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={240}>
             <BarChart data={barChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis dataKey="year" stroke="#6b7280" fontSize={13} fontWeight={600} />

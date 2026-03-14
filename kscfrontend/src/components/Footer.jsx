@@ -289,11 +289,10 @@ export default function Footer() {
               style={{
                 listStyle: "none",
                 padding: 0,
-                margin: 29,
+                margin: 0,
                 lineHeight: 1.8,
-                fontSize: 18,
+                fontSize: 15,
                 fontWeight: "bold",
-                marginleft:23
               }}
             >
               {safeList(links.quickLinks, defaultLinks.quickLinks).map((item) => (

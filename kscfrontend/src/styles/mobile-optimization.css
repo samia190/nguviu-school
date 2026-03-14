@@ -281,18 +281,11 @@
   }
 }
 
-/* Padding & margins responsive */
+/* Performance page — compact section cards on mobile */
 @media (max-width: 768px) {
-  [style*="padding: 30px"] {
-    padding: 15px !important;
-  }
-  
-  [style*="padding: 20px"] {
-    padding: 15px !important;
-  }
-  
-  [style*="margin-bottom: 30px"] {
-    margin-bottom: 15px !important;
+  .perf-page > div {
+    padding: clamp(14px, 3vw, 28px) !important;
+    margin-bottom: clamp(16px, 3vw, 36px) !important;
   }
 }
 

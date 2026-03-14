@@ -161,19 +161,12 @@ button:focus,a:focus,input:focus,textarea:focus{outline:2px solid #4f46e5;outlin
   div > section{padding:0 8px !important}
   div > h1{font-size:1.5rem !important;margin:12px 8px !important}
   
-  /* General mobile optimizations for all pages */
-  h1{font-size:1.5rem !important}
-  h2{font-size:1.3rem !important}
-  h3{font-size:1.1rem !important}
-  p{font-size:0.9rem}
-  
   /* Tables responsive */
   table{font-size:0.85rem}
   th, td{padding:6px 4px}
   
-  /* Forms responsive */
+  /* Forms responsive — font-size only, padding handled by mobile-optimization.css */
   input, textarea, select{font-size:0.9rem;padding:8px}
-  button{font-size:0.9rem;padding:8px 12px}
   
   /* Images full width on mobile */
   img{max-width:100%;height:auto}
