@@ -43,8 +43,8 @@ export default function ResetPassword({ navigate }) {
 
   // Extract token and email from URL hash
   useEffect(() => {
-    const hash = window.location.hash;
-    const params = new URLSearchParams(hash.split('?')[1]);
+    const hash = window.location.hash.replace(/^#/, '');
+    const params = new URLSearchParams(hash);
     const tokenParam = params.get('token');
     const emailParam = params.get('email');
     

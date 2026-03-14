@@ -270,7 +270,8 @@ router.post("/forgot-password", async (req, res) => {
     if (!process.env.FRONTEND_URL && process.env.NODE_ENV === 'production') {
       console.error('[Auth] CRITICAL: FRONTEND_URL environment variable is not set. Password reset emails will contain localhost URLs that will not work in production. Set FRONTEND_URL in your deployment environment.');
     }
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/#/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+    const frontendBase = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
+    const resetUrl = `${frontendBase}/reset-password#token=${resetToken}&email=${encodeURIComponent(email)}`;
 
     // Send email
     const emailText = `You requested a password reset. Click the link below to reset your password:\n\n${resetUrl}\n\nThis link will expire in 1 hour.\n\nIf you didn't request this, please ignore this email.`;
