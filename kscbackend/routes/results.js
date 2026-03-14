@@ -4,6 +4,7 @@ import Result from "../models/Result.js";
 import Student from "../models/Student.js";
 import User from "../models/User.js";
 import { requireAuth, requireRole } from "../middleware/requireAuth.js";
+import { verifyLimiter } from "../middleware/rateLimiter.js";
 import multer from "multer";
 import { uploadBuffer, deleteFile } from "../utils/storage.js";
 import { performCompleteAnalysis } from "../utils/performanceAnalysis.js";
@@ -51,7 +52,7 @@ async function analyzePerformance(studentId, currentResult) {
 }
 
 // Verify student and get their results (STUDENT only)
-router.post("/verify-and-fetch", requireAuth, async (req, res) => {
+router.post("/verify-and-fetch", verifyLimiter, requireAuth, async (req, res) => {
   try {
     // Only students can access this
     if (req.user.role !== "student") {
@@ -87,8 +88,7 @@ router.post("/verify-and-fetch", requireAuth, async (req, res) => {
     
     if (inputName !== dbName) {
       return res.status(401).json({ 
-        error: "Verification failed: Name does not match our records.",
-        details: `Expected: "${studentFullName}" but got: "${studentName}". Please check the spelling and try again.`,
+        error: "Verification failed: Name does not match our records. Please check the spelling and try again.",
         field: "name"
       });
     }
@@ -108,8 +108,7 @@ router.post("/verify-and-fetch", requireAuth, async (req, res) => {
     
     if (inputDate.toDateString() !== studentDOBDate.toDateString()) {
       return res.status(401).json({ 
-        error: "Verification failed: Date of birth does not match our records.",
-        details: `Expected: ${studentDOBDate.toDateString()} but got: ${inputDate.toDateString()}. Please check and try again.`,
+        error: "Verification failed: Date of birth does not match our records. Please check and try again.",
         field: "dateOfBirth"
       });
     }
@@ -370,10 +369,10 @@ router.post("/admin/create", requireRole('admin'), async (req, res) => {
 // Upload PDF result (ADMIN only)
 router.post("/admin/upload-pdf", requireRole('admin'), upload.single('pdf'), async (req, res) => {
   try {
-    console.log("PDF Upload request received");
-    console.log("File:", req.file);
-    console.log("Body:", req.body);
-    
+    if (process.env.NODE_ENV !== 'production') {
+      console.log("PDF Upload request received", { filename: req.file?.originalname, bodyKeys: Object.keys(req.body) });
+    }
+
     if (!req.file) {
       return res.status(400).json({ error: "No PDF file uploaded" });
     }

@@ -19,4 +19,34 @@ export const authLimiter = rateLimit({
   }
 });
 
+// Rate limiter for student verification / parent token exchange
+// 10 requests per 15 minutes per IP
+export const verifyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => process.env.NODE_ENV === "development",
+  handler: (req, res) => {
+    res.status(429).json({
+      error: "Too many verification attempts. Please try again in 15 minutes."
+    });
+  }
+});
+
+// Rate limiter for public contact/submission forms
+// 5 submissions per 15 minutes per IP
+export const formLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => process.env.NODE_ENV === "development",
+  handler: (req, res) => {
+    res.status(429).json({
+      error: "Too many form submissions. Please try again in 15 minutes."
+    });
+  }
+});
+
 export default authLimiter;

@@ -16,7 +16,8 @@ router.get('/public', async (req, res) => {
     if (category) filter.category = category;
 
     const performances = await SchoolPerformance.find(filter)
-      .sort({ year: -1, displayOrder: 1, createdAt: -1 });
+      .sort({ year: -1, displayOrder: 1, createdAt: -1 })
+      .limit(200);
 
     res.json({
       success: true,

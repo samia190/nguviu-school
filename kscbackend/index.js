@@ -54,7 +54,20 @@ const app = express();
 // Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
-  contentSecurityPolicy: false, // Disable if causing issues, configure properly for production
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://lh3.googleusercontent.com"],
+      mediaSrc: ["'self'", "https://res.cloudinary.com"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
 }));
 
 // Compression middleware (Gzip/Brotli)
@@ -100,8 +113,8 @@ app.use(
 console.log("CORS allowed origins:", allowedOrigins.length ? allowedOrigins : "(all)");
 
 // Body parser with larger limits for file uploads
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Ensure static folders exist and are ready for use
 const uploadsDir = path.join(process.cwd(), "public", "uploads");
@@ -208,8 +221,22 @@ await connectToDatabase().then((connected) => {
 // Export dbConnected flag so routes can optionally check it
 export { dbConnected };
 
-// Health check route
-app.get("/api/health", (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
+// Health check route — returns 503 when database is unreachable
+app.get("/api/health", (req, res) => {
+  const dbReady = getDbConnected();
+  if (!dbReady) {
+    return res.status(503).json({ ok: false, db: false, time: new Date().toISOString() });
+  }
+  res.json({ ok: true, db: true, time: new Date().toISOString() });
+});
+
+// 404 handler for unmatched API routes
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: "Not found" });
+  }
+  next();
+});
 
 // Global error handler - MUST be last, catches any errors thrown by routes
 app.use((err, req, res, next) => {
@@ -217,9 +244,7 @@ app.use((err, req, res, next) => {
   console.error("Message:", err.message);
   console.error("Stack:", err.stack);
   res.status(err.status || 500).json({ 
-    error: "Internal Server Error",
-    path: req.path,
-    method: req.method
+    error: "Internal Server Error"
   });
 });
 

@@ -4,6 +4,7 @@ import path from "path";
 import File from "../models/File.js";
 import { uploadBuffer } from "../utils/storage.js";
 import { requireRole } from "../middleware/requireAuth.js";
+import { formLimiter } from "../middleware/rateLimiter.js";
 // ========== MEDIA OPTIMIZATION ==========
 import { optimizeMedia, mediaFileFilter } from "../middleware/mediaOptimizer.js";
 
@@ -22,7 +23,7 @@ const upload = multer({
 // POST /api/submit-form
 // fields: name, email, phone, classLevel
 // files: applicationForm (pdf), image (profile)
-router.post("/", upload.fields([ { name: "applicationForm", maxCount: 1 }, { name: "image", maxCount: 1 } ]), optimizeMedia(), async (req, res) => {
+router.post("/", formLimiter, upload.fields([ { name: "applicationForm", maxCount: 1 }, { name: "image", maxCount: 1 } ]), optimizeMedia(), async (req, res) => {
   try {
     const { name, email, phone, classLevel } = req.body || {};
     const files = req.files || {};

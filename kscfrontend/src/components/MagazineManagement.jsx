@@ -80,7 +80,7 @@ export default function MagazineManagement({ user }) {
     console.log(`Uploading ${type}:`, file.name, `Size: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
 
     const token = localStorage.getItem("token");
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+    const apiUrl = import.meta.env.VITE_API_URL || '';
     const uploadUrl = `${apiUrl}/api/files/upload`;
     
     console.log('Upload URL:', uploadUrl);
@@ -181,7 +181,7 @@ export default function MagazineManagement({ user }) {
       
       // Submit magazine data
       const token = localStorage.getItem("token");
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      const apiUrl = import.meta.env.VITE_API_URL || '';
       const response = await fetch(`${apiUrl}/api/school-magazine`, {
         method: "POST",
         headers: {
@@ -239,7 +239,7 @@ export default function MagazineManagement({ user }) {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/school-magazine/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/school-magazine/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: token ? `Bearer ${token}` : "",

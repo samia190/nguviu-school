@@ -931,7 +931,7 @@ const StudentResults = ({ user }) => {
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
               {latestResult.isUploadedPdf && latestResult.uploadedPdfUrl && (
                 <a
-                  href={`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/${latestResult.uploadedPdfUrl}`}
+                  href={latestResult.uploadedPdfUrl.startsWith('http') ? latestResult.uploadedPdfUrl : `${import.meta.env.VITE_API_URL || ''}/${latestResult.uploadedPdfUrl}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -1124,7 +1124,7 @@ const StudentResults = ({ user }) => {
                 <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                   {result.isUploadedPdf && result.uploadedPdfUrl && (
                     <a
-                      href={`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/${result.uploadedPdfUrl}`}
+                      href={result.uploadedPdfUrl.startsWith('http') ? result.uploadedPdfUrl : `${import.meta.env.VITE_API_URL || ''}/${result.uploadedPdfUrl}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{

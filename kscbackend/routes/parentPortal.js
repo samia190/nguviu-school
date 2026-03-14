@@ -2,14 +2,26 @@
 // Parent Portal System - Email-based access to student results
 import express from "express";
 import crypto from "crypto";
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Result from "../models/Result.js";
 import Student from "../models/Student.js";
 import User from "../models/User.js";
 import { sendEmail } from "../utils/email.js";
 import { requireAuth, requireRole } from "../middleware/requireAuth.js";
+import { verifyLimiter } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
+
+// Escape user-supplied strings before interpolating into HTML email bodies
+function escHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
 
 // ===== PARENT PORTAL MANAGEMENT =====
 
@@ -39,8 +51,8 @@ router.post("/admin/generate-parent-link", requireRole('admin'), async (req, res
     });
 
     if (!parentUser) {
-      // Use a fixed placeholder hash — parent authenticates via token link, not password
-      const placeholderPasswordHash = crypto.createHash('sha256').update('parent-no-password-' + parentEmail).digest('hex');
+      // Parent authenticates via token link, not password — use a random unhashable placeholder
+      const placeholderPasswordHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
       parentUser = new User({
         email: parentEmail.toLowerCase(),
         name: `Parent of ${student.name}`,
@@ -71,7 +83,7 @@ router.post("/admin/generate-parent-link", requireRole('admin'), async (req, res
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #667eea;">📊 Access Your Child's Results</h2>
         <p>Hello,</p>
-        <p>You have been given access to view <strong>${student.name}</strong>'s academic results and performance on the KANGARU GIRLS portal.</p>
+        <p>You have been given access to view <strong>${escHtml(student.name)}</strong>'s academic results and performance on the KANGARU GIRLS portal.</p>
         <p>Click the link below to access the parent portal:</p>
         <div style="text-align: center; margin: 30px 0;">
           <a href="${accessLink}" style="
@@ -136,7 +148,7 @@ router.post("/admin/generate-parent-link", requireRole('admin'), async (req, res
 });
 
 // Parent login with token
-router.post("/parent-login", async (req, res) => {
+router.post("/parent-login", verifyLimiter, async (req, res) => {
   try {
     const { email, token } = req.body;
 
@@ -504,7 +516,7 @@ router.post("/admin/bulk-generate-links", requireRole('admin'), async (req, res)
 
       let parentUser = await User.findOne({ email: parentEmail, role: 'parent' });
       if (!parentUser) {
-        const placeholderHash = crypto.createHash('sha256').update('parent-no-password-' + parentEmail).digest('hex');
+        const placeholderHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
         parentUser = new User({
           email: parentEmail,
           name: `Parent of ${result.studentName}`,
