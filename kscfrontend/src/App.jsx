@@ -77,6 +77,11 @@ function MenuButton({ route, setRoute, setLoading, user }) {
     { key: "legal", label: "Legal", icon: "⚖️" },
     { key: "newsletter", label: "Newsletter", icon: "📰" },
     { key: "contact", label: "Contact", icon: "📞" },
+    // Auth: show Login / Sign Up only when not logged in
+    ...(!user ? [
+      { key: "login", label: "Log In", icon: "🔑" },
+      { key: "signup", label: "Sign Up", icon: "✍️" },
+    ] : []),
     // Homework portal: only visible to students, teachers, and admins
     ...(user && (user.role === "student" || user.role === "teacher" || user.role === "admin") ? [
       { key: "portal/homework", label: "Homework Portal", icon: "📚" }

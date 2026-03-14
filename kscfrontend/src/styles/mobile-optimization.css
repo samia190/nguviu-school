@@ -303,40 +303,28 @@
     flex-direction: column;
     gap: 8px !important;
   }
-  
   .button-group button {
     width: 100% !important;
   }
-  
-  [style*="display: flex"] [style*="gap: 15px"] button {
-    flex: 1 !important;
-    min-width: 0 !important;
-  }
 }
 
-/* Input fields touch-friendly */
+/* Input fields touch-friendly — form controls only, not icon/nav buttons */
 @media (max-width: 768px) {
-  input, select, textarea, button {
-    min-height: 44px !important; /* Apple touch target minimum */
-    min-width: 44px !important;
+  input, select, textarea {
+    min-height: 44px !important; /* Apple HIG touch-target minimum */
   }
-  
   label {
     font-size: 14px !important;
     font-weight: 600 !important;
   }
 }
 
-/* Prevent horizontal scroll */
-@media (max-width: 768px) {
-  body {
-    overflow-x: hidden !important;
-  }
-  
-  div {
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-  }
+/* Prevent horizontal scroll — clip on body only.
+   Using overflow-x:hidden on ANY div creates a new scroll container
+   which breaks window.scrollTo(0,0) on route changes (page appears
+   to start from footer instead of top). */
+body {
+  overflow-x: clip;
 }
 
 /* Specific component optimizations */
@@ -590,5 +578,30 @@
 }
 @media (max-width: 480px) {
   .page-section { padding: 12px 0; }
+}
+
+/* ── HOME PAGE RESPONSIVE LAYOUT ───────────────────────────────────────── */
+
+/* Stack quick-links column above news widget on tablet/mobile */
+@media (max-width: 768px) {
+  .home-layout {
+    flex-direction: column !important;
+    gap: 16px !important;
+    padding: 0 12px !important;
+    margin: 16px auto !important;
+  }
+}
+
+/* Quick-links child card grid: 2-col on phones, 1-col on tiny phones */
+@media (max-width: 768px) {
+  .home-ql-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+}
+@media (max-width: 380px) {
+  .home-ql-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 

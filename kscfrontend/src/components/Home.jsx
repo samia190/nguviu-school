@@ -200,6 +200,7 @@ export default function Home({ user, setRoute }) {
 
       {/* ===== MAIN CONTENT + SIDEBAR ===== */}
       <div
+        className="home-layout"
         style={{
           display: "flex",
           gap: "30px",
@@ -224,9 +225,10 @@ export default function Home({ user, setRoute }) {
 
                   {/* Child containers grid */}
                   <div
+                    className="home-ql-grid"
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(min(48%, 140px), 1fr))",
                       gap: "20px",
                     }}
                   >

@@ -299,7 +299,7 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
 
         /* Logo — default (mobile-first, smallest) */
         .header-logo { width: 34px !important; height: 34px !important; }
-        .header-school-name { font-size: 10px !important; max-width: 130px; }
+        .header-school-name { font-size: 10px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
         .header-tagline { display: none !important; }
 
         /* >=481px: show tagline, slightly larger logo */
