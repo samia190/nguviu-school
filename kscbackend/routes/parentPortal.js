@@ -97,21 +97,37 @@ router.post("/admin/generate-parent-link", requireRole('admin'), async (req, res
       </div>
     `;
 
-    // Respond immediately — don't wait for email (Gmail SMTP adds 1-3s delay)
-    res.json({
-      message: "Parent access link generated and sent to email",
+    // Try email with a 6s timeout — fast enough to include result in response
+    let emailSent = false;
+    let emailError = null;
+    try {
+      await Promise.race([
+        sendEmail(
+          parentEmail,
+          `Your Child's Results Access - KANGARU GIRLS`,
+          `You have been given access to ${student.name}'s results. Click this link to access: ${accessLink}`,
+          emailHtml
+        ),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Email timeout after 6s")), 6000))
+      ]);
+      emailSent = true;
+    } catch (err) {
+      emailError = err.message;
+      console.error("[email] Failed to send parent access link:", err.message);
+    }
+
+    // Always return the link so admin can share it manually if email fails
+    return res.json({
+      message: emailSent
+        ? "Parent access link generated and sent to email"
+        : "Parent access link generated (email delivery failed — share link manually)",
       parentEmail: parentEmail.toLowerCase(),
       student: student.name,
+      accessLink,
+      emailSent,
+      emailError: emailError || undefined,
       expiresIn: "30 days"
     });
-
-    // Fire-and-forget email after response is sent
-    sendEmail(
-      parentEmail,
-      `Your Child's Results Access - KANGARU GIRLS`,
-      `You have been given access to ${student.name}'s results. Click this link to access: ${accessLink}`,
-      emailHtml
-    ).catch(emailError => console.error("Email send error:", emailError));
 
   } catch (err) {
     console.error("Generate parent link error:", err);

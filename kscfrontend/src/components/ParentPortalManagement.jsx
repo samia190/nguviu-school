@@ -5,6 +5,7 @@ export default function ParentPortalManagement({ user }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [generatedLink, setGeneratedLink] = useState(null);
   
   // Generate parent access form
   const [formData, setFormData] = useState({
@@ -69,7 +70,18 @@ export default function ParentPortalManagement({ user }) {
         parentEmail: formData.parentEmail.toLowerCase()
       });
 
-      setSuccess(`✅ Parent access link sent to ${formData.parentEmail}`);
+      setGeneratedLink({
+        url: response.accessLink,
+        email: formData.parentEmail,
+        emailSent: response.emailSent,
+        emailError: response.emailError
+      });
+
+      if (response.emailSent) {
+        setSuccess(`✅ Parent access link sent to ${formData.parentEmail}`);
+      } else {
+        setSuccess(`⚠️ Link generated but email failed — copy and share manually`);
+      }
       setFormData({ studentId: "", parentEmail: "", parentName: "" });
       
       // Refresh active parents list
@@ -115,6 +127,71 @@ export default function ParentPortalManagement({ user }) {
 
       {error && <div style={styles.error}>{error}</div>}
       {success && <div style={styles.success}>{success}</div>}
+
+      {generatedLink && (
+        <div style={{
+          background: generatedLink.emailSent ? "#f0fdf4" : "#fffbeb",
+          border: `1px solid ${generatedLink.emailSent ? "#86efac" : "#fcd34d"}`,
+          borderRadius: "8px",
+          padding: "16px",
+          marginBottom: "16px"
+        }}>
+          <p style={{ fontWeight: 600, marginBottom: "8px", fontSize: "14px" }}>
+            {generatedLink.emailSent
+              ? "📧 Email sent — link also shown here for your records:"
+              : "📋 Email failed — copy this link and share with the parent manually:"}
+          </p>
+          {generatedLink.emailError && (
+            <p style={{ color: "#dc2626", fontSize: "12px", marginBottom: "8px" }}>
+              Error: {generatedLink.emailError}
+            </p>
+          )}
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <input
+              readOnly
+              value={generatedLink.url}
+              style={{
+                flex: 1,
+                padding: "8px 10px",
+                border: "1px solid #d1d5db",
+                borderRadius: "6px",
+                fontSize: "12px",
+                fontFamily: "monospace",
+                background: "#fff"
+              }}
+              onFocus={e => e.target.select()}
+            />
+            <button
+              onClick={() => { navigator.clipboard.writeText(generatedLink.url); }}
+              style={{
+                padding: "8px 14px",
+                background: "#667eea",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "13px",
+                whiteSpace: "nowrap"
+              }}
+            >
+              Copy
+            </button>
+            <button
+              onClick={() => setGeneratedLink(null)}
+              style={{
+                padding: "8px 10px",
+                background: "#e5e7eb",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "13px"
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Generate Access Link Section */}
       <div style={styles.section}>
