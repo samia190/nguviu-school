@@ -6,6 +6,15 @@ export default function ParentPortalManagement({ user }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [generatedLink, setGeneratedLink] = useState(null);
+
+  // Bulk notify parents state
+  const [bulkConfig, setBulkConfig] = useState({
+    term: "Term 1",
+    year: new Date().getFullYear().toString(),
+    examType: "End of Term"
+  });
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkResult, setBulkResult] = useState(null);
   
   // Generate parent access form
   const [formData, setFormData] = useState({
@@ -352,6 +361,149 @@ export default function ParentPortalManagement({ user }) {
           <div style={styles.statNumber}>{students?.length || 0}</div>
           <div style={styles.statLabel}>Total Students</div>
         </div>
+      </div>
+
+      {/* ── Bulk Notify Parents ─────────────────────────────── */}
+      <div style={styles.section}>
+        <div style={styles.sectionHeader}>
+          <h3 style={styles.sectionTitle}>📣 Bulk Notify Parents</h3>
+        </div>
+        <p style={{ fontSize: "14px", color: "#64748b", marginBottom: "16px" }}>
+          Generate access links for all students in an exam at once. Uses the guardian email stored on each student record.
+        </p>
+
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
+          <div style={{ flex: 1, minWidth: "140px" }}>
+            <label style={{ fontSize: "13px", fontWeight: 600, display: "block", marginBottom: "4px" }}>Term</label>
+            <select
+              style={{ width: "100%", padding: "8px 10px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "14px" }}
+              value={bulkConfig.term}
+              onChange={e => setBulkConfig(c => ({ ...c, term: e.target.value }))}
+            >
+              <option>Term 1</option>
+              <option>Term 2</option>
+              <option>Term 3</option>
+            </select>
+          </div>
+          <div style={{ flex: 1, minWidth: "100px" }}>
+            <label style={{ fontSize: "13px", fontWeight: 600, display: "block", marginBottom: "4px" }}>Year</label>
+            <input
+              type="number" min="2020" max="2030"
+              style={{ width: "100%", padding: "8px 10px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "14px", boxSizing: "border-box" }}
+              value={bulkConfig.year}
+              onChange={e => setBulkConfig(c => ({ ...c, year: e.target.value }))}
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: "160px" }}>
+            <label style={{ fontSize: "13px", fontWeight: 600, display: "block", marginBottom: "4px" }}>Exam Type</label>
+            <select
+              style={{ width: "100%", padding: "8px 10px", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "14px" }}
+              value={bulkConfig.examType}
+              onChange={e => setBulkConfig(c => ({ ...c, examType: e.target.value }))}
+            >
+              <option>End of Term</option>
+              <option>Mid Term</option>
+              <option>Mock Exam</option>
+              <option>Final Exam</option>
+            </select>
+          </div>
+          <div style={{ display: "flex", alignItems: "flex-end" }}>
+            <button
+              disabled={bulkLoading}
+              onClick={async () => {
+                setBulkLoading(true);
+                setBulkResult(null);
+                try {
+                  const data = await post("/api/parent/admin/bulk-generate-links", {
+                    term: bulkConfig.term,
+                    year: parseInt(bulkConfig.year),
+                    examType: bulkConfig.examType
+                  });
+                  setBulkResult(data);
+                } catch (err) {
+                  setBulkResult({ error: err?.message || "Failed to generate links" });
+                } finally {
+                  setBulkLoading(false);
+                }
+              }}
+              style={{
+                padding: "9px 20px",
+                background: "linear-gradient(135deg, #667eea, #764ba2)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                cursor: bulkLoading ? "not-allowed" : "pointer",
+                fontWeight: 600,
+                fontSize: "14px",
+                whiteSpace: "nowrap"
+              }}
+            >
+              {bulkLoading ? "Generating..." : "🔗 Generate All Links"}
+            </button>
+          </div>
+        </div>
+
+        {bulkResult?.error && (
+          <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: "8px", padding: "12px", marginBottom: "12px", color: "#dc2626", fontSize: "14px" }}>
+            ❌ {bulkResult.error}
+          </div>
+        )}
+
+        {bulkResult && !bulkResult.error && (
+          <>
+            <div style={{ background: "#f0fdf4", border: "1px solid #86efac", borderRadius: "8px", padding: "12px", marginBottom: "16px", fontSize: "14px" }}>
+              ✅ <strong>{bulkResult.generated}</strong> link(s) generated · <strong>{bulkResult.skipped}</strong> skipped (no guardian email)
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                <thead>
+                  <tr style={{ background: "#f1f5f9" }}>
+                    {["Student", "Guardian", "Email / Phone", "Actions"].map(h => (
+                      <th key={h} style={{ padding: "9px 10px", textAlign: "left", borderBottom: "1px solid #e2e8f0", fontWeight: 600 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {bulkResult.links.map((item, i) => (
+                    <tr key={i} style={{ borderBottom: "1px solid #f1f5f9", background: item.skipped ? "#fffbeb" : "#fff" }}>
+                      <td style={{ padding: "8px 10px" }}>
+                        <div style={{ fontWeight: 600 }}>{item.studentName}</div>
+                        <div style={{ fontSize: "12px", color: "#94a3b8" }}>{item.admissionNumber}</div>
+                      </td>
+                      <td style={{ padding: "8px 10px" }}>{item.guardianName || "—"}</td>
+                      <td style={{ padding: "8px 10px" }}>
+                        <div>{item.guardianEmail || <span style={{ color: "#f59e0b" }}>No email</span>}</div>
+                        <div style={{ fontSize: "12px", color: "#64748b" }}>{item.guardianPhone}</div>
+                      </td>
+                      <td style={{ padding: "8px 10px" }}>
+                        {item.skipped ? (
+                          <span style={{ color: "#f59e0b", fontSize: "12px" }}>⚠️ {item.reason}</span>
+                        ) : (
+                          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                            <button
+                              onClick={() => navigator.clipboard.writeText(item.accessLink)}
+                              style={{ padding: "5px 10px", background: "#667eea", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontSize: "12px" }}
+                            >
+                              📋 Copy Link
+                            </button>
+                            <a
+                              href={item.whatsappUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ padding: "5px 10px", background: "#25d366", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontSize: "12px", textDecoration: "none", display: "inline-block" }}
+                            >
+                              💬 WhatsApp
+                            </a>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

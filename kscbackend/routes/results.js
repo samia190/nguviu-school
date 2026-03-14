@@ -1181,4 +1181,161 @@ router.get("/admin/analytics/year-over-year", requireRole('admin'), async (req, 
   }
 });
 
+// ─── Grade helpers (8-4-4 system) ────────────────────────────────────────────
+function calcSubjectGrade(marks) {
+  if (marks >= 75) return 'A';
+  if (marks >= 70) return 'A-';
+  if (marks >= 65) return 'B+';
+  if (marks >= 60) return 'B';
+  if (marks >= 55) return 'B-';
+  if (marks >= 50) return 'C+';
+  if (marks >= 45) return 'C';
+  if (marks >= 40) return 'C-';
+  if (marks >= 35) return 'D+';
+  if (marks >= 30) return 'D';
+  if (marks >= 25) return 'D-';
+  return 'E';
+}
+function calcOverallGrade(avg) { return calcSubjectGrade(avg); }
+
+// Simple CSV parser (handles quoted fields + CRLF)
+function parseCSV(text) {
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n');
+  return lines.map(line => {
+    const vals = [];
+    let cur = '', inQ = false;
+    for (const ch of line) {
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
+      else { cur += ch; }
+    }
+    vals.push(cur.trim());
+    return vals;
+  });
+}
+
+// CSV bulk import (ADMIN only)
+// Body: { csv: "...", term, year, examType, curriculum }
+// CSV columns: admissionNumber, [position], [outOf], [teacherRemarks], SubjectName1, SubjectName2, ...
+router.post("/admin/csv-import", requireRole('admin'), async (req, res) => {
+  try {
+    const { csv, term, year, examType = 'End of Term', curriculum = '8-4-4' } = req.body;
+
+    if (!csv || !term || !year) {
+      return res.status(400).json({ error: "csv, term and year are required" });
+    }
+
+    const rows = parseCSV(csv);
+    if (rows.length < 2) {
+      return res.status(400).json({ error: "CSV must have a header row and at least one data row" });
+    }
+
+    const headers = rows[0];
+    const RESERVED = new Set(['admissionNumber', 'position', 'outOf', 'teacherRemarks', 'stream']);
+    const subjectCols = headers.map((h, i) => ({ h, i })).filter(({ h }) => !RESERVED.has(h) && h !== 'admissionNumber');
+    const admIdx = headers.indexOf('admissionNumber');
+
+    if (admIdx === -1) {
+      return res.status(400).json({ error: "CSV must have an 'admissionNumber' column" });
+    }
+    if (subjectCols.length === 0) {
+      return res.status(400).json({ error: "CSV must have at least one subject column" });
+    }
+
+    const imported = [];
+    const errors = [];
+
+    for (let ri = 1; ri < rows.length; ri++) {
+      const row = rows[ri];
+      if (row.every(v => !v)) continue; // skip blank lines
+
+      const admissionNumber = row[admIdx];
+      if (!admissionNumber) { errors.push({ row: ri + 1, error: 'Missing admissionNumber' }); continue; }
+
+      const getCol = name => { const idx = headers.indexOf(name); return idx !== -1 ? row[idx] : ''; };
+
+      try {
+        const student = await Student.findOne({ admissionNumber });
+        if (!student) {
+          errors.push({ row: ri + 1, admissionNumber, error: 'Student not found' });
+          continue;
+        }
+
+        const existing = await Result.findOne({
+          admissionNumber,
+          term,
+          year: parseInt(year),
+          examType
+        });
+        if (existing) {
+          errors.push({ row: ri + 1, admissionNumber, error: `Result already exists for ${term} ${year}` });
+          continue;
+        }
+
+        const subjects = subjectCols
+          .filter(({ i }) => row[i] !== '' && !isNaN(parseFloat(row[i])))
+          .map(({ h, i }) => {
+            const marks = Math.min(100, Math.max(0, parseFloat(row[i])));
+            return { subjectName: h, marks, grade: calcSubjectGrade(marks) };
+          });
+
+        if (subjects.length === 0) {
+          errors.push({ row: ri + 1, admissionNumber, error: 'No valid subject marks found' });
+          continue;
+        }
+
+        const totalMarks = subjects.reduce((s, sub) => s + sub.marks, 0);
+        const averageMarks = parseFloat((totalMarks / subjects.length).toFixed(2));
+        const overallGrade = calcOverallGrade(averageMarks);
+
+        const posStr = getCol('position');
+        const outOfStr = getCol('outOf');
+        const position = posStr ? parseInt(posStr) : undefined;
+        const outOf = outOfStr ? parseInt(outOfStr) : undefined;
+
+        const result = new Result({
+          studentId: student._id,
+          admissionNumber,
+          studentName: `${student.firstName} ${student.lastName}`.trim(),
+          class: student.class,
+          stream: getCol('stream') || student.stream,
+          term,
+          year: parseInt(year),
+          examType,
+          curriculum,
+          dateOfBirth: student.dateOfBirth,
+          subjects,
+          totalMarks,
+          averageMarks,
+          overallGrade,
+          position,
+          outOf,
+          teacherRemarks: getCol('teacherRemarks') || undefined,
+          createdBy: req.user._id,
+          published: false
+        });
+
+        const perf = await analyzePerformance(student._id, result);
+        Object.assign(result, perf);
+        await result.save();
+
+        imported.push({ admissionNumber, studentName: result.studentName });
+      } catch (rowErr) {
+        errors.push({ row: ri + 1, admissionNumber, error: rowErr.message || 'Row failed' });
+      }
+    }
+
+    return res.json({
+      message: `Imported ${imported.length} result(s) successfully`,
+      imported: imported.length,
+      results: imported,
+      errors: errors.length > 0 ? errors : undefined
+    });
+
+  } catch (err) {
+    console.error("CSV import error:", err);
+    return res.status(500).json({ error: "Failed to import CSV" });
+  }
+});
+
 export default router;

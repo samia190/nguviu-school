@@ -464,6 +464,99 @@ router.get("/student/:studentId/recommendations", requireAuth, async (req, res) 
   }
 });
 
+// Bulk generate parent links for all students in an exam (ADMIN)
+// Body: { term, year, examType }
+// Uses guardianEmail from Student record — skips students without one
+router.post("/admin/bulk-generate-links", requireRole('admin'), async (req, res) => {
+  try {
+    const { term, year, examType = 'End of Term' } = req.body;
+    if (!term || !year) {
+      return res.status(400).json({ error: "term and year are required" });
+    }
+
+    // Find all results for this exam (only published ones so parents see actual data)
+    const results = await Result.find({ term, year: parseInt(year), examType }).lean();
+    if (results.length === 0) {
+      return res.status(404).json({ error: `No results found for ${term} ${year} ${examType}` });
+    }
+
+    const frontendBase = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
+    const links = [];
+
+    for (const result of results) {
+      const student = await Student.findById(result.studentId).lean();
+      const parentEmail = student?.guardianEmail?.toLowerCase().trim();
+
+      if (!parentEmail) {
+        links.push({
+          studentName: result.studentName,
+          admissionNumber: result.admissionNumber,
+          guardianName: student?.guardianName || '',
+          guardianPhone: student?.guardianPhone || '',
+          skipped: true,
+          reason: 'No guardian email on student record'
+        });
+        continue;
+      }
+
+      const accessToken = crypto.randomBytes(32).toString('hex');
+      const accessTokenHash = crypto.createHash('sha256').update(accessToken).digest('hex');
+
+      let parentUser = await User.findOne({ email: parentEmail, role: 'parent' });
+      if (!parentUser) {
+        const placeholderHash = crypto.createHash('sha256').update('parent-no-password-' + parentEmail).digest('hex');
+        parentUser = new User({
+          email: parentEmail,
+          name: `Parent of ${result.studentName}`,
+          passwordHash: placeholderHash,
+          role: 'parent',
+          accessTokenHash,
+          accessTokenExpires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          linkedStudents: [result.studentId]
+        });
+      } else {
+        if (!parentUser.linkedStudents.includes(result.studentId?.toString())) {
+          parentUser.linkedStudents.push(result.studentId);
+        }
+        parentUser.accessTokenHash = accessTokenHash;
+        parentUser.accessTokenExpires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      }
+      await parentUser.save();
+
+      const accessLink = `${frontendBase}/parent-login#token=${accessToken}&email=${encodeURIComponent(parentEmail)}`;
+      const whatsappText = encodeURIComponent(
+        `Dear ${student?.guardianName || 'Parent'}, ${result.studentName}'s results for ${term} ${year} are ready. View them here: ${accessLink}`
+      );
+
+      links.push({
+        studentName: result.studentName,
+        admissionNumber: result.admissionNumber,
+        guardianName: student?.guardianName || '',
+        guardianEmail: parentEmail,
+        guardianPhone: student?.guardianPhone || '',
+        accessLink,
+        whatsappUrl: `https://wa.me/?text=${whatsappText}`,
+        skipped: false
+      });
+    }
+
+    const generated = links.filter(l => !l.skipped).length;
+    const skipped = links.filter(l => l.skipped).length;
+
+    return res.json({
+      message: `Generated ${generated} link(s) — ${skipped} skipped (no guardian email)`,
+      total: links.length,
+      generated,
+      skipped,
+      links
+    });
+
+  } catch (err) {
+    console.error("Bulk generate links error:", err);
+    return res.status(500).json({ error: "Failed to bulk generate links" });
+  }
+});
+
 // Get all active parent accounts (ADMIN)
 router.get("/admin/active-parents", requireRole('admin'), async (req, res) => {
   try {

@@ -34,6 +34,7 @@ import UserList from "./admin/UserList";
 import DirectAccountCreate from "./admin/DirectAccountCreate";
 import ChatManagement from "./ChatManagement";
 import ResultsManagement from "./ResultsManagement";
+import ResultsBulkUpload from "./ResultsBulkUpload";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 import ParentPortalManagement from "./ParentPortalManagement";
 import EngagementCampaigns from "./EngagementCampaigns";
@@ -209,8 +210,8 @@ export default function AdminDashboard({ user }) {
     { key: "studentLife", label: "Student Life", icon: "🎓", color: "#059669" },
     { key: "students", label: "Student Page", icon: "🎓", color: "#0891b2" },
     { key: "submissions", label: "Submissions", icon: "📬", color: "#8b5cf6" },
+    { key: "studentResults", label: "Student Results", icon: "📊", color: "#06b6d4" },
     // NOTE: The sections below require additional setup before enabling:
-    // { key: "studentResults", label: "Student Results", icon: "📊", color: "#06b6d4" },
     // { key: "analytics", label: "Analytics Dashboard", icon: "📈", color: "#8b5cf6" },
     // { key: "engagement", label: "Engagement Campaigns", icon: "📧", color: "#10b981" },
     // Hidden until needed:
@@ -411,7 +412,12 @@ export default function AdminDashboard({ user }) {
         {activeSection === "chat" && <ChatManagement />}
 
         {/* Phase 2: Student Results Management */}
-        {activeSection === "studentResults" && <ResultsManagement />}
+        {activeSection === "studentResults" && (
+          <>
+            <ResultsBulkUpload />
+            <ResultsManagement />
+          </>
+        )}
 
         {/* Phase 3: Analytics Dashboard */}
         {activeSection === "analytics" && <AnalyticsDashboard />}
