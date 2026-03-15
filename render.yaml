@@ -64,7 +64,7 @@ services:
         value: text/xml; charset=utf-8
       - path: /sitemap.xml
         name: Cache-Control
-        value: public, max-age=3600, must-revalidate
+        value: no-cache, no-store, must-revalidate
       - path: /robots.txt
         name: Content-Type
         value: text/plain; charset=utf-8
