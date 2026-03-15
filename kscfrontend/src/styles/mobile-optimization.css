@@ -150,7 +150,7 @@
   /* Each news item card */
   .home-news-sidebar div[style*="padding: 15px"],
   .home-news-sidebar div[style*="padding:15px"] {
-    padding: 8px 6px !important;
+    padding: 6px 4px !important;
   }
   /* News title */
   .home-news-sidebar h4 {
@@ -169,10 +169,48 @@
   }
 }
 @media (max-width: 380px) {
-  /* Very tiny phones (≤380px): 2 columns, tightest gap */
+  /* ── 1080×2460 @ 3×DPR = 360px CSS: tightest layout ── */
+  /* Shrink sidebar to 34% to give quick-links a little more room */
+  .home-news-sidebar {
+    flex: 0 0 34% !important;
+    width: 34% !important;
+  }
+  /* Layout gap even tighter */
+  .home-layout {
+    gap: 5px !important;
+    padding: 0 4px !important;
+  }
+  /* Quick-link grid: tightest gap */
   .home-ql-grid {
     grid-template-columns: repeat(2, 1fr) !important;
+    gap: 5px !important;
+  }
+  /* Quick-link cards: minimal padding */
+  .home-ql-card {
+    padding: 8px 5px !important;
     gap: 6px !important;
+  }
+  .home-ql-card button {
+    font-size: 0.75rem !important;
+    padding: 6px 8px !important;
+  }
+  /* News widget: absolute minimum */
+  .home-news-sidebar > div {
+    padding: 8px 5px !important;
+  }
+  .home-news-sidebar h2 {
+    font-size: 10px !important;
+    margin-bottom: 8px !important;
+  }
+  .home-news-sidebar div[style*="padding: 15px"],
+  .home-news-sidebar div[style*="padding:15px"] {
+    padding: 5px 3px !important;
+  }
+  .home-news-sidebar h4 {
+    font-size: 10px !important;
+  }
+  .home-news-sidebar p {
+    font-size: 9px !important;
   }
 }
 
