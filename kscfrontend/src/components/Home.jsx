@@ -239,7 +239,7 @@ export default function Home({ user, setRoute }) {
                         key={idx}
                         style={{
                             background: "skyblue",
-                            padding: "20px",
+                            padding: "16px",
                             borderRadius: "8px",
                             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                             display: "flex",
@@ -257,13 +257,13 @@ export default function Home({ user, setRoute }) {
                             onClick={() => setRoute(section.key)}
                             style={{
                               marginTop: "auto",
-                              padding: "10px 16px",
+                              padding: "8px 12px",
                               background: "#667eea",
                               color: "white",
                               border: "none",
                               borderRadius: "4px",
                               cursor: "pointer",
-                              fontSize: "0.9rem",
+                              fontSize: "0.85rem",
                               fontWeight: "600",
                             }}
                           >
