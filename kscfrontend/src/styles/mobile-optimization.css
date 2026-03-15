@@ -373,6 +373,51 @@
   }
 }
 
+/* ── HOME PAGE ───────────────────────────────────────────────
+   Title, intro, quick-link cards, carousel buttons.
+   ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Title + intro block: less vertical padding on mobile */
+  .home-title-block {
+    padding: 20px 14px !important;
+  }
+  .home-title {
+    font-size: clamp(1.4rem, 5.5vw, 2rem) !important;
+    margin-bottom: 12px !important;
+  }
+  /* Quick-link child cards: tighter padding */
+  .home-ql-card {
+    padding: 14px 10px !important;
+    gap: 8px !important;
+  }
+  /* Carousel nav buttons: smaller, closer to edges */
+  .carousel-btn {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 18px !important;
+  }
+  .carousel-btn-prev {
+    left: 8px !important;
+  }
+  .carousel-btn-next {
+    right: 8px !important;
+  }
+}
+@media (max-width: 430px) {
+  /* Very narrow phones: stack layout already handled by existing rule.
+     Further tighten title + intro. */
+  .home-title-block {
+    padding: 14px 10px !important;
+  }
+  .home-title {
+    font-size: clamp(1.2rem, 5vw, 1.6rem) !important;
+  }
+  /* Cards: single column, full-width padding */
+  .home-ql-card {
+    padding: 12px 8px !important;
+  }
+}
+
 /* ── STUDENT PAGE ────────────────────────────────────────────
    Hero clamp, compact quick-links 2-col grid.
    ─────────────────────────────────────────────────────────── */

@@ -148,6 +148,7 @@ export default function HeroCarousel({
           {/* Previous button */}
           <button
             onClick={goToPrevious}
+            className="carousel-btn carousel-btn-prev"
             style={{
               position: "absolute",
               left: "20px",
@@ -177,6 +178,7 @@ export default function HeroCarousel({
           {/* Next button */}
           <button
             onClick={goToNext}
+            className="carousel-btn carousel-btn-next"
             style={{
               position: "absolute",
               right: "20px",

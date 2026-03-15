@@ -187,8 +187,8 @@ export default function Home({ user, setRoute }) {
       )}
 
       {/* ===== TITLE ===== */}
-      <div style={{ padding: "40px 20px", textAlign: "center", maxWidth: "1200px", margin: "0 auto" }}>
-        <h1 style={{ fontSize: "2.5rem", margin: "0 0 20px 0" }}>
+      <div className="home-title-block" style={{ padding: "40px 20px", textAlign: "center", maxWidth: "1200px", margin: "0 auto" }}>
+        <h1 className="home-title" style={{ fontSize: "2.5rem", margin: "0 0 20px 0" }}>
           {title || "WELCOME TO KANGARU GIRLS' SCHOOL"}
         </h1>
 
@@ -234,9 +234,10 @@ export default function Home({ user, setRoute }) {
                   >
                     {section.childContainers && section.childContainers.length > 0 ? (
                       section.childContainers.map((child, idx) => (
-                        <div
-                          key={idx}
-                          style={{
+                  <div
+                        className="home-ql-card"
+                        key={idx}
+                        style={{
                             background: "skyblue",
                             padding: "20px",
                             borderRadius: "8px",
