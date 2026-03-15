@@ -320,6 +320,15 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
             flex-shrink: 1 !important;
           }
         }
+
+        /* ── MOBILE (≤768px): very compact — nav wraps to multiple rows ── */
+        @media (max-width: 768px) {
+          .main-header nav button,
+          .main-header nav > div button {
+            font-size: 0.68rem !important;
+            padding: 4px 7px !important;
+          }
+        }
       `}</style>
     </header>
   );

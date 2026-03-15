@@ -262,53 +262,57 @@
   }
 }
 
-/* Desktop nav: visible on desktop, hidden on mobile (hamburger handles it)
-   Hamburger toggle: visible on mobile, also visible on desktop.
-   On mobile the hamburger lives inside the header bar, right-aligned. */
+/* Desktop nav: ALWAYS VISIBLE on all screen sizes.
+   On mobile the nav wraps to multiple rows inside the header (flex:1 with flexWrap:wrap).
+   Hamburger toggle (app-menu-toggle) gives access to the full site map (admin, portals etc.).
+   On mobile the hamburger sits top-right; header grows to fit the wrapped nav rows. */
 @media (max-width: 768px) {
+  /* Show the full nav on mobile — wrap buttons to rows */
   .desktop-nav {
-    display: none !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
   }
+  /* Compact button sizing so more fit per row */
+  .desktop-nav button,
+  .desktop-nav > div > button {
+    font-size: 0.68rem !important;
+    padding: 4px 7px !important;
+    white-space: nowrap !important;
+  }
+  /* Hamburger: fixed to top-right of header */
   .app-menu-toggle {
     display: flex !important;
-    /* Move hamburger into the header bar on the right side */
     left: auto !important;
-    right: 12px !important;
-    top: calc((var(--header-h, 52px) - 44px) / 2) !important;
+    right: 4px !important;
+    top: 6px !important;
   }
-  /* Drawer opens right from below the header */
+  /* Drawer opens from below the header */
   .app-nav-drawer {
     top: var(--header-h, 52px) !important;
   }
 
-  /* ── HEADER IDENTITY AREA (logo + school name + tagline) ──
-     Add right padding so the fixed hamburger button (44px wide
-     at right:12px) never overlaps the header text.
-     Allow the identity div to shrink on narrower screens.
-  ── */
+  /* ── Keep header identity (logo+name+tagline) always clear of hamburger ── */
   .main-header {
-    padding-right: 60px !important;
+    padding-right: 56px !important;
   }
-  /* Allow logo+text block to shrink so text clips before going
-     under the hamburger. min-width:0 is required for flex shrink. */
   .main-header > div:first-child {
     flex: 0 1 auto !important;
     min-width: 0 !important;
     overflow: hidden !important;
   }
-  /* School name: clip with ellipsis rather than overflow */
   .header-school-name {
     font-size: 13px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     max-width: 100% !important;
   }
-  /* Tagline: a touch larger and always visible */
   .header-tagline {
     font-size: 11px !important;
     display: block !important;
   }
-  /* Logo: slightly smaller on phones to give more text room */
   .main-header .header-logo {
     width: 40px !important;
     height: 40px !important;
