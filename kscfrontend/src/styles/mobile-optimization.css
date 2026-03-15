@@ -75,128 +75,116 @@
 }
 
 /* ── HOME PAGE LAYOUT ───────────────────────────────────────
-   Preserve desktop row layout on tablet; phones wrap naturally
-   when viewport is too narrow to fit both columns.
+   Mobile: stack news ABOVE quick links (full width each).
+   News cards scroll horizontally (swipe), 2 visible at a time.
+   Quick-link cards are portrait (taller than wide) in 2 columns.
+   Desktop (>768px) stays side-by-side, no changes.
    ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  /* Force row layout — never let sidebar wrap below quick links */
+  /* Stack news above quick links */
   .home-layout {
+    flex-direction: column !important;
     flex-wrap: nowrap !important;
-    gap: 14px !important;
-    padding: 0 10px !important;
+    gap: 16px !important;
+    padding: 0 12px !important;
     margin: 14px auto !important;
   }
-  /* Quick-links column: shrink freely, kill the 300px inline min-width */
-  .home-ql-section {
-    flex: 1 1 0 !important;
-    min-width: 0 !important;
-  }
-  /* Sidebar: fixed ~32% width, kill the 280px inline min-width */
+  /* News sidebar: full width, float to top with order */
   .home-news-sidebar {
-    flex: 0 0 32% !important;
+    order: -1 !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
     min-width: 0 !important;
-    width: 32% !important;
   }
-  /* Quick-link card grid: 2 columns on tablet/phone */
+  /* Quick-links: full width below news */
+  .home-ql-section {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  /* Quick-link card grid: always 2 equal columns */
   .home-ql-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
   }
+  /* Portrait cards: taller than wide */
+  .home-ql-card {
+    min-height: 140px !important;
+    padding: 14px 10px !important;
+  }
+  /* ── News items: horizontal swipe, 2 cards visible at a time ── */
+  .news-items-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 10px !important;
+    padding-bottom: 8px !important;
+    /* Hide scrollbar but keep scrollability */
+    scrollbar-width: none !important;
+  }
+  .news-items-grid::-webkit-scrollbar {
+    display: none !important;
+  }
+  /* Each news card: exactly half the container (2 visible) */
+  .news-items-grid > div {
+    flex: 0 0 46% !important;
+    scroll-snap-align: start !important;
+    min-width: 0 !important;
+  }
 }
-/* ── NARROW PHONES ≤430px (e.g. 1080×2460 @ 3x DPR = 360px CSS width) ────
-   ≤768px already forces nowrap + kills minWidths. Here we just tighten
-   gaps and compact the news sidebar content further.
-   ─────────────────────────────────────────────────────────────────────── */
+
+/* ── NARROW PHONES ≤430px ──────────────────────────────────── */
 @media (max-width: 430px) {
-  /* Tighten gaps on narrow phones */
   .home-layout {
-    gap: 8px !important;
-    padding: 0 6px !important;
-    margin: 8px auto !important;
+    gap: 12px !important;
+    padding: 0 8px !important;
+    margin: 10px auto !important;
   }
-  /* Sidebar narrows slightly on very small phones */
-  .home-news-sidebar {
-    flex: 0 0 36% !important;
-    width: 36% !important;
-  }
-  /* 2-column quick-link grid */
   .home-ql-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
   }
-  /* ── Compact news sidebar ── */
+  .home-ql-card {
+    min-height: 130px !important;
+    padding: 10px 8px !important;
+    gap: 6px !important;
+  }
+  /* Show 1 full card + peek of next on small phones */
+  .news-items-grid > div {
+    flex: 0 0 70% !important;
+  }
+  /* Hide news images to save vertical space */
   .home-news-sidebar div[style*="height: 160px"],
   .home-news-sidebar div[style*="height:160px"] {
     display: none !important;
   }
-  .home-news-sidebar > div {
-    padding: 10px 8px !important;
-  }
   .home-news-sidebar h2 {
-    font-size: 11px !important;
-    margin-bottom: 10px !important;
-    padding-bottom: 6px !important;
-  }
-  .home-news-sidebar div[style*="padding: 15px"],
-  .home-news-sidebar div[style*="padding:15px"] {
-    padding: 6px 4px !important;
-  }
-  .home-news-sidebar h4 {
-    font-size: 11px !important;
-    margin-bottom: 4px !important;
-  }
-  .home-news-sidebar p {
-    font-size: 10px !important;
-    margin: 3px 0 6px !important;
-    line-height: 1.3 !important;
-  }
-  .home-news-sidebar div[style*="font-size: 11px"] {
-    font-size: 9px !important;
+    font-size: 14px !important;
   }
 }
+
+/* ── 1080×2460 @ 3×DPR = 360px CSS ───────────────────────── */
 @media (max-width: 380px) {
-  /* ── 1080×2460 @ 3×DPR = 360px CSS: tightest layout ── */
-  /* Shrink sidebar to 34% to give quick-links a little more room */
-  .home-news-sidebar {
-    flex: 0 0 34% !important;
-    width: 34% !important;
-  }
-  /* Layout gap even tighter */
   .home-layout {
-    gap: 5px !important;
-    padding: 0 4px !important;
+    gap: 8px !important;
+    padding: 0 5px !important;
   }
-  /* Quick-link grid: tightest gap */
   .home-ql-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 5px !important;
-  }
-  /* Quick-link cards: minimal padding */
-  .home-ql-card {
-    padding: 8px 5px !important;
     gap: 6px !important;
+  }
+  .home-ql-card {
+    min-height: 120px !important;
+    padding: 8px 6px !important;
+    gap: 5px !important;
   }
   .home-ql-card button {
     font-size: 0.75rem !important;
     padding: 6px 8px !important;
   }
-  /* News widget: absolute minimum */
-  .home-news-sidebar > div {
-    padding: 8px 5px !important;
-  }
-  .home-news-sidebar h2 {
-    font-size: 10px !important;
-    margin-bottom: 8px !important;
-  }
-  .home-news-sidebar div[style*="padding: 15px"],
-  .home-news-sidebar div[style*="padding:15px"] {
-    padding: 5px 3px !important;
-  }
-  .home-news-sidebar h4 {
-    font-size: 10px !important;
-  }
-  .home-news-sidebar p {
-    font-size: 9px !important;
+  /* Show 1 card + slight peek of next */
+  .news-items-grid > div {
+    flex: 0 0 80% !important;
   }
 }
 

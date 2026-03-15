@@ -38,7 +38,7 @@ export default function NewsWidget() {
         📰 Latest News & Updates
       </h2>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "20px" }}>
+      <div className="news-items-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "20px" }}>
         {news.map((item, index) => (
           <div key={item._id} style={{
             padding: "15px",
