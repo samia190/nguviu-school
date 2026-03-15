@@ -186,7 +186,61 @@
   }
 }
 
-/* ── PERFORMANCE PAGE ───────────────────────────────────────
+/* ── GALLERY PAGE ────────────────────────────────────────────
+   Desktop: auto-fill grid ~180px min = 3-5 cols on wide screens.
+   Mobile:  section padding reduced, grid forced to 3 cols (≤768px)
+            and 2 cols (≤430px) so thumbnail size mirrors desktop.
+   ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Reduce side padding so grid takes full usable width */
+  .gallery-content {
+    padding: 0 10px 24px !important;
+  }
+  /* Force 3-column grid on tablets */
+  .gallery-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+  /* Album filter tabs — smaller pills */
+  .gallery-album-tabs button {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+  }
+  /* Hero overlay text box — constrain on narrow viewports */
+  .gallery-hero > div:last-child > div {
+    padding: 10px 14px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  /* 2-column grid on phones ≤430px (360px CSS viewport) */
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+  }
+  .gallery-content {
+    padding: 0 8px 20px !important;
+  }
+  /* Tighten album tab row */
+  .gallery-album-tabs {
+    gap: 4px !important;
+    margin-bottom: 16px !important;
+  }
+  .gallery-album-tabs button {
+    padding: 5px 9px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* Lightbox image — fill most of screen on mobile */
+@media (max-width: 768px) {
+  .gallery-lightbox img {
+    max-width: 98vw !important;
+    max-height: 70vh !important;
+  }
+}
+
+
    Compact inner section card padding.
    ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {

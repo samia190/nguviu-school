@@ -155,7 +155,7 @@ export default function Gallery() {
         </div>
       )}
 
-      <section style={{ padding: "0 20px 40px" }}>
+      <section className="gallery-content" style={{ padding: "0 20px 40px" }}>
         <h2 style={{ marginBottom: 4 }}>{title}</h2>
         <p
           style={{
@@ -171,6 +171,7 @@ export default function Gallery() {
         {/* ═══════════════ ALBUM FILTER TABS ═══════════════ */}
         {albumsWithImages.length > 0 && (
           <div
+            className="gallery-album-tabs"
             style={{
               display: "flex",
               gap: 8,
@@ -236,6 +237,7 @@ export default function Gallery() {
           </p>
         ) : (
           <div
+            className="gallery-grid"
             style={{
               display: "grid",
               gap: 12,
