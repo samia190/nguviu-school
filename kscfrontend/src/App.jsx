@@ -208,20 +208,20 @@ const OG_IMAGE = `${BASE_URL}/header/logo-new.png`;
 const SITE_NAME = "Kangaru Girls Senior School";
 
 const ROUTE_META = {
-  home:        { title: "Kangaru Girls Senior School – Excellence in Education", description: "A leading girls' school in Embu, Kenya, offering quality education, comprehensive curriculum, and excellent facilities." },
-  about:       { title: "About Us – Kangaru Girls Senior School",               description: "Learn about Kangaru Girls Senior School's history, mission, vision, staff and values." },
-  admissions:  { title: "Admissions – Kangaru Girls Senior School",              description: "Apply for admission at Kangaru Girls Senior School. Find requirements, procedures and important dates." },
-  events:      { title: "Events – Kangaru Girls Senior School",                  description: "Stay up to date with the latest events and activities at Kangaru Girls Senior School." },
-  feestructure:{ title: "Fee Structure – Kangaru Girls Senior School",           description: "View the current fee structure and payment details for Kangaru Girls Senior School." },
-  curriculum:  { title: "Curriculum – Kangaru Girls Senior School",              description: "Explore the 8-4-4 and CBC curricula offered at Kangaru Girls Senior School." },
-  performance: { title: "Academic Performance – Kangaru Girls Senior School",    description: "View KCSE results, mean scores and historical performance data for Kangaru Girls Senior School." },
-  policies:    { title: "School Policies – Kangaru Girls Senior School",         description: "Read the school rules, policies and guidelines for Kangaru Girls Senior School." },
-  parents:     { title: "Parents & Guardians – Kangaru Girls Senior School",     description: "Information and resources for parents and guardians of Kangaru Girls Senior School students." },
-  "student-life": { title: "Student Life – Kangaru Girls Senior School",         description: "Discover clubs, sports, and co-curricular activities at Kangaru Girls Senior School." },
-  gallery:     { title: "Gallery – Kangaru Girls Senior School",                 description: "Photos and memories from Kangaru Girls Senior School." },
-  newsletter:  { title: "Newsletter – Kangaru Girls Senior School",              description: "Read the latest news and newsletters from Kangaru Girls Senior School." },
-  contact:     { title: "Contact Us – Kangaru Girls Senior School",              description: "Get in touch with Kangaru Girls Senior School. Find our address, phone number and email." },
-  legal:       { title: "Legal – Kangaru Girls Senior School",                   description: "Legal information, terms of use and privacy policy for Kangaru Girls Senior School." },
+  home:        { title: "Kangaru Girls Senior School – Excellence in Education | Embu, Kenya", description: "Kangaru Girls Senior School in Embu, Kenya – a top girls' secondary school offering CBC and 8-4-4 curricula, excellent KCSE results, holistic education, admissions info, and vibrant student life." },
+  about:       { title: "About Us – Kangaru Girls Senior School | Embu, Kenya",               description: "Learn about Kangaru Girls Senior School's history, mission, vision, values (integrity, excellence, professionalism, teamwork), principal, deputy principals, and dedicated teaching staff in Embu, Kenya." },
+  admissions:  { title: "Admissions – Kangaru Girls Senior School | Form 1 Intake Kenya",     description: "Apply for Form 1 admission at Kangaru Girls Senior School, Embu, Kenya. Find entry requirements, KCPE cutoff, admission procedures, important dates, and how to join our school." },
+  events:      { title: "School Events – Kangaru Girls Senior School | Embu, Kenya",           description: "Stay up to date with the latest events, sports days, academic competitions, open days, cultural festivals, and school activities at Kangaru Girls Senior School, Embu." },
+  feestructure:{ title: "Fee Structure – Kangaru Girls Senior School | School Fees Kenya 2024-2025", description: "View the current fee structure, tuition, boarding, and payment details for Kangaru Girls Senior School, Embu, Kenya. Transparent school fees for government-sponsored and private students." },
+  curriculum:  { title: "Curriculum – Kangaru Girls Senior School | CBC & 8-4-4 Kenya",        description: "Explore CBC and 8-4-4 curricula at Kangaru Girls Senior School. Subjects include Biology, Chemistry, Physics, Mathematics, English, Kiswahili, Geography, History, CRE, Business Studies, Computer Studies, Home Science, Agriculture, Music and Art." },
+  performance: { title: "KCSE Academic Performance – Kangaru Girls Senior School | Results",   description: "View KCSE results, mean scores and historical academic performance data 2017–2024 for Kangaru Girls Senior School. C+ and B- grade achievements, national exam records, and performance trends." },
+  policies:    { title: "School Policies & Rules – Kangaru Girls Senior School | Embu, Kenya", description: "Read the school rules, policies, code of conduct, guidelines, and disciplinary procedures for Kangaru Girls Senior School, Embu, Kenya." },
+  parents:     { title: "Parents & Guardians – Kangaru Girls Senior School | Parent Portal",   description: "Information and resources for parents and guardians of Kangaru Girls Senior School students. Parent portal, school updates, fee payment guidance, and communication channels." },
+  "student-life": { title: "Student Life – Kangaru Girls Senior School | Clubs, Sports & Activities", description: "Discover vibrant student life at Kangaru Girls Senior School – clubs, sports teams, co-curricular activities, debate, music, drama, scouts, science congress, and leadership development for girls in Embu, Kenya." },
+  gallery:     { title: "Photo Gallery – Kangaru Girls Senior School | Embu, Kenya",           description: "Browse photos and memories from Kangaru Girls Senior School – school events, sports days, academic activities, student life, campus, and facilities in Embu, Kenya." },
+  newsletter:  { title: "School Newsletter – Kangaru Girls Senior School | Latest News",       description: "Read the latest news, announcements, and newsletters from Kangaru Girls Senior School, Embu, Kenya. Stay informed about school achievements, upcoming events, and academic updates." },
+  contact:     { title: "Contact Us – Kangaru Girls Senior School | Embu, Kenya",              description: "Contact Kangaru Girls Senior School. Address: P.O. BOX 1094-60100, Embu, Kenya. Phone: +254796214804. Email: kangarugirls@yahoo.com. Find us in Embu County, Kenya." },
+  legal:       { title: "Legal – Kangaru Girls Senior School | Terms & Privacy Policy",        description: "Legal information, terms of use, privacy policy, and data protection practices for the Kangaru Girls Senior School website." },
 };
 
 function updatePageMeta(route) {
