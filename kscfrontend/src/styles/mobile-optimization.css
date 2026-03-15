@@ -262,18 +262,13 @@
 }
 
 /* Desktop nav: visible on desktop, hidden on mobile (hamburger handles it)
-   Hamburger toggle: hidden on desktop, visible on mobile */
+   Hamburger toggle: visible on mobile, also visible on desktop */
 @media (max-width: 768px) {
   .desktop-nav {
     display: none !important;
   }
   .app-menu-toggle {
     display: flex !important;
-  }
-}
-@media (min-width: 769px) {
-  .app-menu-toggle {
-    display: none !important;
   }
 }
 
