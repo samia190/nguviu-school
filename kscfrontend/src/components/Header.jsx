@@ -77,7 +77,7 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
         boxSizing: "border-box",
         zIndex: 500,
         gap: 8,
-        flexWrap: "wrap",
+        flexWrap: "nowrap",
       }}
       className="main-header"
     >
@@ -301,35 +301,6 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
         .header-logo { width: 46px !important; height: 46px !important; }
         .header-school-name { font-size: 12px !important; white-space: nowrap; }
         .header-tagline { display: block !important; font-size: 11px !important; }
-
-        /* ── MOBILE (≤768px): nav wraps to second row ── */
-        @media (max-width: 768px) {
-          /* Nav takes full width on the second row */
-          .main-header .desktop-nav {
-            flex: 0 0 100% !important;
-            justify-content: flex-start !important;
-            flex-wrap: wrap !important;
-            gap: 4px !important;
-          }
-          /* Compact nav buttons so more fit per row */
-          .main-header nav button,
-          .main-header nav > div button {
-            font-size: 0.72rem !important;
-            padding: 4px 6px !important;
-          }
-        }
-
-        /* ── VERY SMALL PHONES (≤430px, e.g. 360px CSS viewport) ── */
-        @media (max-width: 430px) {
-          .header-logo { width: 36px !important; height: 36px !important; }
-          .header-school-name { font-size: 10px !important; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
-          .header-tagline { font-size: 9px !important; }
-          .main-header nav button,
-          .main-header nav > div button {
-            font-size: 0.62rem !important;
-            padding: 3px 5px !important;
-          }
-        }
 
         /* ── DESKTOP (≥769px): full-size nav buttons ── */
         @media (min-width: 769px) {

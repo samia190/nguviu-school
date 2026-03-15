@@ -261,9 +261,20 @@
   }
 }
 
-/* Desktop nav is always visible — hamburger button hidden everywhere */
-.app-menu-toggle {
-  display: none !important;
+/* Desktop nav: visible on desktop, hidden on mobile (hamburger handles it)
+   Hamburger toggle: hidden on desktop, visible on mobile */
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none !important;
+  }
+  .app-menu-toggle {
+    display: flex !important;
+  }
+}
+@media (min-width: 769px) {
+  .app-menu-toggle {
+    display: none !important;
+  }
 }
 
 /* Hide auth page floating image shapes on small screens to prevent card overlap */
