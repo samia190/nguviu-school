@@ -75,48 +75,66 @@
 }
 
 /* ── HOME PAGE LAYOUT ───────────────────────────────────────
-   Stack quick-links column above the news sidebar on mobile.
+   Preserve desktop row layout on tablet; phones wrap naturally
+   when viewport is too narrow to fit both columns.
    ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .home-layout {
-    flex-direction: column !important;
-    gap: 16px !important;
-    padding: 0 12px !important;
-    margin: 16px auto !important;
+    gap: 14px !important;
+    padding: 0 10px !important;
+    margin: 14px auto !important;
+  }
+  /* Allow sidebar to shrink so it can stay beside the main column */
+  .home-layout > div:last-child {
+    min-width: 180px !important;
+    flex: 1 1 26% !important;
   }
   /* Quick-link card grid: 2 columns on phone */
   .home-ql-grid {
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
+    gap: 10px !important;
   }
 }
 @media (max-width: 380px) {
-  /* Tiny phones: 1 column */
+  /* Tiny phones: keep 2 columns, just tighter */
   .home-ql-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
   }
 }
 
 /* ── ABOUT PAGE — LEADERSHIP SECTION ───────────────────────
-   Stack principal and deputies, scale down circular photos.
+   Keep deputies side-by-side (desktop look), scale photos down
+   so they fit in the narrower per-card width on phones.
    ─────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .about-deputies {
-    flex-direction: column !important;
-    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
   }
   .about-deputy {
-    min-width: 100% !important;
-    max-width: 100% !important;
+    min-width: 44% !important;
+    max-width: 48% !important;
+    flex: 1 1 44% !important;
   }
-  /* Scale circular portrait photos */
+  /* Scale circular portrait photos to fit side-by-side */
   .about-principal > div:first-child {
-    width: 120px !important;
-    height: 120px !important;
+    width: 110px !important;
+    height: 110px !important;
   }
   .about-deputy > div:first-child {
-    width: 120px !important;
-    height: 120px !important;
+    width: 82px !important;
+    height: 82px !important;
+  }
+  /* Scale deputy text to fit narrow card */
+  .about-deputy h3 {
+    font-size: 0.85rem !important;
+    margin: 6px 0 2px !important;
+  }
+  .about-deputy p {
+    font-size: 0.78rem !important;
+    line-height: 1.4 !important;
+    margin: 2px 0 !important;
   }
 }
 

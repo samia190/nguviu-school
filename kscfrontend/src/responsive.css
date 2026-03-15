@@ -145,11 +145,11 @@ button:focus,a:focus,input:focus,textarea:focus{outline:2px solid #4f46e5;outlin
   .about-principal h3{font-size:1rem !important}
   .about-principal p{font-size:0.85rem !important}
   .about-deputies{gap:8px !important}
-  .about-deputies .about-leader-card{max-width:49% !important;flex:1 1 49% !important}
-  .about-deputies .about-leader-card > div:first-child{width:70px !important;height:70px !important}
-  .about-deputies .about-leader-card h3{font-size:0.85rem !important;margin:4px 0 !important}
-  .about-deputies .about-leader-card p{font-size:0.8rem !important;margin:2px 0 !important}
-  .about-deputies .about-leader-card div{font-size:0.85rem !important}
+  .about-deputies .about-deputy{max-width:48% !important;flex:1 1 44% !important}
+  .about-deputies .about-deputy > div:first-child{width:70px !important;height:70px !important}
+  .about-deputies .about-deputy h3{font-size:0.85rem !important;margin:4px 0 !important}
+  .about-deputies .about-deputy p{font-size:0.78rem !important;margin:2px 0 !important}
+  .about-deputies .about-deputy div{font-size:0.83rem !important}
   
   /* Student page mobile optimizations */
   .student-page{padding:0 !important;margin:0 !important}
