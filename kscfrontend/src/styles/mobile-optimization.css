@@ -96,23 +96,30 @@
   }
 }
 /* ── NARROW PHONES ≤430px (e.g. 1080×2460 @ 3x DPR = 360px CSS width) ────
-   At ~360px CSS px the main+sidebar flex row cannot fit side-by-side
-   (combined min-widths 300px+180px > 360px viewport), so the sidebar
-   wraps. We explicitly stack here and make it look intentional.
+   Keep quick-links + news side-by-side: main left (62%), news right (36%).
+   Override the large minWidths from inline JSX styles.
    ─────────────────────────────────────────────────────────────────────── */
 @media (max-width: 430px) {
-  /* Stack main content above news sidebar */
+  /* Stay as a row — remove any column stacking */
   .home-layout {
-    flex-direction: column !important;
-    gap: 12px !important;
-    padding: 0 8px !important;
-    margin: 10px auto !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    padding: 0 6px !important;
+    margin: 8px auto !important;
+    align-items: flex-start !important;
   }
-  /* Each column takes full width when stacked */
-  .home-layout > div {
+  /* Main column (quick links): take remaining space */
+  .home-layout > div:first-child {
+    flex: 1 1 0 !important;
     min-width: 0 !important;
-    width: 100% !important;
-    flex: 1 1 100% !important;
+    width: auto !important;
+  }
+  /* News sidebar: fixed ~36% of viewport */
+  .home-news-sidebar {
+    flex: 0 0 36% !important;
+    min-width: 0 !important;
+    width: 36% !important;
   }
   /* Title / intro block above quick-links */
   .home-layout > div:first-child > h2 {
@@ -123,6 +130,42 @@
   .home-ql-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
+  }
+  /* ── Compact news sidebar at narrow widths ── */
+  /* Hide news images so cards fit in ~130px wide column */
+  .home-news-sidebar div[style*="height: 160px"],
+  .home-news-sidebar div[style*="height:160px"] {
+    display: none !important;
+  }
+  /* Tighten outer widget padding */
+  .home-news-sidebar > div {
+    padding: 10px 8px !important;
+  }
+  /* Widget heading */
+  .home-news-sidebar h2 {
+    font-size: 11px !important;
+    margin-bottom: 10px !important;
+    padding-bottom: 6px !important;
+  }
+  /* Each news item card */
+  .home-news-sidebar div[style*="padding: 15px"],
+  .home-news-sidebar div[style*="padding:15px"] {
+    padding: 8px 6px !important;
+  }
+  /* News title */
+  .home-news-sidebar h4 {
+    font-size: 11px !important;
+    margin-bottom: 4px !important;
+  }
+  /* News description */
+  .home-news-sidebar p {
+    font-size: 10px !important;
+    margin: 3px 0 6px !important;
+    line-height: 1.3 !important;
+  }
+  /* Meta (category / views) */
+  .home-news-sidebar div[style*="font-size: 11px"] {
+    font-size: 9px !important;
   }
 }
 @media (max-width: 380px) {

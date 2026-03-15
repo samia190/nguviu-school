@@ -299,7 +299,7 @@ export default function Home({ user, setRoute }) {
         </div>
 
         {/* RIGHT: NEWS WIDGET SIDEBAR (30%) */}
-        <div style={{ flex: "1 1 30%", minWidth: "280px" }}>
+        <div className="home-news-sidebar" style={{ flex: "1 1 30%", minWidth: "280px" }}>
           <NewsWidget />
         </div>
       </div>
