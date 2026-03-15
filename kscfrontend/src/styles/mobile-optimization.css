@@ -95,8 +95,38 @@
     gap: 10px !important;
   }
 }
+/* ── NARROW PHONES ≤430px (e.g. 1080×2460 @ 3x DPR = 360px CSS width) ────
+   At ~360px CSS px the main+sidebar flex row cannot fit side-by-side
+   (combined min-widths 300px+180px > 360px viewport), so the sidebar
+   wraps. We explicitly stack here and make it look intentional.
+   ─────────────────────────────────────────────────────────────────────── */
+@media (max-width: 430px) {
+  /* Stack main content above news sidebar */
+  .home-layout {
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding: 0 8px !important;
+    margin: 10px auto !important;
+  }
+  /* Each column takes full width when stacked */
+  .home-layout > div {
+    min-width: 0 !important;
+    width: 100% !important;
+    flex: 1 1 100% !important;
+  }
+  /* Title / intro block above quick-links */
+  .home-layout > div:first-child > h2 {
+    font-size: 1.1rem !important;
+    margin-bottom: 14px !important;
+  }
+  /* 2-column quick-link grid — compact card sizing */
+  .home-ql-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+}
 @media (max-width: 380px) {
-  /* Tiny phones: keep 2 columns, just tighter */
+  /* Very tiny phones (≤380px): 2 columns, tightest gap */
   .home-ql-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 6px !important;
@@ -135,6 +165,24 @@
     font-size: 0.78rem !important;
     line-height: 1.4 !important;
     margin: 2px 0 !important;
+  }
+}
+
+/* At ≤430px (1080×2460 @ 3x DPR = 360px CSS) scale deputy cards further */
+@media (max-width: 430px) {
+  .about-deputy > div:first-child {
+    width: 70px !important;
+    height: 70px !important;
+  }
+  .about-deputy h3 {
+    font-size: 0.8rem !important;
+  }
+  .about-deputy p {
+    font-size: 0.72rem !important;
+  }
+  .about-principal > div:first-child {
+    width: 100px !important;
+    height: 100px !important;
   }
 }
 
