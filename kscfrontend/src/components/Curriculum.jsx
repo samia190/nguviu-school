@@ -52,7 +52,7 @@ export default function Curriculum() {
 
       {/* School Profile */}
       {(page.schoolName || page.schoolLocation) && (
-        <section className="school-profile-section" style={{ background: "#f0fdf4", borderRadius: 12, padding: "20px 24px", marginBottom: 32 }}>
+        <section id="school-profile" className="school-profile-section" style={{ background: "#f0fdf4", borderRadius: 12, padding: "20px 24px", marginBottom: 32 }}>
           <h2 style={{ marginBottom: 12 }}>🏫 School Profile</h2>
           <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
             {page.schoolName && <div><strong>School:</strong> {page.schoolName}</div>}
@@ -64,7 +64,7 @@ export default function Curriculum() {
 
       {/* Subject Combinations */}
       {page.streams?.length > 0 && (
-        <section style={{ marginBottom: 40 }}>
+        <section id="subject-combinations" style={{ marginBottom: 40 }}>
           <h2 style={{ marginBottom: 8 }}>📚 Subject Combinations Offered</h2>
           <p style={{ color: "#6b7280", marginBottom: 20 }}>
             Available subject combinations organized by stream
@@ -72,7 +72,10 @@ export default function Curriculum() {
           </p>
 
           {page.streams.map((stream, si) => (
-            <div key={si} style={{ border: "1px solid #e5e7eb", borderRadius: 12, marginBottom: 12, overflow: "hidden" }}>
+            <div
+              key={si}
+              id={stream.name ? stream.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `stream-${si}`}
+              style={{ border: "1px solid #e5e7eb", borderRadius: 12, marginBottom: 12, overflow: "hidden" }}>
               {/* Stream header (clickable) */}
               <button
                 onClick={() => setExpandedStream(expandedStream === si ? null : si)}
@@ -120,7 +123,7 @@ export default function Curriculum() {
 
       {/* Content Sections */}
       {page.sections?.length > 0 && (
-        <section>
+        <section id="cbc-curriculum">
           {/* Section nav pills */}
           {page.sections.length > 1 && (
             <div className="curriculum-section-pills" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>

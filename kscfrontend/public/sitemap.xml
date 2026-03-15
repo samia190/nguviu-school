@@ -48,6 +48,62 @@
     <priority>0.9</priority>
   </url>
 
+  <!-- Curriculum – School Profile -->
+  <url>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/curriculum#school-profile</loc>
+    <lastmod>2026-03-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Curriculum – Subject Combinations (all streams) -->
+  <url>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/curriculum#subject-combinations</loc>
+    <lastmod>2026-03-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Curriculum – Sciences Stream -->
+  <url>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/curriculum#sciences</loc>
+    <lastmod>2026-03-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Curriculum – Arts Stream -->
+  <url>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/curriculum#arts</loc>
+    <lastmod>2026-03-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Curriculum – Humanities Stream -->
+  <url>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/curriculum#humanities</loc>
+    <lastmod>2026-03-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Curriculum – CBC Curriculum -->
+  <url>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/curriculum#cbc-curriculum</loc>
+    <lastmod>2026-03-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Curriculum – 8-4-4 Curriculum -->
+  <url>
+    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/curriculum#8-4-4-curriculum</loc>
+    <lastmod>2026-03-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Performance -->
   <url>
     <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/performance</loc>
