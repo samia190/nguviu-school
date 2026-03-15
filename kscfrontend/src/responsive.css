@@ -30,11 +30,6 @@ body{
 /* Containers - preserve structure but add safe padding */
 section{max-width:var(--max-site-width);margin:0 auto;padding:0 var(--fluid-padding)}
 
-/* Mobile: remove all section padding for full-width content */
-@media (max-width: 480px) {
-  section{padding:0;margin:0 auto}
-}
-
 /* Fluid typography (mobile-first) */
 h1{font-size:clamp(1.4rem,4.6vw,2.4rem);line-height:1.15;margin:0.6rem 0}
 h2{font-size:clamp(1.25rem,3.6vw,1.8rem);line-height:1.2;margin:0.5rem 0}
@@ -161,12 +156,19 @@ button:focus,a:focus,input:focus,textarea:focus{outline:2px solid #4f46e5;outlin
   div > section{padding:0 8px !important}
   div > h1{font-size:1.5rem !important;margin:12px 8px !important}
   
+  /* General mobile optimizations for all pages */
+  h1{font-size:1.5rem !important}
+  h2{font-size:1.3rem !important}
+  h3{font-size:1.1rem !important}
+  p{font-size:0.9rem}
+  
   /* Tables responsive */
   table{font-size:0.85rem}
   th, td{padding:6px 4px}
   
-  /* Forms responsive — font-size only, padding handled by mobile-optimization.css */
+  /* Forms responsive */
   input, textarea, select{font-size:0.9rem;padding:8px}
+  button{font-size:0.9rem;padding:8px 12px}
   
   /* Images full width on mobile */
   img{max-width:100%;height:auto}

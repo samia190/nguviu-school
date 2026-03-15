@@ -107,7 +107,7 @@ export default function Gallery() {
             width: "100vw",
             marginLeft: "50%",
             transform: "translateX(-50%)",
-            minHeight: "clamp(200px, 40vh, 380px)",
+            minHeight: 380,
             overflow: "hidden",
             marginBottom: 30,
             background: `url('${encodeURI(heroImage)}') center/cover no-repeat, linear-gradient(135deg, #667eea, #764ba2)`,
@@ -417,7 +417,7 @@ export default function Gallery() {
             <div
               style={{
                 position: "absolute",
-                bottom: "max(20px, env(safe-area-inset-bottom))",
+                bottom: 20,
                 left: "50%",
                 transform: "translateX(-50%)",
                 display: "flex",

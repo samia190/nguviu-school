@@ -50,7 +50,7 @@ export default function About({ user }) {
           transform: "translateX(-50%)",
           maxHeight: 1000,
           overflow: "hidden",
-          height: "clamp(220px, 45vh, 500px)",
+          height: 500,
           backgroundImage: hero?.imageUrl ? `url(${encodeURI(hero.imageUrl)})` : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -244,7 +244,7 @@ export default function About({ user }) {
                     flex: 1,
                     textAlign: "center",
                     maxWidth: 500,
-                    minWidth: "48%",
+                    minWidth: window.innerWidth <= 768 ? "100%" : "48%"
                   }}
                 >
                   <div

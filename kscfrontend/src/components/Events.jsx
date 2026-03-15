@@ -276,7 +276,7 @@ function EventModal({ event, onClose }) {
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "#fff", borderRadius: 14,
-          width: "min(720px, 95vw)", maxHeight: "90vh",
+          maxWidth: 720, width: "100%", maxHeight: "90vh",
           overflow: "auto", position: "relative",
           boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
           animation: "fadeInUp 0.25s ease-out",
@@ -298,7 +298,7 @@ function EventModal({ event, onClose }) {
 
         {/* Hero image */}
         {event.imageUrl && (
-          <div style={{ width: "100%", aspectRatio: "16/9", height: "auto", overflow: "hidden", borderRadius: "14px 14px 0 0", background: "#f0f0f0" }}>
+          <div style={{ width: "100%", height: 320, overflow: "hidden", borderRadius: "14px 14px 0 0", background: "#f0f0f0" }}>
             <OptimizedImage
               src={event.imageUrl}
               alt={event.imageAlt || event.title}
@@ -309,7 +309,7 @@ function EventModal({ event, onClose }) {
         )}
 
         {/* Content */}
-        <div style={{ padding: "clamp(14px, 4vw, 28px) clamp(14px, 4vw, 28px) clamp(16px, 4vw, 28px)" }}>
+        <div style={{ padding: "24px 28px 28px" }}>
           {/* Category + status badges */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
             <span style={{ padding: "4px 14px", borderRadius: 20, fontSize: 12, fontWeight: 700, background: catObj.color, color: "#fff" }}>{catObj.label}</span>

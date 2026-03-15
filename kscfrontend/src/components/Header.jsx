@@ -130,25 +130,6 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
         </div>
       </div>
 
-      {/* ── Mobile-only compact action buttons (Login / Sign Up / Apply) ─────────
-           Visible only on ≤768px. Desktop handles these inside the full nav.    */}
-      <div className="mobile-header-actions">
-        {!user ? (
-          <>
-            <button onClick={() => go("admissions")} className="mha-apply">📝 Apply</button>
-            <button onClick={() => go("login")}      className="mha-login">Log In</button>
-            <button onClick={() => go("signup")}     className="mha-signup">Sign Up</button>
-          </>
-        ) : (
-          <>
-            {user.role === "admin" && (
-              <button onClick={() => go("admin")} className="mha-login">Admin</button>
-            )}
-            <button onClick={() => { logout && logout(); go("home"); }} className="mha-logout">Log Out</button>
-          </>
-        )}
-      </div>
-
       {/* Navigation — hidden on mobile; MenuButton (hamburger) handles mobile nav */}
       <nav className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", flex: 1, justifyContent: "flex-end" }}>
         {/* Quick access buttons */}
@@ -352,42 +333,6 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
             padding: 4px 6px !important;
             flex-shrink: 1 !important;
           }
-        }
-
-        /* ── Mobile-only header action buttons ── */
-        /* Hidden on desktop (nav handles them) */
-        .mobile-header-actions {
-          display: none;
-        }
-
-        /* Show on mobile only */
-        @media (max-width: 768px) {
-          .mobile-header-actions {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex-shrink: 0;
-            margin-left: auto;
-          }
-          .mha-apply, .mha-login, .mha-signup, .mha-logout {
-            padding: 5px 8px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 700;
-            white-space: nowrap;
-            line-height: 1.2;
-          }
-          .mha-apply  { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; }
-          .mha-login  { background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.4) !important; }
-          .mha-signup { background: rgba(255,255,255,0.95); color: #1e40af; }
-          .mha-logout { background: #ef4444; color: #fff; }
-        }
-
-        /* On very small screens hide "Sign Up" to save space, keep Apply + Login */
-        @media (max-width: 360px) {
-          .mha-signup { display: none; }
         }
       `}</style>
     </header>

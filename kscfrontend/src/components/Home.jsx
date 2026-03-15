@@ -187,13 +187,13 @@ export default function Home({ user, setRoute }) {
       )}
 
       {/* ===== TITLE ===== */}
-      <div style={{ padding: "clamp(20px, 4vw, 40px) 20px", textAlign: "center", maxWidth: "1200px", margin: "0 auto" }}>
-        <h1 style={{ fontSize: "clamp(1.5rem, 5vw, 2.5rem)", margin: "0 0 14px 0" }}>
+      <div style={{ padding: "40px 20px", textAlign: "center", maxWidth: "1200px", margin: "0 auto" }}>
+        <h1 style={{ fontSize: "2.5rem", margin: "0 0 20px 0" }}>
           {title || "WELCOME TO KANGARU GIRLS' SCHOOL"}
         </h1>
 
         {/* ===== INTRO ===== */}
-        <p style={{ fontSize: "clamp(0.9rem, 2.5vw, 1.05rem)", lineHeight: "1.6", color: "#555", maxWidth: "900px", margin: "0 auto clamp(20px, 4vw, 40px)" }}>
+        <p style={{ fontSize: "1.05rem", lineHeight: "1.6", color: "#555", marginBottom: "40px", maxWidth: "900px", margin: "0 auto 40px" }}>
           {intro || "At our institution, we believe education is a journey of creativity, growth, and excellence..."}
         </p>
       </div>
@@ -216,7 +216,7 @@ export default function Home({ user, setRoute }) {
           <h2 style={{ marginTop: 0, marginBottom: "30px", textAlign: "center" }}>Quick Links</h2>
 
           {quickLinks && quickLinks.length > 0 ? (
-            <div style={{ display: "grid", gap: "clamp(16px, 3vw, 30px)" }}>
+            <div style={{ display: "grid", gap: "30px" }}>
               {quickLinks.map((section) => (
                 <div key={section._id} style={{ width: "100%" }}>
                   <h3 style={{ textAlign: "center", marginBottom: "20px", fontSize: "1.3rem" }}>

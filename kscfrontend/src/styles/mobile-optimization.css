@@ -29,6 +29,18 @@
   }
 }
 
+/* =============================================================
+   DESKTOP-FIT 80% ZOOM
+   Scales the entire page to ~80% on mobile so the full desktop
+   layout fits on small screens without hiding or rearranging any
+   content.  zoom on html changes the CSS layout viewport (100vw,
+   fixed elements, and media-query breakpoints all remain
+   internally consistent), so no other layout rules need changing.
+   ============================================================= */
+@media (max-width: 768px) {
+  html { zoom: 0.8; }
+}
+
 /* Hide desktop nav on mobile — MenuButton (hamburger) handles navigation */
 @media (max-width: 768px) {
   .desktop-nav {
@@ -40,43 +52,6 @@
 @media (max-width: 600px) {
   .auth-shape {
     display: none !important;
-  }
-}
-
-/* Base responsive typography */
-@media (max-width: 768px) {
-  h1 {
-    font-size: 24px !important;
-  }
-  
-  h2 {
-    font-size: 20px !important;
-  }
-  
-  h3 {
-    font-size: 16px !important;
-  }
-  
-  body {
-    font-size: 14px !important;
-  }
-}
-
-@media (max-width: 480px) {
-  h1 {
-    font-size: 20px !important;
-  }
-  
-  h2 {
-    font-size: 16px !important;
-  }
-  
-  h3 {
-    font-size: 14px !important;
-  }
-  
-  body {
-    font-size: 14px !important; /* Minimum readable size — 12px violates WCAG 1.4.4 */
   }
 }
 
@@ -278,14 +253,6 @@
   .flex-between {
     flex-direction: column !important;
     align-items: flex-start !important;
-  }
-}
-
-/* Performance page — compact section cards on mobile */
-@media (max-width: 768px) {
-  .perf-page > div {
-    padding: clamp(14px, 3vw, 28px) !important;
-    margin-bottom: clamp(16px, 3vw, 36px) !important;
   }
 }
 
