@@ -79,91 +79,77 @@
    when viewport is too narrow to fit both columns.
    ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
+  /* Force row layout — never let sidebar wrap below quick links */
   .home-layout {
+    flex-wrap: nowrap !important;
     gap: 14px !important;
     padding: 0 10px !important;
     margin: 14px auto !important;
   }
-  /* Allow sidebar to shrink so it can stay beside the main column */
-  .home-layout > div:last-child {
-    min-width: 180px !important;
-    flex: 1 1 26% !important;
+  /* Quick-links column: shrink freely, kill the 300px inline min-width */
+  .home-ql-section {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
   }
-  /* Quick-link card grid: 2 columns on phone */
+  /* Sidebar: fixed ~32% width, kill the 280px inline min-width */
+  .home-news-sidebar {
+    flex: 0 0 32% !important;
+    min-width: 0 !important;
+    width: 32% !important;
+  }
+  /* Quick-link card grid: 2 columns on tablet/phone */
   .home-ql-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
   }
 }
 /* ── NARROW PHONES ≤430px (e.g. 1080×2460 @ 3x DPR = 360px CSS width) ────
-   Keep quick-links + news side-by-side: main left (62%), news right (36%).
-   Override the large minWidths from inline JSX styles.
+   ≤768px already forces nowrap + kills minWidths. Here we just tighten
+   gaps and compact the news sidebar content further.
    ─────────────────────────────────────────────────────────────────────── */
 @media (max-width: 430px) {
-  /* Stay as a row — remove any column stacking */
+  /* Tighten gaps on narrow phones */
   .home-layout {
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
     gap: 8px !important;
     padding: 0 6px !important;
     margin: 8px auto !important;
-    align-items: flex-start !important;
   }
-  /* Main column (quick links): take remaining space */
-  .home-layout > div:first-child {
-    flex: 1 1 0 !important;
-    min-width: 0 !important;
-    width: auto !important;
-  }
-  /* News sidebar: fixed ~36% of viewport */
+  /* Sidebar narrows slightly on very small phones */
   .home-news-sidebar {
     flex: 0 0 36% !important;
-    min-width: 0 !important;
     width: 36% !important;
   }
-  /* Title / intro block above quick-links */
-  .home-layout > div:first-child > h2 {
-    font-size: 1.1rem !important;
-    margin-bottom: 14px !important;
-  }
-  /* 2-column quick-link grid — compact card sizing */
+  /* 2-column quick-link grid */
   .home-ql-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
   }
-  /* ── Compact news sidebar at narrow widths ── */
-  /* Hide news images so cards fit in ~130px wide column */
+  /* ── Compact news sidebar ── */
   .home-news-sidebar div[style*="height: 160px"],
   .home-news-sidebar div[style*="height:160px"] {
     display: none !important;
   }
-  /* Tighten outer widget padding */
   .home-news-sidebar > div {
     padding: 10px 8px !important;
   }
-  /* Widget heading */
   .home-news-sidebar h2 {
     font-size: 11px !important;
     margin-bottom: 10px !important;
     padding-bottom: 6px !important;
   }
-  /* Each news item card */
   .home-news-sidebar div[style*="padding: 15px"],
   .home-news-sidebar div[style*="padding:15px"] {
     padding: 6px 4px !important;
   }
-  /* News title */
   .home-news-sidebar h4 {
     font-size: 11px !important;
     margin-bottom: 4px !important;
   }
-  /* News description */
   .home-news-sidebar p {
     font-size: 10px !important;
     margin: 3px 0 6px !important;
     line-height: 1.3 !important;
   }
-  /* Meta (category / views) */
   .home-news-sidebar div[style*="font-size: 11px"] {
     font-size: 9px !important;
   }

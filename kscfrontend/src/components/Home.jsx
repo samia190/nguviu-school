@@ -212,7 +212,7 @@ export default function Home({ user, setRoute }) {
         }}
       >
         {/* LEFT: QUICK LINKS GRID (70%) */}
-        <div style={{ flex: "1 1 65%", minWidth: "300px" }}>
+        <div className="home-ql-section" style={{ flex: "1 1 65%", minWidth: "300px" }}>
           <h2 style={{ marginTop: 0, marginBottom: "30px", textAlign: "center" }}>Quick Links</h2>
 
           {quickLinks && quickLinks.length > 0 ? (
