@@ -101,6 +101,7 @@ function MenuButton({ route, setRoute, setLoading, user }) {
         aria-expanded={open}
         aria-label={open ? "Close menu" : "Open menu"}
         onClick={() => setOpen((s) => !s)}
+        className="app-menu-toggle"
         style={{
           position: "fixed",
           left: 5,
