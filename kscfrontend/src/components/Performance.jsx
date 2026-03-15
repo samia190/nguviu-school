@@ -157,7 +157,7 @@ export default function Performance() {
   if (!data) return null;
 
   return (
-    <section style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 20px", background: "#fff" }}>
+    <section className="perf-page" style={{ maxWidth: 1200, margin: "0 auto", padding: "clamp(16px,4vw,40px) clamp(12px,3vw,20px)", background: "#fff" }}>
       {/* ===== Header ===== */}
       <div
         style={{

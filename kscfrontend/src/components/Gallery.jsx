@@ -102,12 +102,13 @@ export default function Gallery() {
       {/* ═══════════════ HERO SECTION ═══════════════ */}
       {heroImage && (
         <div
+          className="gallery-hero"
           style={{
             position: "relative",
             width: "100vw",
             marginLeft: "50%",
             transform: "translateX(-50%)",
-            minHeight: 380,
+            minHeight: "clamp(180px, 38vh, 380px)",
             overflow: "hidden",
             marginBottom: 30,
             background: `url('${encodeURI(heroImage)}') center/cover no-repeat, linear-gradient(135deg, #667eea, #764ba2)`,

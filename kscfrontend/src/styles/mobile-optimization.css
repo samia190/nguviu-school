@@ -30,15 +30,115 @@
 }
 
 /* =============================================================
-   DESKTOP-FIT 80% ZOOM
-   Scales the entire page to ~80% on mobile so the full desktop
-   layout fits on small screens without hiding or rearranging any
-   content.  zoom on html changes the CSS layout viewport (100vw,
-   fixed elements, and media-query breakpoints all remain
-   internally consistent), so no other layout rules need changing.
+   MOBILE-FIRST RESPONSIVE DESIGN
+   Proper media-query layout that preserves the full desktop
+   design structure, scales all elements to fit smaller screens
+   naturally, and keeps every piece of content visible.
    ============================================================= */
+
+/* ── HERO SECTIONS ──────────────────────────────────────────
+   All full-bleed hero banners use fixed px heights as inline
+   styles. Override with clamp() proportional heights on mobile.
+   ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  html { zoom: 0.8; }
+  .about-hero {
+    height: clamp(180px, 38vh, 360px) !important;
+  }
+  .events-hero {
+    min-height: clamp(160px, 35vh, 280px) !important;
+  }
+  .gallery-hero {
+    min-height: clamp(160px, 35vh, 280px) !important;
+  }
+  /* Hero overlay heading text — scale for mobile */
+  .about-hero h2,
+  .events-hero h2,
+  .gallery-hero h2,
+  .hero-carousel h2 {
+    font-size: clamp(1.1rem, 4.5vw, 1.8rem) !important;
+    margin: 0 0 6px 0 !important;
+  }
+  .about-hero p,
+  .events-hero p,
+  .gallery-hero p,
+  .hero-carousel p {
+    font-size: clamp(0.82rem, 2.8vw, 1rem) !important;
+  }
+  /* HeroCarousel prev/next buttons — keep 44px+ touch target, trim inset */
+  .hero-carousel > button {
+    left: 8px !important;
+    right: 8px !important;
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 20px !important;
+  }
+}
+
+/* ── HOME PAGE LAYOUT ───────────────────────────────────────
+   Stack quick-links column above the news sidebar on mobile.
+   ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .home-layout {
+    flex-direction: column !important;
+    gap: 16px !important;
+    padding: 0 12px !important;
+    margin: 16px auto !important;
+  }
+  /* Quick-link card grid: 2 columns on phone */
+  .home-ql-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+}
+@media (max-width: 380px) {
+  /* Tiny phones: 1 column */
+  .home-ql-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── ABOUT PAGE — LEADERSHIP SECTION ───────────────────────
+   Stack principal and deputies, scale down circular photos.
+   ─────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .about-deputies {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  .about-deputy {
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+  /* Scale circular portrait photos */
+  .about-principal > div:first-child {
+    width: 120px !important;
+    height: 120px !important;
+  }
+  .about-deputy > div:first-child {
+    width: 120px !important;
+    height: 120px !important;
+  }
+}
+
+/* ── PERFORMANCE PAGE ───────────────────────────────────────
+   Compact inner section card padding.
+   ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .perf-page > div {
+    padding: clamp(14px, 3vw, 28px) !important;
+    margin-bottom: clamp(16px, 3vw, 36px) !important;
+  }
+}
+
+/* ── EVENTS PAGE — FILTER TOOLBAR ──────────────────────────
+   Stack filter row on narrow screens.
+   ─────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .events-page > div[style] {
+    /* filter bar row */
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
 }
 
 /* Hide desktop nav on mobile — MenuButton (hamburger) handles navigation */

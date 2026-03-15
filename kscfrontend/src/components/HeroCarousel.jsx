@@ -130,11 +130,11 @@ export default function HeroCarousel({
               textAlign: "center",
             }}
           >
-            <h2 style={{ margin: "0 0 10px 0", fontSize: "2rem" }}>
+            <h2 style={{ margin: "0 0 10px 0", fontSize: "clamp(1.1rem, 4.5vw, 2rem)" }}>
               {currentSlide.title}
             </h2>
             {currentSlide.description && (
-              <p style={{ margin: 0, fontSize: "1.1rem" }}>
+              <p style={{ margin: 0, fontSize: "clamp(0.85rem, 2.5vw, 1.1rem)" }}>
                 {currentSlide.description}
               </p>
             )}
