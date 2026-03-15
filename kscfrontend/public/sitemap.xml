@@ -1,107 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
-  <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/</loc>
-    <lastmod>2026-03-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-
-  <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/about</loc>
-    <lastmod>2026-03-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/admissions</loc>
-    <lastmod>2026-03-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/events</loc>
-    <lastmod>2026-03-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/feestructure</loc>
-    <lastmod>2026-03-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/curriculum</loc>
-    <lastmod>2026-03-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/performance</loc>
-    <lastmod>2026-03-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/policies</loc>
-    <lastmod>2026-03-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/parents</loc>
-    <lastmod>2026-03-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/student-life</loc>
-    <lastmod>2026-03-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/gallery</loc>
-    <lastmod>2026-03-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/newsletter</loc>
-    <lastmod>2026-03-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/contact</loc>
-    <lastmod>2026-03-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/legal</loc>
-    <lastmod>2026-03-14</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-</urlset>
-
-  
   <!-- Home Page -->
   <url>
     <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/</loc>
@@ -109,15 +7,15 @@
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
-  
-  <!-- About Section -->
+
+  <!-- About -->
   <url>
     <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/about</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
-  
+
   <!-- Admissions -->
   <url>
     <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/admissions</loc>
@@ -125,7 +23,7 @@
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  
+
   <!-- Events -->
   <url>
     <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/events</loc>
@@ -133,7 +31,7 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  
+
   <!-- Fee Structure -->
   <url>
     <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/feestructure</loc>
@@ -141,7 +39,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-  
+
   <!-- Curriculum -->
   <url>
     <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/curriculum</loc>
@@ -149,7 +47,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
-  
+
   <!-- Performance -->
   <url>
     <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/performance</loc>
@@ -157,7 +55,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-  
+
   <!-- Policies -->
   <url>
     <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/policies</loc>
@@ -165,7 +63,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-  
+
   <!-- Parents -->
   <url>
     <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/parents</loc>
@@ -173,7 +71,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-  
+
   <!-- Student Life -->
   <url>
     <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/student-life</loc>
@@ -181,7 +79,7 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
-  
+
   <!-- Gallery -->
   <url>
     <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/gallery</loc>
@@ -189,7 +87,7 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
-  
+
   <!-- Newsletter -->
   <url>
     <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/newsletter</loc>
@@ -197,7 +95,7 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
-  
+
   <!-- Contact -->
   <url>
     <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/contact</loc>
@@ -205,7 +103,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-  
+
   <!-- Legal -->
   <url>
     <loc>https://kangarugirlsseniorschool-sc-ke.onrender.com/legal</loc>
@@ -213,5 +111,5 @@
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
-  
+
 </urlset>
