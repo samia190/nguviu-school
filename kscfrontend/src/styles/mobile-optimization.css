@@ -280,6 +280,40 @@
   .app-nav-drawer {
     top: var(--header-h, 52px) !important;
   }
+
+  /* ── HEADER IDENTITY AREA (logo + school name + tagline) ──
+     Add right padding so the fixed hamburger button (44px wide
+     at right:12px) never overlaps the header text.
+     Allow the identity div to shrink on narrower screens.
+  ── */
+  .main-header {
+    padding-right: 60px !important;
+  }
+  /* Allow logo+text block to shrink so text clips before going
+     under the hamburger. min-width:0 is required for flex shrink. */
+  .main-header > div:first-child {
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+  /* School name: clip with ellipsis rather than overflow */
+  .header-school-name {
+    font-size: 13px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+  }
+  /* Tagline: a touch larger and always visible */
+  .header-tagline {
+    font-size: 11px !important;
+    display: block !important;
+  }
+  /* Logo: slightly smaller on phones to give more text room */
+  .main-header .header-logo {
+    width: 40px !important;
+    height: 40px !important;
+    flex-shrink: 0 !important;
+  }
 }
 
 /* Hide auth page floating image shapes on small screens to prevent card overlap */
