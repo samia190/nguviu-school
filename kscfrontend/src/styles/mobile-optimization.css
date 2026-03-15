@@ -107,9 +107,9 @@
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
   }
-  /* Portrait cards: taller than wide */
+  /* Portrait cards: taller than wide (col width ~168px on 360px phone) */
   .home-ql-card {
-    min-height: 140px !important;
+    min-height: 200px !important;
     padding: 14px 10px !important;
   }
   /* ── News items: horizontal swipe, 2 cards visible at a time ── */
@@ -146,7 +146,7 @@
     gap: 8px !important;
   }
   .home-ql-card {
-    min-height: 130px !important;
+    min-height: 190px !important;
     padding: 10px 8px !important;
     gap: 6px !important;
   }
@@ -174,7 +174,7 @@
     gap: 6px !important;
   }
   .home-ql-card {
-    min-height: 120px !important;
+    min-height: 180px !important;
     padding: 8px 6px !important;
     gap: 5px !important;
   }

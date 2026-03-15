@@ -228,7 +228,7 @@ export default function Home({ user, setRoute }) {
                     className="home-ql-grid"
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(min(48%, 140px), 1fr))",
+                      gridTemplateColumns: "repeat(2, 1fr)",
                       gap: "20px",
                     }}
                   >
