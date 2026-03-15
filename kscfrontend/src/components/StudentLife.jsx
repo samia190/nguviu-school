@@ -61,7 +61,7 @@ export default function StudentLife() {
   }
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page} className="sl-page">
       {/* ─── HERO ─────────────────────────────────────────────────────── */}
       <section style={styles.hero}>
         {data?.heroImage && (
@@ -86,13 +86,14 @@ export default function StudentLife() {
         <section style={styles.featuredSection}>
           <div style={styles.container}>
             <h2 style={styles.sectionTitle}>Featured Activities</h2>
-            <div style={styles.featuredGrid}>
+            <div style={styles.featuredGrid} className="sl-featured-grid">
               {featuredActivities.map((a, i) => {
                 const cat = CATEGORIES.find((c) => c.value === a.category);
                 return (
                   <div
                     key={i}
                     style={styles.featuredCard}
+                    className="sl-featured-card"
                     onClick={() => setSelected(a)}
                     role="button"
                     tabIndex={0}
@@ -166,7 +167,7 @@ export default function StudentLife() {
           )}
 
           {/* Activity grid */}
-          <div style={styles.grid}>
+          <div style={styles.grid} className="sl-activities-grid">
             {filtered.map((a, i) => {
               const cat = CATEGORIES.find((c) => c.value === a.category);
               return (

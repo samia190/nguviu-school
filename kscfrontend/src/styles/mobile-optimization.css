@@ -279,6 +279,52 @@
   }
 }
 
+/* ── STUDENT LIFE PAGE ──────────────────────────────────────
+   Featured cards become column-stacked; activity grid 2-col.
+   ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sl-featured-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .sl-featured-card {
+    flex-direction: column !important;
+  }
+  .sl-featured-card img {
+    width: 100% !important;
+    height: 200px !important;
+    min-height: unset !important;
+  }
+  .sl-activities-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 430px) {
+  .sl-activities-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── EVENTS PAGE — GRIDS & MODAL ────────────────────────────
+   Featured + all-events grids collapse on mobile.
+   ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .events-featured-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .events-cards-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 430px) {
+  .events-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .events-modal {
+    max-width: calc(100vw - 16px) !important;
+    margin: 8px !important;
+  }
+}
+
 /* Dashboard responsive grids */
 @media (max-width: 768px) {
   .dashboard-grid {

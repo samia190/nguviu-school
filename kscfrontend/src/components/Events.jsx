@@ -106,7 +106,7 @@ export default function Events() {
       {featured.length > 0 && (
         <section style={{ marginBottom: "2rem" }}>
           <h2 style={{ marginBottom: "1rem", display: "flex", alignItems: "center", gap: 8 }}>⭐ Featured Events</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.25rem" }}>
+          <div className="events-featured-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.25rem" }}>
             {featured.map((ev) => (
               <EventCard key={ev._id} event={ev} featured onSelect={setSelectedEvent} />
             ))}
@@ -142,7 +142,7 @@ export default function Events() {
 
       {/* ── EVENT CARDS ── */}
       {displayEvents.length > 0 ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.25rem", marginBottom: "2rem" }}>
+        <div className="events-cards-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.25rem", marginBottom: "2rem" }}>
           {displayEvents.map((ev) => (
             <EventCard key={ev._id} event={ev} onSelect={setSelectedEvent} />
           ))}
@@ -274,6 +274,7 @@ function EventModal({ event, onClose }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        className="events-modal"
         style={{
           background: "#fff", borderRadius: 14,
           maxWidth: 720, width: "100%", maxHeight: "90vh",
