@@ -94,6 +94,7 @@ export default function Student({ user, subRoute, setRoute }) {
     <div className="student-page">
       {/* ═══ HERO ═══ */}
       <div
+        className="student-hero"
         style={{
           position: "relative",
           width: "100vw",
@@ -124,7 +125,7 @@ export default function Student({ user, subRoute, setRoute }) {
 
         {/* ═══ QUICK LINKS ═══ */}
         {quickLinks.length > 0 && (
-          <div style={{
+          <div className="student-ql-grid" style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))",
             gap: 12,

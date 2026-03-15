@@ -94,7 +94,7 @@ export default function Curriculum() {
               {/* Expanded combinations */}
               {expandedStream === si && (
                 <div style={{ padding: "0 20px 16px" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10 }}>
+                  <div className="curriculum-combos-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10 }}>
                     {(stream.combinations || []).map((combo, ci) => (
                       <div key={ci} style={{ background: "#f9fafb", borderRadius: 8, padding: "10px 14px", border: "1px solid #e5e7eb" }}>
                         <div style={{ fontWeight: 600, color: "#7c3aed", fontSize: "0.85rem", marginBottom: 6 }}>{combo.code}</div>
@@ -123,7 +123,7 @@ export default function Curriculum() {
         <section>
           {/* Section nav pills */}
           {page.sections.length > 1 && (
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
+            <div className="curriculum-section-pills" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
               <button
                 onClick={() => setActiveSection(null)}
                 style={{
@@ -155,7 +155,7 @@ export default function Curriculum() {
               <div key={idx} style={{ marginBottom: 32, padding: 24, background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb" }}>
                 <h3 style={{ marginBottom: 12, color: "#1f2937" }}>{sec.heading}</h3>
 
-                <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+                <div className="curriculum-section-flex" style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
                   <div style={{ flex: 1, minWidth: 280 }}>
                     {sec.body && <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, color: "#374151" }}>{sec.body}</p>}
                   </div>

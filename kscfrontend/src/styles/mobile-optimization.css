@@ -373,6 +373,59 @@
   }
 }
 
+/* ── STUDENT PAGE ────────────────────────────────────────────
+   Hero clamp, compact quick-links 2-col grid.
+   ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .student-hero {
+    min-height: clamp(180px, 38vh, 280px) !important;
+  }
+  .student-hero h1 {
+    font-size: clamp(1.4rem, 5vw, 2rem) !important;
+  }
+  .student-hero p {
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem) !important;
+  }
+  /* Quick-links: 2 columns on mobile */
+  .student-ql-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+
+/* ── CURRICULUM PAGE ─────────────────────────────────────────
+   Subject combinations grid + section content flex column.
+   ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Subject combo cards: 2 columns */
+  .curriculum-combos-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  /* Section body + image: stack vertically */
+  .curriculum-section-flex {
+    flex-direction: column !important;
+  }
+  .curriculum-section-flex > div:last-child img {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  /* Section filter pills: compact */
+  .curriculum-section-pills {
+    gap: 6px !important;
+  }
+  .curriculum-section-pills button {
+    font-size: 0.78rem !important;
+    padding: 5px 10px !important;
+  }
+}
+@media (max-width: 430px) {
+  /* On very narrow phones keep combos 2-col but tighten */
+  .curriculum-combos-grid {
+    gap: 6px !important;
+  }
+}
+
 /* Dashboard responsive grids */
 @media (max-width: 768px) {
   .dashboard-grid {
