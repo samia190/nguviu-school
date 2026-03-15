@@ -141,6 +141,7 @@ function MenuButton({ route, setRoute, setLoading, user }) {
           {/* Drawer */}
           <nav
             aria-label="Sidebar menu"
+            className="app-nav-drawer"
             style={{
               position: "fixed",
               left: 0,

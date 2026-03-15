@@ -241,6 +241,7 @@
 }
 
 
+/* ── PERFORMANCE PAGE — CARD PADDING ────────────────────────
    Compact inner section card padding.
    ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
@@ -262,13 +263,22 @@
 }
 
 /* Desktop nav: visible on desktop, hidden on mobile (hamburger handles it)
-   Hamburger toggle: visible on mobile, also visible on desktop */
+   Hamburger toggle: visible on mobile, also visible on desktop.
+   On mobile the hamburger lives inside the header bar, right-aligned. */
 @media (max-width: 768px) {
   .desktop-nav {
     display: none !important;
   }
   .app-menu-toggle {
     display: flex !important;
+    /* Move hamburger into the header bar on the right side */
+    left: auto !important;
+    right: 12px !important;
+    top: calc((var(--header-h, 52px) - 44px) / 2) !important;
+  }
+  /* Drawer opens right from below the header */
+  .app-nav-drawer {
+    top: var(--header-h, 52px) !important;
   }
 }
 
@@ -283,24 +293,23 @@
    Featured cards become column-stacked; activity grid 2-col.
    ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
+  /* Featured cards: 2 columns, image stacked above text */
   .sl-featured-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
   }
   .sl-featured-card {
     flex-direction: column !important;
   }
   .sl-featured-card img {
     width: 100% !important;
-    height: 200px !important;
+    height: 160px !important;
     min-height: unset !important;
   }
+  /* All-activities grid: 2 columns (matches gallery approach) */
   .sl-activities-grid {
     grid-template-columns: repeat(2, 1fr) !important;
-  }
-}
-@media (max-width: 430px) {
-  .sl-activities-grid {
-    grid-template-columns: 1fr !important;
+    gap: 10px !important;
   }
 }
 
@@ -308,17 +317,18 @@
    Featured + all-events grids collapse on mobile.
    ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
+  /* Featured events: 2 columns (matches gallery approach) */
   .events-featured-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
   }
+  /* All events: 2 columns */
   .events-cards-grid {
     grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
   }
 }
 @media (max-width: 430px) {
-  .events-cards-grid {
-    grid-template-columns: 1fr !important;
-  }
   .events-modal {
     max-width: calc(100vw - 16px) !important;
     margin: 8px !important;
