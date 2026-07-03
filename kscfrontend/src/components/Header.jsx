@@ -140,6 +140,12 @@ export default function Header({ route, setRoute, setLoading, user, logout }) {
           About
         </button>
 
+        {user?.role === "teacher" && (
+          <button onClick={() => go("teacher")} style={navButtonStyle(route && route.split("/")[0] === "teacher")}>
+            Teacher Management
+          </button>
+        )}
+
         {/* Curriculum parent + submenu */}
         <div
           onMouseEnter={() => setOpenSubmenu("curriculum")}

@@ -7,7 +7,7 @@ import { requireRole } from "../middleware/requireAuth.js";
 const router = express.Router();
 
 // All invite management endpoints require admin
-router.use(requireRole(["admin"]));
+router.use(requireRole(["admin", "superadmin"]));
 
 // Role mapping from linkType
 const LINK_TYPE_ROLE = {

@@ -128,8 +128,8 @@ router.get("/status/:applicationNumber", async (req, res) => {
 
 // ============ ADMIN ROUTES ============
 
-// Get all admissions (ADMIN only)
-router.get("/", requireRole('admin'), async (req, res) => {
+// Get all admissions (ADMIN and SUPERADMIN only)
+router.get("/", requireRole(['admin', 'superadmin']), async (req, res) => {
   try {
     const { status, year, search, limit = 50, skip = 0 } = req.query;
     
@@ -161,8 +161,8 @@ router.get("/", requireRole('admin'), async (req, res) => {
   }
 });
 
-// Get admission statistics (ADMIN only)
-router.get("/stats", requireRole('admin'), async (req, res) => {
+// Get admission statistics (ADMIN and SUPERADMIN only)
+router.get("/stats", requireRole(['admin', 'superadmin']), async (req, res) => {
   try {
     const year = parseInt(req.query.year) || new Date().getFullYear();
     
@@ -199,8 +199,8 @@ router.get("/stats", requireRole('admin'), async (req, res) => {
   }
 });
 
-// Get single admission (ADMIN only)
-router.get("/:id", requireRole('admin'), async (req, res) => {
+// Get single admission (ADMIN and SUPERADMIN only)
+router.get("/:id", requireRole(['admin', 'superadmin']), async (req, res) => {
   try {
     const admission = await Admission.findById(req.params.id);
     
@@ -216,8 +216,8 @@ router.get("/:id", requireRole('admin'), async (req, res) => {
   }
 });
 
-// Update admission status (ADMIN only)
-router.patch("/:id/status", requireRole('admin'), async (req, res) => {
+// Update admission status (ADMIN and SUPERADMIN only)
+router.patch("/:id/status", requireRole(['admin', 'superadmin']), async (req, res) => {
   try {
     const { status, reviewNotes } = req.body;
     
@@ -252,8 +252,8 @@ router.patch("/:id/status", requireRole('admin'), async (req, res) => {
   }
 });
 
-// Delete admission (ADMIN only)
-router.delete("/:id", requireRole('admin'), async (req, res) => {
+// Delete admission (ADMIN and SUPERADMIN only)
+router.delete("/:id", requireRole(['admin', 'superadmin']), async (req, res) => {
   try {
     const admission = await Admission.findById(req.params.id);
     
@@ -288,8 +288,8 @@ router.delete("/:id", requireRole('admin'), async (req, res) => {
   }
 });
 
-// Bulk update status (ADMIN only)
-router.post("/bulk-status", requireRole('admin'), async (req, res) => {
+// Bulk update status (ADMIN and SUPERADMIN only)
+router.post("/bulk-status", requireRole(['admin', 'superadmin']), async (req, res) => {
   try {
     const { ids, status, reviewNotes } = req.body;
     

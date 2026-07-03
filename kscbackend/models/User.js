@@ -9,7 +9,7 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, required: true, lowercase: true, index: { unique: true } },
     passwordHash: { type: String, required: true },
 
-    role: { type: String, default: "pending", enum: ["pending","admin","teacher","student","staff","parent","user"] },
+    role: { type: String, default: "pending", enum: ["pending","superadmin","admin","teacher","student","staff","parent","user"] },
     requestedRole: { type: String, default: "user" },
 
     // Student-specific fields

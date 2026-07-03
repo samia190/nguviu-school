@@ -26,9 +26,19 @@ export default function SignUp({ onAuth, navigate }) {
   // Reads from hash fragment (#invite=TOKEN) — hash is never sent to the server so
   // the CDN rewrite always serves index.html for /signup regardless of invite token.
   useEffect(() => {
-    const hash = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : "";
-    const params = new URLSearchParams(hash);
-    const token = params.get("invite");
+    const rawHash = window.location.hash || "";
+    const hashContent = rawHash.startsWith("#") ? rawHash.slice(1) : rawHash;
+    const inviteFromHash = (() => {
+      const match = hashContent.match(/(?:^|[?#&])invite=([^&]+)/);
+      if (match) return match[1];
+      if (hashContent.includes("?")) {
+        return new URLSearchParams(hashContent.split("?").pop()).get("invite");
+      }
+      return new URLSearchParams(hashContent).get("invite");
+    })();
+    const inviteFromQuery = new URLSearchParams(window.location.search).get("invite");
+    const token = inviteFromHash || inviteFromQuery;
+
     if (token) {
       setInviteToken(token);
       get(`/api/invite/validate/${encodeURIComponent(token)}`)

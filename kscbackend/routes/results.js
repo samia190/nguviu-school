@@ -242,8 +242,8 @@ router.get("/:resultId", requireAuth, async (req, res) => {
 
 // ============ ADMIN ROUTES ============
 
-// Get all results (ADMIN only)
-router.get("/admin/all", requireRole('admin'), async (req, res) => {
+// Get all results (ADMIN and SUPERADMIN only)
+router.get("/admin/all", requireRole(["admin", "superadmin"]), async (req, res) => {
   try {
     const { term, year, published, curriculum, page = 1, limit = 20 } = req.query;
     
@@ -281,8 +281,8 @@ router.get("/admin/all", requireRole('admin'), async (req, res) => {
   }
 });
 
-// Create/upload new result (ADMIN only)
-router.post("/admin/create", requireRole('admin'), async (req, res) => {
+// Create/upload new result (ADMIN and SUPERADMIN only)
+router.post("/admin/create", requireRole(["admin", "superadmin"]), async (req, res) => {
   try {
     const resultData = req.body;
     

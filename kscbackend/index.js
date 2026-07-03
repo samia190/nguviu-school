@@ -47,6 +47,13 @@ import homeworkRoutes from "./routes/homework.js";
 import chatRoutes from "./routes/chat.js";
 import inviteRoutes from "./routes/invites.js";
 import invitePublicRoutes from "./routes/invitePublic.js";
+import examUploadRoutes from "./routes/examUpload.js";
+import recordingRoutes from "./routes/recording.js";
+
+// New integrated routes
+import examsRoutes from "./routes/exams.js";
+import linksRoutes from "./routes/links.js";
+import aiAssistantRoutes from "./routes/aiAssistant.js";
 
 // Initialize the Express app
 const app = express();
@@ -125,6 +132,19 @@ if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir, { recursive: true });
 if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
 
+// Short-circuit API requests when DB is not connected yet
+app.use('/api', (req, res, next) => {
+  try {
+    if (!getDbConnected()) {
+      return res.status(503).json({ error: 'Service unavailable: database not connected' });
+    }
+  } catch (err) {
+    // In case of unexpected error when checking DB status, log and continue to next
+    console.error('Error checking DB connection status:', err?.message || err);
+  }
+  return next();
+});
+
 // Cache control middleware for static assets
 const setStaticCacheHeaders = (res, path) => {
   if (path.match(/\.(jpg|jpeg|png|gif|ico|svg|webp)$/)) {
@@ -181,10 +201,12 @@ app.use("/api/gallery-page", galleryPageRoutes);
 app.use("/api/content/gallery", galleryRoutes);
 app.use("/api/content", contentRoutes);
 app.use("/api/files", filesRoutes);
+app.use("/api/recording", recordingRoutes);
 app.use("/api/downloads", downloadRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/invite", inviteRoutes);
 app.use("/api/invite", invitePublicRoutes);
+app.use("/api/exams", examUploadRoutes);
 app.use("/api/submissions", submissionsRoutes);
 // Public submit form and admin helpers
 app.use("/api/submit-form", submitFormRoutes);
@@ -209,6 +231,16 @@ app.use("/api/curriculum-page", curriculumPageRoutes);
 app.use("/api/admissions-page", admissionsPageRoutes);
 app.use("/api/homework", homeworkRoutes);
 app.use("/api/chat", chatRoutes);
+
+// ==========================================
+// INTEGRATED FEATURE ROUTES (Phase 4)
+// ==========================================
+// Exam Room Feature
+app.use("/api/exams", examsRoutes);
+// Link Generator Feature
+app.use("/api/links", linksRoutes);
+// AI Assistant Feature
+app.use("/api/ai", aiAssistantRoutes);
 
 // ==========================================
 // DATABASE CONNECTION
@@ -248,8 +280,20 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start the server
+import http from 'http';
+import initSocketServer from './socketServer.js';
+
+// Start the HTTP server and optionally initialize Socket.IO + mediasoup
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () =>
-  console.log(`🚀 Server listening on http://localhost:${PORT}`)
-);
+const server = http.createServer(app);
+
+if (process.env.ENABLE_MEDIASOUP === 'true') {
+  try {
+    await initSocketServer(server, app);
+    console.log('✅ Socket.IO + mediasoup signaling initialized');
+  } catch (err) {
+    console.error('Failed to initialize Socket.IO/mediasoup:', err);
+  }
+}
+
+server.listen(PORT, () => console.log(`🚀 Server listening on http://localhost:${PORT}`));

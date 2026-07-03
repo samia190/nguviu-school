@@ -2,14 +2,19 @@
 import { get } from "../utils/api";
 import Loader from "./Loader";
 
-export default function HomeworkPortal() {
+export default function HomeworkPortal({ user }) {
   const [homework, setHomework] = useState([]);
   const [filteredHomework, setFilteredHomework] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [submitForms, setSubmitForms] = useState({});
   const [selectedClass, setSelectedClass] = useState("all");
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [selectedContentType, setSelectedContentType] = useState("all");
+  const [selectedVisibility, setSelectedVisibility] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const classes = ["Grade 10", "Grade 11", "Grade 12", "Form 3", "Form 4"];
   const subjects = [
@@ -26,8 +31,40 @@ export default function HomeworkPortal() {
     { value: "assignment", label: "📋 Assignment", color: "#FF6B6B" },
     { value: "exam", label: "📝 Exam", color: "#4ECDC4" },
     { value: "notes", label: "📖 Notes", color: "#45B7D1" },
-    { value: "classwork", label: "✏️ Classwork", color: "#F4A261" }
+    { value: "classwork", label: "✏️ Classwork", color: "#F4A261" },
+    { value: "revision", label: "📚 Revision", color: "#9B59B6" }
   ];
+  const visibilityOptions = [
+    { value: "whole-school", label: "Whole school" },
+    { value: "my-class", label: "My class" },
+    { value: "selected-classes", label: "Selected classes" },
+    { value: "selected-stream", label: "Selected stream" },
+    { value: "revision-library", label: "Revision library" }
+  ];
+
+  function getAttachmentPreviewType(attachment) {
+    const name = (attachment?.originalName || attachment?.name || "").toLowerCase();
+    if (/\.pdf$/i.test(name)) return "pdf";
+    if (/\.(png|jpe?g|gif|webp|svg)$/i.test(name)) return "image";
+    if (/\.(mp4|webm|ogg)$/i.test(name)) return "video";
+    if (/\.(mp3|wav|m4a|aac)$/i.test(name)) return "audio";
+    return "download";
+  }
+
+  function getAttachmentViewUrl(attachment) {
+    const rawUrl = attachment?.url || "";
+    if (!rawUrl) return "";
+
+    if (rawUrl.includes("cloudinary")) {
+      return rawUrl;
+    }
+
+    if (rawUrl.includes("drive.google.com")) {
+      return rawUrl.replace(/\/view\?usp=sharing$/, "/preview");
+    }
+
+    return rawUrl;
+  }
 
   useEffect(() => {
     fetchHomework();
@@ -50,6 +87,37 @@ export default function HomeworkPortal() {
     }
   }
 
+  async function handleSubmitHomework(e, homeworkId) {
+    e.preventDefault();
+    if (!homeworkId) return;
+    setSubmitting(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const formData = new FormData();
+      const form = submitForms[homeworkId] || { notes: "", files: [] };
+      Array.from(form.files || []).forEach((file) => formData.append("attachments", file));
+      formData.append("notes", form.notes || "");
+
+      const response = await fetch(`/api/homework/${homeworkId}/submissions`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token") || sessionStorage.getItem("token") || ""}` },
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error || "Failed to submit homework");
+
+      setSuccess("Your submission was sent to the teacher.");
+      setSubmitForms((prev) => ({ ...prev, [homeworkId]: { notes: "", files: [] } }));
+    } catch (err) {
+      setError(err.message || "Failed to submit homework");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   useEffect(() => {
     let filtered = homework;
 
@@ -65,8 +133,19 @@ export default function HomeworkPortal() {
       filtered = filtered.filter(hw => hw.contentType === selectedContentType);
     }
 
+    if (selectedVisibility !== "all") {
+      filtered = filtered.filter(hw => hw.visibility === selectedVisibility);
+    }
+
+    if (searchTerm.trim()) {
+      const query = searchTerm.toLowerCase();
+      filtered = filtered.filter(hw =>
+        `${hw.title} ${hw.description || ""} ${hw.subject} ${hw.topic || ""} ${hw.department || ""}`.toLowerCase().includes(query)
+      );
+    }
+
     setFilteredHomework(filtered);
-  }, [selectedClass, selectedSubject, selectedContentType, homework]);
+  }, [selectedClass, selectedSubject, selectedContentType, selectedVisibility, searchTerm, homework]);
 
   if (loading) return <Loader />;
 
@@ -104,7 +183,7 @@ export default function HomeworkPortal() {
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
         }}>
           <h3 style={{ marginTop: 0 }}>Filter Homework</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "15px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "15px" }}>
             <div>
               <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold" }}>Class</label>
               <select
@@ -156,6 +235,39 @@ export default function HomeworkPortal() {
                 {contentTypes.map(ct => <option key={ct.value} value={ct.value}>{ct.label}</option>)}
               </select>
             </div>
+            <div>
+              <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold" }}>Visibility</label>
+              <select
+                value={selectedVisibility}
+                onChange={(e) => setSelectedVisibility(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                  fontSize: "14px"
+                }}
+              >
+                <option value="all">All Visibility</option>
+                {visibilityOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </div>
+          </div>
+          <div style={{ marginTop: "15px" }}>
+            <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold" }}>Search</label>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search title, topic, description, department"
+              style={{
+                width: "100%",
+                padding: "10px",
+                border: "1px solid #ddd",
+                borderRadius: "4px",
+                fontSize: "14px"
+              }}
+            />
           </div>
         </div>
 
@@ -263,35 +375,111 @@ export default function HomeworkPortal() {
                   )}
 
                   {/* Files */}
+                  {user?.role === "student" && (
+                    <form onSubmit={(e) => handleSubmitHomework(e, hw._id)} style={{ marginBottom: "12px", borderTop: "1px solid #e5e7eb", paddingTop: "12px" }}>
+                      <div style={{ fontSize: "13px", fontWeight: 600, marginBottom: "8px" }}>Submit your work</div>
+                      <textarea
+                        value={submitForms[hw._id]?.notes || ""}
+                        onChange={(e) => setSubmitForms((prev) => ({ ...prev, [hw._id]: { ...(prev[hw._id] || { files: [] }), notes: e.target.value } }))}
+                        placeholder="Add notes for your teacher"
+                        style={{ width: "100%", minHeight: "70px", padding: "8px", border: "1px solid #ddd", borderRadius: "4px", marginBottom: "8px" }}
+                      />
+                      <input
+                        type="file"
+                        multiple
+                        onChange={(e) => setSubmitForms((prev) => ({ ...prev, [hw._id]: { ...(prev[hw._id] || { notes: "" }), files: Array.from(e.target.files || []) } }))}
+                        style={{ width: "100%", marginBottom: "8px" }}
+                      />
+                      <button
+                        type="submit"
+                        disabled={submitting || !(submitForms[hw._id]?.files || []).length}
+                        style={{ width: "100%", padding: "8px 10px", background: submitting || !(submitForms[hw._id]?.files || []).length ? "#9ca3af" : "#2563eb", color: "white", border: "none", borderRadius: "4px", cursor: submitting || !(submitForms[hw._id]?.files || []).length ? "not-allowed" : "pointer" }}
+                      >
+                        {submitting ? "Submitting..." : "Submit to teacher"}
+                      </button>
+                    </form>
+                  )}
+
                   {hw.attachments && hw.attachments.length > 0 && (
                     <div style={{ marginBottom: "12px" }}>
                       <small style={{ color: "#666", display: "block", marginBottom: "8px" }}>
                         <strong>📎 {hw.attachments.length} file{hw.attachments.length !== 1 ? "s" : ""}</strong>
                       </small>
-                      <div style={{ display: "grid", gap: "6px" }}>
-                        {hw.attachments.map((att, idx) => (
-                          <a
-                            key={att._id || idx}
-                            href={att.url}
-                            download={att.originalName}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              padding: "8px 12px",
-                              background: "#007bff",
-                              color: "white",
-                              textDecoration: "none",
-                              borderRadius: "4px",
-                              fontSize: "12px",
-                              textAlign: "center",
-                              transition: "background 0.2s"
-                            }}
-                            onMouseEnter={(e) => e.target.style.background = "#0056b3"}
-                            onMouseLeave={(e) => e.target.style.background = "#007bff"}
-                          >
-                            📥 {att.originalName}
-                          </a>
-                        ))}
+                      <div style={{ display: "grid", gap: "8px" }}>
+                        {hw.attachments.map((att, idx) => {
+                          const previewType = getAttachmentPreviewType(att);
+                          const fileName = att.originalName || att.name || "Attachment";
+                          const viewUrl = getAttachmentViewUrl(att);
+
+                          return (
+                            <div key={att._id || idx} style={{ border: "1px solid #e5e7eb", borderRadius: "6px", overflow: "hidden" }}>
+                              {previewType === "pdf" && (
+                                <iframe
+                                  title={fileName}
+                                  src={viewUrl || att.url}
+                                  style={{ width: "100%", height: "220px", border: 0 }}
+                                />
+                              )}
+                              {previewType === "image" && (
+                                <img
+                                  src={viewUrl || att.url}
+                                  alt={fileName}
+                                  style={{ width: "100%", maxHeight: "220px", objectFit: "contain", background: "#f8fafc" }}
+                                />
+                              )}
+                              {previewType === "video" && (
+                                <video controls style={{ width: "100%", maxHeight: "220px", background: "#000" }}>
+                                  <source src={viewUrl || att.url} type={att.mimetype || "video/mp4"} />
+                                  Your browser does not support the video tag.
+                                </video>
+                              )}
+                              {previewType === "audio" && (
+                                <div style={{ padding: "12px", background: "#f8fafc" }}>
+                                  <audio controls style={{ width: "100%" }}>
+                                    <source src={viewUrl || att.url} type={att.mimetype || "audio/mpeg"} />
+                                    Your browser does not support the audio tag.
+                                  </audio>
+                                </div>
+                              )}
+                              <div style={{ display: "flex", gap: "8px", padding: "8px", background: "#f8fafc" }}>
+                                <a
+                                  href={viewUrl || att.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    flex: 1,
+                                    padding: "8px 10px",
+                                    background: previewType === "download" ? "#007bff" : "#2563eb",
+                                    color: "white",
+                                    textDecoration: "none",
+                                    borderRadius: "4px",
+                                    fontSize: "12px",
+                                    textAlign: "center"
+                                  }}
+                                >
+                                  {previewType === "pdf" ? "Open PDF" : previewType === "image" ? "Open image" : previewType === "video" ? "Play video" : previewType === "audio" ? "Play audio" : "Open file"}
+                                </a>
+                                <a
+                                  href={att.url}
+                                  download={fileName}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    padding: "8px 10px",
+                                    background: "#e5e7eb",
+                                    color: "#111827",
+                                    textDecoration: "none",
+                                    borderRadius: "4px",
+                                    fontSize: "12px",
+                                    textAlign: "center"
+                                  }}
+                                >
+                                  Download
+                                </a>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

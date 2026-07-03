@@ -13,11 +13,21 @@ export function requireAuth(req, res, next) {
     if (!token) return res.status(401).json({ error: "Unauthorized" });
     if (!process.env.JWT_SECRET) return res.status(500).json({ error: "JWT_SECRET not configured" });
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = payload;
+    req.user = {
+      ...payload,
+      id: payload.id || payload._id,
+      _id: payload._id || payload.id,
+    };
     return next();
   } catch (err) {
     console.error("Auth error:", err.message);
-    return res.status(401).json({ error: "Invalid token" });
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ error: "Token expired" });
+    }
+    if (err.name === "JsonWebTokenError") {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+    return res.status(401).json({ error: "Unauthorized" });
   }
 }
 
@@ -50,11 +60,23 @@ export function requireRole(allowed = []) {
         return res.status(403).json({ error: `Forbidden - requires role: ${roles.join(", ")}` });
       }
       
-      req.user = payload;
+      req.user = {
+        ...payload,
+        id: payload.id || payload._id,
+        _id: payload._id || payload.id,
+      };
       return next();
     } catch (err) {
       console.error("Role check error:", err.message);
-      return res.status(401).json({ error: "Invalid token" });
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({ error: "Token expired" });
+      }
+      if (err.name === "JsonWebTokenError") {
+        return res.status(401).json({ error: "Invalid token" });
+      }
+      return res.status(401).json({ error: "Unauthorized" });
     }
   };
 }
+
+export default requireAuth;

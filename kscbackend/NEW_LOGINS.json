@@ -1,0 +1,30 @@
+[
+  {
+    "type": "SUPERADMIN",
+    "email": "superadmin@kangaru-girls.ac.ke",
+    "password": "&,}Dsh$&l!5Cvjbo",
+    "role": "superadmin",
+    "access": "Full access to all system features and sensitive information"
+  },
+  {
+    "type": "ADMIN",
+    "email": "admin@kangaru-girls.ac.ke",
+    "password": "Iw:tQwnSIVd3rTQb",
+    "role": "admin",
+    "access": "Limited administrative access, excludes sensitive system information"
+  },
+  {
+    "type": "TEACHER",
+    "email": "teacher@kangaru-girls.ac.ke",
+    "password": "h!P5&ON#O0ydc,hF",
+    "role": "teacher",
+    "access": "Can manage homework, view results, and interact with students"
+  },
+  {
+    "type": "STUDENT",
+    "email": "student@kangaru-girls.ac.ke",
+    "password": "J;sz,}SJ1t5Af@|3",
+    "role": "student",
+    "access": "Can view results, submit homework, and access student portal"
+  }
+]

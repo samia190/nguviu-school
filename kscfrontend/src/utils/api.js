@@ -41,6 +41,15 @@ const API_ORIGIN = (() => {
   return "";
 })();
 
+// Socket.IO server origin (for live streaming signaling)
+if (typeof window !== 'undefined' && !window.__SOCKET_ORIGIN) {
+  // If not explicitly set, derive from API_ORIGIN or use current origin
+  window.__SOCKET_ORIGIN = API_ORIGIN || window.location.origin;
+  if (window.__SOCKET_ORIGIN === '') {
+    window.__SOCKET_ORIGIN = window.location.origin;
+  }
+}
+
 export function getToken() {
   try {
     return localStorage.getItem("token") || sessionStorage.getItem("token") || null;

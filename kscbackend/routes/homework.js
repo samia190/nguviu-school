@@ -4,6 +4,8 @@ import mongoose from "mongoose";
 import Homework from "../models/Homework.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { uploadBuffer } from "../utils/storage.js";
+import { buildHomeworkPayload } from "../utils/homeworkPayload.js";
+import { buildHomeworkSubmissionRecord } from "../utils/homeworkSubmission.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -78,11 +80,75 @@ router.get("/:id", requireAuth, async (req, res) => {
   }
 });
 
+// GET submissions for a homework item (teacher/admin only)
+router.get("/:id/submissions", requireAuth, async (req, res) => {
+  try {
+    if (!["teacher", "admin"].includes(req.user?.role)) {
+      return res.status(403).json({ error: "Only teachers and admins can view submissions" });
+    }
+
+    const homework = await Homework.findById(req.params.id);
+    if (!homework) {
+      return res.status(404).json({ error: "Homework not found" });
+    }
+
+    const Submission = mongoose.model("HomeworkSubmission");
+    const submissions = await Submission.find({ homeworkId: req.params.id }).sort({ submittedAt: -1 }).lean();
+    res.json(submissions || []);
+  } catch (err) {
+    console.error("Error fetching homework submissions:", err.message);
+    res.status(500).json({ error: "Failed to fetch submissions" });
+  }
+});
+
+// POST create a student submission for a homework item
+router.post("/:id/submissions", requireAuth, upload.array("attachments", 10), async (req, res) => {
+  try {
+    if (req.user?.role !== "student") {
+      return res.status(403).json({ error: "Only students can submit homework" });
+    }
+
+    const homework = await Homework.findById(req.params.id);
+    if (!homework) {
+      return res.status(404).json({ error: "Homework not found" });
+    }
+
+    const attachments = [];
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const uploaded = await uploadBuffer(file.buffer, file.originalname, file.mimetype);
+        attachments.push({
+          originalName: file.originalname,
+          name: uploaded.filename || uploaded.public_id || file.originalname,
+          url: uploaded.url,
+          mimetype: file.mimetype,
+          size: file.size,
+        });
+      }
+    }
+
+    const Submission = mongoose.model("HomeworkSubmission");
+    const submissionPayload = buildHomeworkSubmissionRecord({
+      homework,
+      user: req.user,
+      notes: req.body?.notes || "",
+      attachments,
+    });
+
+    const submission = await Submission.create(submissionPayload);
+    res.status(201).json(submission);
+  } catch (err) {
+    console.error("Error creating homework submission:", err.message);
+    res.status(500).json({ error: "Failed to submit homework" });
+  }
+});
+
 // POST create homework (teachers & admins)
 router.post("/", requireAuth, upload.array("attachments", 10), async (req, res) => {
   try {
-    const { title, description, subject, class: classParam, contentType, dueDate, status } = req.body;
     const user = req.user;
+    const payload = buildHomeworkPayload(req.body);
+    const { title, description, subject, class: classParam, contentType, dueDate, status, stream, academicYear, term, topic, department, resourceType, visibility, allowedClasses, allowedStreams } = payload;
 
     // Only teachers and admins can upload homework
     if (user.role !== "teacher" && user.role !== "admin") {
@@ -127,14 +193,23 @@ router.post("/", requireAuth, upload.array("attachments", 10), async (req, res) 
       description,
       subject,
       class: classParam,
-      contentType: contentType || "assignment",
+      stream,
+      academicYear,
+      term,
+      topic,
+      department,
+      resourceType: resourceType || "notes",
+      contentType: contentType || "notes",
       teacher: {
         _id: user.id,
         name: teacherName
       },
       dueDate: dueDate || null,
       attachments,
-      status: status || "published"
+      status: status || "published",
+      visibility: visibility || "whole-school",
+      allowedClasses: Array.isArray(allowedClasses) ? allowedClasses : [],
+      allowedStreams: Array.isArray(allowedStreams) ? allowedStreams : [],
     });
 
     await homework.save();
@@ -160,15 +235,25 @@ router.put("/:id", requireAuth, upload.array("attachments", 10), async (req, res
       return res.status(403).json({ error: "Unauthorized to update this homework" });
     }
 
-    const { title, description, subject, class: classParam, contentType, dueDate, status } = req.body;
+    const payload = buildHomeworkPayload(req.body);
+    const { title, description, subject, class: classParam, contentType, dueDate, status, stream, academicYear, term, topic, department, resourceType, visibility, allowedClasses, allowedStreams } = payload;
 
     if (title) homework.title = title;
-    if (description) homework.description = description;
+    if (description !== undefined) homework.description = description;
     if (subject) homework.subject = subject;
     if (classParam) homework.class = classParam;
+    if (stream !== undefined) homework.stream = stream;
+    if (academicYear !== undefined) homework.academicYear = academicYear;
+    if (term !== undefined) homework.term = term;
+    if (topic !== undefined) homework.topic = topic;
+    if (department !== undefined) homework.department = department;
+    if (resourceType) homework.resourceType = resourceType;
     if (contentType) homework.contentType = contentType;
     if (dueDate !== undefined) homework.dueDate = dueDate || null;
     if (status) homework.status = status;
+    if (visibility) homework.visibility = visibility;
+    if (allowedClasses !== undefined) homework.allowedClasses = Array.isArray(allowedClasses) ? allowedClasses : [];
+    if (allowedStreams !== undefined) homework.allowedStreams = Array.isArray(allowedStreams) ? allowedStreams : [];
 
     // Handle new file uploads via unified storage (Cloudinary > S3 > Disk)
     if (req.files && req.files.length > 0) {

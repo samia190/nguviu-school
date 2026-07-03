@@ -80,11 +80,10 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// PUT /api/submissions/:id  -> update status and reviewer notes
-router.put("/:id", async (req, res) => {
+const updateSubmission = async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) return res.status(503).json({ error: "DB unavailable" });
-    const { status, reviewerNotes } = req.body;
+    const { status, reviewerNotes, originalName, notes } = req.body;
     const doc = await File.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: "Submission not found" });
 
@@ -92,6 +91,8 @@ router.put("/:id", async (req, res) => {
       doc.status = status;
     }
     if (typeof reviewerNotes === "string") doc.reviewerNotes = reviewerNotes;
+    if (typeof originalName === "string") doc.originalName = originalName;
+    if (typeof notes === "string") doc.notes = notes;
     if (req.user?.id) doc.reviewedBy = req.user.id;
 
     await doc.save();
@@ -100,7 +101,11 @@ router.put("/:id", async (req, res) => {
     console.error(err);
     return res.status(500).json({ error: "Failed to update submission" });
   }
-});
+};
+
+// PUT /api/submissions/:id  -> update status and reviewer notes
+router.put("/:id", updateSubmission);
+router.patch("/:id", updateSubmission);
 
 // DELETE /api/submissions/:id
 router.delete("/:id", async (req, res) => {

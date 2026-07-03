@@ -24,6 +24,9 @@ export default function Login({ onAuth, navigate }) {
     e.preventDefault();
 
     const formData = Object.fromEntries(new FormData(e.target));
+    if (formData.email) {
+      formData.email = formData.email.toLowerCase().trim();
+    }
     setStatus("Logging in...");
 
     try {

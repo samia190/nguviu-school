@@ -89,7 +89,7 @@ router.post("/upload", upload.single("file"), optimizeMedia(), async (req, res) 
 // ✅ POST: upload student homework (multiple files)
 router.post("/", upload.array("attachments", 10), optimizeMedia(), async (req, res) => {
   try {
-    const { level, subject, notes, studentEmail, studentRole } = req.body;
+    const { level, subject, notes, studentEmail, studentRole, examId, sessionId, questionId, type } = req.body;
 
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: "No files uploaded" });
@@ -115,6 +115,10 @@ router.post("/", upload.array("attachments", 10), optimizeMedia(), async (req, r
           notes: notes || "",
           studentEmail: studentEmail || "",
           studentRole: studentRole || "",
+          examId: examId || null,
+          sessionId: sessionId || null,
+          questionId: questionId || null,
+          type: type || "",
           uploadedAt: new Date(),
         });
       } else {
@@ -127,6 +131,10 @@ router.post("/", upload.array("attachments", 10), optimizeMedia(), async (req, r
           notes: notes || "",
           studentEmail: studentEmail || "",
           studentRole: studentRole || "",
+          examId: examId || null,
+          sessionId: sessionId || null,
+          questionId: questionId || null,
+          type: type || "",
         });
 
         savedFiles.push(doc);
@@ -136,6 +144,9 @@ router.post("/", upload.array("attachments", 10), optimizeMedia(), async (req, r
     const response = savedFiles.map((doc) => ({
       ...(doc.toObject ? doc.toObject() : doc),
       downloadUrl: toAbsoluteUrl(req, doc.url),
+      questionId: doc.questionId || null,
+      examId: doc.examId || null,
+      sessionId: doc.sessionId || null,
     }));
 
     if (dbUnavailable) return res.json({ warning: "DB unavailable; files not persisted", items: response });

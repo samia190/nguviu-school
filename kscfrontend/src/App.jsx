@@ -5,7 +5,7 @@ import Header from "./components/Header";
 import Home from "./components/Home";
 import Footer from "./components/Footer";
 import Loader from "./components/Loader";
-import ChatWidget from "./components/ChatWidget";
+import UnifiedAIAssistant from "./components/UnifiedAIAssistant";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 // Lazy-load all pages except Home (first paint)
@@ -45,6 +45,18 @@ const StudentClubs = lazy(() => import("./components/subpages/StudentClubs.jsx")
 
 const PageBackgroundManagement = lazy(() => import("./components/PageBackgroundManagement"));
 
+// Integrated Feature Components (Phase 5)
+const ExamList = lazy(() => import("./components/ExamList"));
+const TakeExam = lazy(() => import("./components/TakeExam"));
+const ExamResults = lazy(() => import("./components/ExamResults"));
+const ExamRoomLanding = lazy(() => import("./components/ExamRoomLanding"));
+const TeacherExamManagement = lazy(() => import("./components/TeacherExamManagement"));
+const LiveInvigilation = lazy(() => import("./components/LiveInvigilation"));
+const AdminExamManagement = lazy(() => import("./components/AdminExamManagement"));
+const LinkGenerator = lazy(() => import("./components/LinkGenerator"));
+const LinkAnalytics = lazy(() => import("./components/LinkAnalytics"));
+const AIAssistant = lazy(() => import("./components/AIAssistant"));
+
 function MenuButton({ route, setRoute, setLoading, user }) {
   const [open, setOpen] = useState(false);
   const HIDDEN = ["login", "signup"];
@@ -52,14 +64,15 @@ function MenuButton({ route, setRoute, setLoading, user }) {
   if (HIDDEN.includes((route || "").toLowerCase())) return null;
 
   const links = [
-    // admin quick link visible only when logged in as admin
-    ...(user && user.role === "admin" ? [
+    // admin quick link visible only when logged in as admin or superadmin
+    ...(user && (user.role === "admin" || user.role === "superadmin") ? [
       { key: "admin", label: "Admin", icon: "👤" },
       { key: "results-management", label: "Results Management", icon: "📊" },
       { key: "performance-management", label: "School Performance", icon: "🏆" }
     ] : []),
-    // teacher quick link visible only when logged in as teacher
+    // teacher quick links visible only when logged in as teacher
     ...(user && user.role === "teacher" ? [
+      { key: "teacher", label: "Teacher Management", icon: "👩‍🏫" },
       { key: "teacher/homework", label: "My Homework", icon: "📝" }
     ] : []),
     { key: "home", label: "Home", icon: "🏠" },
@@ -77,14 +90,32 @@ function MenuButton({ route, setRoute, setLoading, user }) {
     { key: "legal", label: "Legal", icon: "⚖️" },
     { key: "newsletter", label: "Newsletter", icon: "📰" },
     { key: "contact", label: "Contact", icon: "📞" },
+    { key: "ai", label: "AI Assistant", icon: "🤖" },
     // Auth: show Login / Sign Up only when not logged in
     ...(!user ? [
       { key: "login", label: "Log In", icon: "🔑" },
       { key: "signup", label: "Sign Up", icon: "✍️" },
     ] : []),
     // Homework portal: only visible to students, teachers, and admins
-    ...(user && (user.role === "student" || user.role === "teacher" || user.role === "admin") ? [
-      { key: "portal/homework", label: "Homework Portal", icon: "📚" }
+    ...(user && (user.role === "student" || user.role === "teacher" || user.role === "admin" || user.role === "superadmin") ? [
+      { key: "portal/homework", label: "Homework Portal", icon: "📚" },
+      { key: "exams", label: "Exams", icon: "📝" },
+    ] : []),
+    // Exam Room: visible to students for taking exams
+    ...(user && user.role === "student" ? [
+      { key: "exam-room/student", label: "📖 Online Exams", icon: "✏️" },
+    ] : []),
+    // Exam Room: visible to teachers for managing exams
+    ...(user && user.role === "teacher" ? [
+      { key: "exam-room/teacher", label: "📊 Create & Manage Exams", icon: "⚙️" },
+    ] : []),
+    // Exam Room: visible to admins and superadmins for global exam management
+    ...(user && (user.role === "admin" || user.role === "superadmin") ? [
+      { key: "exam-room/admin", label: "🎓 Exam Management", icon: "🛠️" },
+    ] : []),
+    // Link generator: visible to teachers and admins
+    ...(user && (user.role === "teacher" || user.role === "admin" || user.role === "superadmin") ? [
+      { key: "links", label: "Link Generator", icon: "🔗" },
     ] : []),
   ];
 
@@ -222,6 +253,10 @@ const ROUTE_META = {
   newsletter:  { title: "School Newsletter – Kangaru Girls Senior School | Latest News",       description: "Read the latest news, announcements, and newsletters from Kangaru Girls Senior School, Embu, Kenya. Stay informed about school achievements, upcoming events, and academic updates." },
   contact:     { title: "Contact Us – Kangaru Girls Senior School | Embu, Kenya",              description: "Contact Kangaru Girls Senior School. Address: P.O. BOX 1094-60100, Embu, Kenya. Phone: +254796214804. Email: kangarugirls@yahoo.com. Find us in Embu County, Kenya." },
   legal:       { title: "Legal – Kangaru Girls Senior School | Terms & Privacy Policy",        description: "Legal information, terms of use, privacy policy, and data protection practices for the Kangaru Girls Senior School website." },
+  exams:       { title: "Exams – Kangaru Girls Senior School | Take Online Exams",             description: "Access your school exams, test your knowledge, and view results. Participate in online examinations with proctoring monitoring at Kangaru Girls Senior School." },
+  "exam-room":{ title: "Exam Room – Kangaru Girls Senior School | Secure Online Exams", description: "Secure online exam room for students, teachers, and administrators. Create, manage and take exams with scheduling, enrollment, and proctoring support." },
+  links:       { title: "Link Generator – Kangaru Girls Senior School | Share Resources",      description: "Create, manage, and track short links for sharing school resources, assignments, and documents. View detailed analytics on link clicks and traffic." },
+  ai:          { title: "AI Assistant – Kangaru Girls Senior School | Study Support",          description: "Get instant homework help and study support from the AI Assistant. Chat with smart tutoring system to improve your learning at Kangaru Girls Senior School." },
 };
 
 function updatePageMeta(route) {
@@ -359,14 +394,28 @@ export default function App() {
 
   // Decode user from token (if any).
   // Checks both localStorage (remember me) and sessionStorage (session-only login).
+  const decodeJwtPayload = (token) => {
+    if (!token || typeof token !== "string") return null;
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    try {
+      const payload = parts[1];
+      const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+      const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, "=");
+      return JSON.parse(atob(padded));
+    } catch (err) {
+      console.error("Failed to decode JWT payload:", err);
+      return null;
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
     if (token) {
       try {
-        const [, payload] = token.split(".");
-        if (payload) {
-          const data = JSON.parse(atob(payload));
-          setUser({ email: data.email, role: data.role, id: data.id });
+        const data = decodeJwtPayload(token);
+        if (data) {
+          setUser({ id: data.id || data._id, name: data.name, email: data.email, role: data.role });
         }
       } catch (err) {
         console.error("Failed to decode token", err);
@@ -435,7 +484,8 @@ export default function App() {
       <ErrorBoundary>
       <Suspense fallback={<div style={{ textAlign: "center", padding: "60px 20px" }}><Loader size={80} /></div>}>
         {(() => {
-          const [mainRoute, subRoute] = route.split("/");
+          const [mainRoute, subRouteRaw] = route.split("/");
+          const subRoute = subRouteRaw?.split("?")[0]; // Extract query string
 
           switch (mainRoute) {
      
@@ -479,15 +529,15 @@ export default function App() {
               return <Student user={user} subRoute={subRoute} setRoute={setRoute} />;
 
             case "portal":
-              // ✅ Homework portal — restricted to students, teachers, admins
+              // ✅ Homework portal — restricted to students, teachers, admins, superadmin
               if (subRoute === "homework") {
-                if (user && (user.role === "student" || user.role === "teacher" || user.role === "admin")) {
+                if (user && (user.role === "student" || user.role === "teacher" || user.role === "admin" || user.role === "superadmin")) {
                   return <HomeworkPortal user={user} />;
                 }
                 return (
                   <div style={{ textAlign: "center", padding: "60px 20px" }}>
                     <h2>🔒 Access Restricted</h2>
-                    <p>Only Varified Student have access to this Portal.</p>
+                    <p>Only Verified Student have access to this Portal.</p>
                     <button onClick={() => setRoute("login")} style={{ padding: "10px 24px", background: "#667eea", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "16px", marginTop: "16px" }}>Log In</button>
                   </div>
                 );
@@ -497,12 +547,42 @@ export default function App() {
 
             case "teacher":
               // ✅ Teacher routes
-              if (user?.role === "teacher") {
-                if (subRoute === "homework") {
-                  return <TeacherHomework user={user} />;
-                }
+              if (user?.role !== "teacher") {
+                return <div>Access denied — teacher only</div>;
               }
-              return <div>Access denied — teacher only</div>;
+
+              if (subRoute === "homework") {
+                return <TeacherHomework user={user} />;
+              }
+
+              if (subRoute === "exams") {
+                return <TeacherExamManagement user={user} />;
+              }
+
+              return (
+                <div style={{ padding: "30px", maxWidth: "1000px", margin: "0 auto" }}>
+                  <h1>👩‍🏫 Teacher Management</h1>
+                  <p style={{ color: "#555", marginBottom: "24px" }}>
+                    Manage your homework, notes, and exams from one place.
+                  </p>
+                  <div style={{ display: "grid", gap: "16px", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
+                    <button
+                      onClick={() => setRoute("teacher/homework")}
+                      style={{ padding: "18px", borderRadius: "12px", border: "1px solid #d0d7de", background: "#f8fafc", cursor: "pointer", textAlign: "left" }}
+                    >
+                      <strong>📚 My Homework & Notes</strong>
+                      <div style={{ color: "#4b5563", marginTop: "6px" }}>Create, edit, and share assignments.</div>
+                    </button>
+                    <button
+                      onClick={() => setRoute("exam-room/teacher")}
+                      style={{ padding: "18px", borderRadius: "12px", border: "1px solid #d0d7de", background: "#f8fafc", cursor: "pointer", textAlign: "left" }}
+                    >
+                      <strong>📝 Create & Manage Exams</strong>
+                      <div style={{ color: "#4b5563", marginTop: "6px" }}>Build exams and manage question banks.</div>
+                    </button>
+                  </div>
+                </div>
+              );
 
             case "events":
               return <Events user={user} />;
@@ -558,13 +638,90 @@ export default function App() {
 
             case "performance-management":
               // Redirect to admin dashboard performance tab
-              if (user?.role !== "admin") return <div>Access denied — admin only</div>;
+              if (user?.role !== "admin" && user?.role !== "superadmin") return <div>Access denied — admin only</div>;
               return <AdminDashboard user={user} />;
 
             case "admin":
-              if (user?.role === "admin")
+              if (user?.role === "admin" || user?.role === "superadmin")
                 return <AdminDashboard user={user} />;
               return <div>Access denied — admin only</div>;
+
+            // ========================================
+            // INTEGRATED FEATURE ROUTES (Phase 5)
+            // ========================================
+            
+            case "exams":
+              // Exam listing and taking
+              if (user && (user.role === "student" || user.role === "teacher" || user.role === "admin" || user.role === "superadmin")) {
+                if (subRoute === "take") {
+                  return <TakeExam user={user} setRoute={setRoute} />;
+                } else if (subRoute === "results") {
+                  return <ExamResults user={user} />;
+                }
+                return <ExamList user={user} setRoute={setRoute} />;
+              }
+              return <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                <h2>🔒 Access Restricted</h2>
+                <p>Only authorized users can access exams.</p>
+                <button onClick={() => setRoute("login")} style={{ padding: "10px 24px", background: "#667eea", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "16px", marginTop: "16px" }}>Log In</button>
+              </div>;
+
+            case "links":
+              // Link generator and analytics
+              if (user && (user.role === "teacher" || user.role === "admin" || user.role === "superadmin")) {
+                if (subRoute === "analytics") {
+                  return <LinkAnalytics user={user} />;
+                }
+                return <LinkGenerator user={user} setRoute={setRoute} />;
+              }
+              return <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                <h2>🔒 Access Restricted</h2>
+                <p>Only teachers and admins can access link generator.</p>
+                <button onClick={() => setRoute("login")} style={{ padding: "10px 24px", background: "#667eea", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "16px", marginTop: "16px" }}>Log In</button>
+              </div>;
+
+            case "ai":
+              // AI Assistant for all authenticated users
+              if (user && (user.role === "student" || user.role === "teacher" || user.role === "admin" || user.role === "staff" || user.role === "parent" || user.role === "superadmin")) {
+                return <AIAssistant user={user} setRoute={setRoute} />;
+              }
+              return <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                <h2>🔒 Access Restricted</h2>
+                <p>Please log in to access the AI Assistant.</p>
+                <button onClick={() => setRoute("login")} style={{ padding: "10px 24px", background: "#667eea", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "16px", marginTop: "16px" }}>Log In</button>
+              </div>;
+
+            case "exam-room":
+              if (!user) {
+                return <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                  <h2>🔒 Access Restricted</h2>
+                  <p>Please log in to access the Exam Room.</p>
+                  <button onClick={() => setRoute("login")} style={{ padding: "10px 24px", background: "#667eea", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "16px", marginTop: "16px" }}>Log In</button>
+                </div>;
+              }
+
+              if (subRoute === "teacher") {
+                if (user.role === "teacher") {
+                  return <TeacherExamManagement user={user} />;
+                }
+                return <div style={{ textAlign: "center", padding: "60px 20px" }}><h2>Access denied — teacher only</h2></div>;
+              }
+
+              if (subRoute === "invigilation") {
+                if (user.role === "teacher") {
+                  return <LiveInvigilation examId={subRoute === "invigilation" ? route.split("/")[2] : null} sessionId={route.split("/")[3]} />;
+                }
+                return <div style={{ textAlign: "center", padding: "60px 20px" }}><h2>Access denied — teacher only</h2></div>;
+              }
+
+              if (subRoute === "admin") {
+                if (user.role === "admin" || user.role === "superadmin") {
+                  return <AdminExamManagement user={user} />;
+                }
+                return <div style={{ textAlign: "center", padding: "60px 20px" }}><h2>Access denied — admin only</h2></div>;
+              }
+
+              return <ExamRoomLanding user={user} setRoute={setRoute} />;
 
             default:
               return <Home user={user} setRoute={setRoute} />;
@@ -576,7 +733,7 @@ export default function App() {
       </main>
 
       <Footer />
-      <ChatWidget />
+      <UnifiedAIAssistant user={user} setRoute={setRoute} />
     </>
   );
 }

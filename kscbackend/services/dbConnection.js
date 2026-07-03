@@ -3,6 +3,7 @@
  * Handles database connections with proper error handling and configuration
  */
 import mongoose from 'mongoose';
+import dns from 'dns';
 
 let dbConnected = false;
 
@@ -17,6 +18,30 @@ function getMongoUri() {
     process.env.MONGODB_URI ||
     process.env.DATABASE_URL
   );
+}
+
+/**
+ * When using mongodb+srv Atlas URIs, Node can sometimes use a local
+ * DNS resolver (127.0.0.1) that does not support SRV queries.
+ * Fall back to public DNS servers for SRV resolution if needed.
+ */
+function enforceAtlasSrvDnsFallback(mongoUri) {
+  if (!mongoUri || !mongoUri.startsWith('mongodb+srv://')) {
+    return;
+  }
+
+  const currentServers = dns.getServers();
+  const needsFallback = currentServers.some((server) =>
+    server === '127.0.0.1' || server === '::1' || server === '[::1]'
+  );
+
+  if (needsFallback) {
+    console.warn('⚠️  Detected local DNS resolver (127.0.0.1/::1). Falling back to public DNS for Atlas SRV queries.');
+    dns.setServers(['8.8.8.8', '1.1.1.1']);
+    console.log('🔎 DNS servers now:', dns.getServers());
+  } else {
+    console.log('🔎 Using configured DNS servers for Atlas SRV:', currentServers);
+  }
 }
 
 /**
@@ -64,6 +89,8 @@ export async function connectToDatabase() {
     const maskedUri = mongoUri.replace(/([^:]+):([^@]+)@/, '$1:***@');
     console.log('🔗 Connecting to MongoDB...');
     console.log('📍 URI:', maskedUri);
+
+    enforceAtlasSrvDnsFallback(mongoUri);
 
     const options = configureMongoose();
     

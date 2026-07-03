@@ -182,21 +182,29 @@ router.post("/register", authLimiter, async (req, res) => {
 router.post("/login", authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = typeof email === "string" ? email.toLowerCase().trim() : "";
 
-    if (!email || !password) {
+    if (!normalizedEmail || !password || typeof password !== "string") {
       return res.status(400).json({ error: "Email and password required" });
     }
 
     if (!process.env.JWT_SECRET) {
+      console.error("Login failed: JWT_SECRET is not configured");
       return res.status(500).json({ error: "JWT_SECRET is not set in .env" });
     }
 
-    const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ error: "Invalid credentials" });
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      console.warn(`Login failed: no user found for email=${normalizedEmail}`);
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
     const ok = await bcrypt.compare(password, user.passwordHash);
 
-    if (!ok) return res.status(401).json({ error: "Invalid credentials" });
+    if (!ok) {
+      console.warn(`Login failed: incorrect password for email=${normalizedEmail}`);
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
     const token = jwt.sign(
       { id: user._id, name: user.name, email: user.email, role: user.role },

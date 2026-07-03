@@ -76,7 +76,7 @@ export default function OptimizedImage({
             width={width}
             height={height}
             loading={priority ? "eager" : "lazy"}
-            fetchpriority={priority ? "high" : fetchPriority}
+            fetchPriority={priority ? "high" : fetchPriority}
             decoding={priority ? "sync" : "async"}
             onLoad={handleLoad}
             onError={handleError}

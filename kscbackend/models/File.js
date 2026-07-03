@@ -13,6 +13,9 @@ const fileSchema = new mongoose.Schema(
     notes: { type: String, default: "" },
     studentEmail: { type: String, default: "" },
     studentRole: { type: String, default: "" },
+    examId: { type: mongoose.Schema.Types.ObjectId, ref: "Exam" },
+    sessionId: { type: mongoose.Schema.Types.ObjectId, ref: "ExamSession" },
+    questionId: { type: mongoose.Schema.Types.ObjectId, ref: "ExamQuestion" },
       // Review status for submissions
       status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
       reviewerNotes: { type: String, default: "" },

@@ -20,8 +20,8 @@ import { optimizeMedia, mediaFileFilter } from "../middleware/mediaOptimizer.js"
 const router = express.Router();
 import { requireRole } from "../middleware/requireAuth.js";
 
-// Protect admin endpoints — only 'admin' role may access
-router.use(requireRole(["admin"]));
+// Protect admin endpoints — only 'admin' and 'superadmin' roles may access
+router.use(requireRole(["admin", "superadmin"]));
 
 // Ensure uploads folder exists (same as in index.js)
 const uploadsDir = path.join(process.cwd(), "public", "uploads");

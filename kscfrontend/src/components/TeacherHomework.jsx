@@ -17,12 +17,32 @@ export default function TeacherHomework({ user }) {
     description: "",
     subject: "",
     class: "Grade 10",
+    stream: "",
+    academicYear: new Date().getFullYear().toString(),
+    term: "Term 1",
+    topic: "",
+    department: "",
+    resourceType: "notes",
     contentType: "assignment",
     dueDate: "",
-    status: "published"
+    status: "published",
+    visibility: "whole-school",
+    allowedClasses: [],
+    allowedStreams: []
   });
 
-  const classes = ["Grade 10", "Grade 11", "Grade 12", "Form 3", "Form 4"];
+  const classes = ["All", "Grade 10", "Grade 11", "Grade 12", "Form 3", "Form 4"];
+  const streams = ["All", "North", "South", "East", "West", "Science", "Arts", "Business"];
+  const academicYears = ["2025", "2026", "2027", "2028", "2029", "2030", "2031"];
+  const terms = ["Term 1", "Mid-Term 1", "End-Term 1", "Cat", "Term 2","Mid-Term 2", "End-Term 2", "Cat 2", "Term 3", "Mid-Term 3", "End-Term 3", "Cat",];
+  const visibilityOptions = [
+    { value: "whole-school", label: "Whole school" },
+    { value: "my-class", label: "My class only" },
+    { value: "selected-classes", label: "Selected classes" },
+    { value: "selected-stream", label: "Selected stream" },
+    { value: "revision-library", label: "Revision library" },
+    { value: "archived", label: "Archived" }
+  ];
   const subjects = [
     "Mathematics", "English", "Kiswahili",
     "Biology", "Physics", "Chemistry",
@@ -40,16 +60,18 @@ export default function TeacherHomework({ user }) {
     { value: "classwork", label: "✏️ Classwork" }
   ];
 
+  const teacherId = user?.id || user?._id;
+
   useEffect(() => {
-    if (user?._id) {
+    if (teacherId) {
       fetchMyHomework();
     }
-  }, [user]);
+  }, [teacherId]);
 
   async function fetchMyHomework() {
     setLoading(true);
     try {
-      const data = await get(`/api/homework?teacher=${user._id}`);
+      const data = await get(`/api/homework?teacher=${encodeURIComponent(teacherId)}`);
       setHomework(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error fetching homework:", err);
@@ -62,6 +84,13 @@ export default function TeacherHomework({ user }) {
   function handleFormChange(e) {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
+  }
+
+  function handleMultiSelectChange(name, value) {
+    setForm(prev => ({
+      ...prev,
+      [name]: value.split(",").map(item => item.trim()).filter(Boolean)
+    }));
   }
 
   function handleFileChange(e) {
@@ -103,9 +132,18 @@ export default function TeacherHomework({ user }) {
         description: form.description,
         subject: form.subject,
         class: form.class,
+        stream: form.stream,
+        academicYear: form.academicYear,
+        term: form.term,
+        topic: form.topic,
+        department: form.department,
+        resourceType: form.resourceType,
         contentType: form.contentType,
         dueDate: form.dueDate,
-        status: form.status
+        status: form.status,
+        visibility: form.visibility,
+        allowedClasses: form.allowedClasses,
+        allowedStreams: form.allowedStreams
       };
 
       if (editingId) {
@@ -134,7 +172,24 @@ export default function TeacherHomework({ user }) {
         setSuccess("Homework uploaded successfully!");
       }
 
-      setForm({ title: "", description: "", subject: "", class: "Grade 10", contentType: "assignment", dueDate: "", status: "published" });
+      setForm({
+        title: "",
+        description: "",
+        subject: "",
+        class: "Grade 10",
+        stream: "",
+        academicYear: new Date().getFullYear().toString(),
+        term: "Term 1",
+        topic: "",
+        department: "",
+        resourceType: "notes",
+        contentType: "assignment",
+        dueDate: "",
+        status: "published",
+        visibility: "whole-school",
+        allowedClasses: [],
+        allowedStreams: []
+      });
       setAttachmentFiles([]);
       setShowForm(false);
       setEditingId(null);
@@ -153,9 +208,18 @@ export default function TeacherHomework({ user }) {
       description: item.description || "",
       subject: item.subject,
       class: item.class,
+      stream: item.stream || "",
+      academicYear: item.academicYear || new Date().getFullYear().toString(),
+      term: item.term || "Term 1",
+      topic: item.topic || "",
+      department: item.department || "",
+      resourceType: item.resourceType || "notes",
       contentType: item.contentType || "assignment",
       dueDate: item.dueDate ? item.dueDate.split("T")[0] : "",
-      status: item.status
+      status: item.status,
+      visibility: item.visibility || "whole-school",
+      allowedClasses: Array.isArray(item.allowedClasses) ? item.allowedClasses : [],
+      allowedStreams: Array.isArray(item.allowedStreams) ? item.allowedStreams : []
     });
     setAttachmentFiles([]);
     setShowForm(true);
@@ -204,11 +268,11 @@ export default function TeacherHomework({ user }) {
         </button>
       </div>
 
-      {error && <div style={{ background: "#fee", padding: "15px", borderRadius: "6px", marginBottom: "20px", color: "#c33" }}>{error}</div>}
-      {success && <div style={{ background: "#efe", padding: "15px", borderRadius: "6px", marginBottom: "20px", color: "#3c3" }}>{success}</div>}
+      {error && <div style={{ background: "rgb(240, 13, 198)", padding: "15px", borderRadius: "6px", marginBottom: "20px", color: "#c33" }}>{error}</div>}
+      {success && <div style={{ background: "rgb(183, 236, 26)", padding: "15px", borderRadius: "6px", marginBottom: "20px", color: "#3c3" }}>{success}</div>}
 
       {showForm && (
-        <div style={{ background: "white", border: "1px solid #ddd", borderRadius: "8px", padding: "20px", marginBottom: "30px" }}>
+        <div style={{ background: "skyblue", border: "1px solid #ddd", borderRadius: "8px", padding: "20px", marginBottom: "30px" }}>
           <h3>{editingId ? "Edit Homework" : "Upload New Homework/Notes"}</h3>
           <form onSubmit={handleSubmit}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", marginBottom: "15px" }}>
@@ -269,6 +333,115 @@ export default function TeacherHomework({ user }) {
                   value={form.dueDate}
                   onChange={handleFormChange}
                   style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
+                />
+              </div>
+              <div>
+                <label>Resource Type</label>
+                <select
+                  name="resourceType"
+                  value={form.resourceType}
+                  onChange={handleFormChange}
+                  style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
+                >
+                  <option value="notes">Notes</option>
+                  <option value="homework">Homework</option>
+                  <option value="assignment">Assignment</option>
+                  <option value="revision-paper">Revision Paper</option>
+                  <option value="practical">Practical</option>
+                  <option value="past-paper">Past Paper</option>
+                  <option value="video">Video</option>
+                  <option value="image">Image</option>
+                  <option value="presentation">Presentation</option>
+                  <option value="pdf">PDF</option>
+                  <option value="zip">ZIP</option>
+                  <option value="external-link">External Link</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label>Visibility</label>
+                <select
+                  name="visibility"
+                  value={form.visibility}
+                  onChange={handleFormChange}
+                  style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
+                >
+                  {visibilityOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label>Academic Year</label>
+                <select
+                  name="academicYear"
+                  value={form.academicYear}
+                  onChange={handleFormChange}
+                  style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
+                >
+                  {academicYears.map(year => <option key={year} value={year}>{year}</option>)}
+                </select>
+              </div>
+              <div>
+                <label>Term</label>
+                <select
+                  name="term"
+                  value={form.term}
+                  onChange={handleFormChange}
+                  style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
+                >
+                  {terms.map(term => <option key={term} value={term}>{term}</option>)}
+                </select>
+              </div>
+              <div>
+                <label>Stream</label>
+                <input
+                  type="text"
+                  name="stream"
+                  value={form.stream}
+                  onChange={handleFormChange}
+                  style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
+                  placeholder="e.g. North"
+                />
+              </div>
+              <div>
+                <label>Topic</label>
+                <input
+                  type="text"
+                  name="topic"
+                  value={form.topic}
+                  onChange={handleFormChange}
+                  style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
+                  placeholder="e.g. Algebra"
+                />
+              </div>
+              <div>
+                <label>Department</label>
+                <input
+                  type="text"
+                  name="department"
+                  value={form.department}
+                  onChange={handleFormChange}
+                  style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
+                  placeholder="e.g. Mathematics"
+                />
+              </div>
+              <div>
+                <label>Allowed Classes</label>
+                <input
+                  type="text"
+                  value={form.allowedClasses.join(", ")}
+                  onChange={(e) => handleMultiSelectChange("allowedClasses", e.target.value)}
+                  style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
+                  placeholder="Grade 10, Form 3"
+                />
+              </div>
+              <div>
+                <label>Allowed Streams</label>
+                <input
+                  type="text"
+                  value={form.allowedStreams.join(", ")}
+                  onChange={(e) => handleMultiSelectChange("allowedStreams", e.target.value)}
+                  style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
+                  placeholder="North, South"
                 />
               </div>
             </div>
