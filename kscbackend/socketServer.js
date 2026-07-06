@@ -13,8 +13,9 @@ const mediaCodecs = [
 ];
 
 export function getListenIps() {
-  const configured = (process.env.MEDIASOUP_LISTEN_IPS || '127.0.0.1').split(',').map((ip) => ip.trim()).filter(Boolean);
-  return configured.map((ip) => ({ ip, announcedIp: process.env.PUBLIC_IP || undefined }));
+  const configured = (process.env.MEDIASOUP_LISTEN_IPS || '0.0.0.0').split(',').map((ip) => ip.trim()).filter(Boolean);
+  const announcedIp = process.env.PUBLIC_IP || process.env.RENDER_EXTERNAL_URL?.replace(/^https?:\/\//, '') || undefined;
+  return configured.map((ip) => ({ ip, announcedIp }));
 }
 
 export function getIceServers() {
@@ -206,6 +207,8 @@ export async function initSocketServer(httpServer) {
           enableUdp: true,
           enableTcp: true,
           preferUdp: true,
+          initialAvailableOutgoingBitrate: 1000000,
+          maximumIncomingBitrate: 1500000,
         });
 
         transport.on('icestatechange', (state) => {
@@ -306,7 +309,14 @@ export async function initSocketServer(httpServer) {
         let consumerTransport = Array.from(room.transports.values()).find((transport) => transport.appData?.ownerSocketId === socket.id && transport.appData?.type === 'consumer');
         if (!consumerTransport) {
           console.log(`[Socket.IO] 🏗️ Creating new consumer transport...`);
-          consumerTransport = await room.router.createWebRtcTransport({ listenIps: getListenIps(), enableUdp: true, enableTcp: true, preferUdp: true });
+          consumerTransport = await room.router.createWebRtcTransport({
+            listenIps: getListenIps(),
+            enableUdp: true,
+            enableTcp: true,
+            preferUdp: true,
+            initialAvailableOutgoingBitrate: 1000000,
+            maximumIncomingBitrate: 1500000,
+          });
           consumerTransport.appData = { ownerSocketId: socket.id, type: 'consumer' };
           room.transports.set(consumerTransport.id, consumerTransport);
           console.log(`[Socket.IO] ✅ Consumer transport created`);

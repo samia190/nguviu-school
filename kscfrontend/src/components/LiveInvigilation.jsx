@@ -583,33 +583,46 @@ const StreamVideo = ({ stream }) => {
     const videoTracks = stream.getVideoTracks();
     if (!videoTracks.length) return;
 
+    const videoTrack = videoTracks[0];
+    const videoOnlyStream = new MediaStream([videoTrack]);
+
     console.log(`[STAGE 6] STREAM INSPECTION:`);
     console.log(`[STAGE 6]   stream.getTracks().length=${stream.getTracks().length}`);
     console.log(`[STAGE 6]   stream.getVideoTracks().length=${stream.getVideoTracks().length}`);
     console.log(`[STAGE 6]   stream.getAudioTracks().length=${stream.getAudioTracks().length}`);
+    console.log(`[STAGE 6]   videoTrack[0].id=${videoTrack.id}, readyState=${videoTrack.readyState}, enabled=${videoTrack.enabled}`);
 
-    if (videoTracks.length > 0) {
-      console.log(`[STAGE 6]   videoTrack[0].id=${videoTracks[0].id}, readyState=${videoTracks[0].readyState}, enabled=${videoTracks[0].enabled}`);
-    }
-    const audioTracks = stream.getAudioTracks();
-    if (audioTracks.length > 0) {
-      console.log(`[STAGE 6]   audioTrack[0].id=${audioTracks[0].id}, readyState=${audioTracks[0].readyState}, enabled=${audioTracks[0].enabled}`);
-    }
-
-    video.srcObject = stream;
+    video.srcObject = videoOnlyStream;
     video.muted = true;
     video.playsInline = true;
     video.autoplay = true;
+    video.defaultMuted = true;
     video.setAttribute('playsinline', 'true');
     video.setAttribute('webkit-playsinline', 'true');
 
+    const tryPlay = () => {
+      video.play().catch((err) => {
+        console.error(`[STAGE 6] VIDEO PLAY: ERROR`, err?.name || err);
+
+        if (err?.name === 'NotAllowedError' || err?.name === 'AbortError') {
+          const resumePlayback = () => {
+            video.play().catch(() => {});
+            window.removeEventListener('pointerdown', resumePlayback);
+            window.removeEventListener('keydown', resumePlayback);
+          };
+          window.addEventListener('pointerdown', resumePlayback, { once: true });
+          window.addEventListener('keydown', resumePlayback, { once: true });
+        }
+      });
+    };
+
     const handleLoadedMetadata = () => {
       console.log(`[STAGE 6] VIDEO EVENT: loadedmetadata`);
-      video.play().catch(() => {});
+      tryPlay();
     };
     const handleCanPlay = () => {
       console.log(`[STAGE 6] VIDEO EVENT: canplay`);
-      video.play().catch(() => {});
+      tryPlay();
     };
     const handlePlaying = () => {
       console.log(`[STAGE 6] VIDEO EVENT: playing`);
@@ -623,7 +636,6 @@ const StreamVideo = ({ stream }) => {
     video.addEventListener('playing', handlePlaying);
     video.addEventListener('loadstart', handleLoadStart);
 
-    const tryPlay = () => video.play().catch(() => {});
     setTimeout(tryPlay, 0);
     setTimeout(tryPlay, 300);
     setTimeout(tryPlay, 1000);
@@ -635,7 +647,7 @@ const StreamVideo = ({ stream }) => {
       video.removeEventListener('loadstart', handleLoadStart);
       if (video) video.srcObject = null;
     };
-  }, [stream, stream?.getVideoTracks().length]);
+  }, [stream]);
 
   return <video ref={ref} autoPlay playsInline muted controls={false} style={{ width: '100%', height: '160px', objectFit: 'cover', background: '#000' }} />;
 }
