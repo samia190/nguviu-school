@@ -117,15 +117,19 @@ const LiveInvigilation = ({ examId, sessionId }) => {
 
     setProducerStreams((prev) => {
       const next = { ...prev };
-      const existingStream = next[studentKey] || new MediaStream();
-      const alreadyAttached = existingStream.getTracks().some((existingTrack) => existingTrack.id === track.id);
+      const existingStream = next[studentKey];
+      const existingTracks = existingStream ? Array.from(existingStream.getTracks()) : [];
+      const alreadyAttached = existingTracks.some((existingTrack) => existingTrack.id === track.id);
 
       if (!alreadyAttached) {
-        existingStream.addTrack(track);
+        const rebuiltStream = new MediaStream(existingTracks);
+        rebuiltStream.addTrack(track);
+        next[studentKey] = rebuiltStream;
         console.log(`[TEACHER] ➕ Added ${track.kind} track to stream ${studentKey}`);
+      } else {
+        next[studentKey] = existingStream;
       }
 
-      next[studentKey] = existingStream;
       return next;
     });
   }, []);
@@ -576,12 +580,14 @@ const StreamVideo = ({ stream }) => {
     const video = ref.current;
     if (!video || !stream) return;
 
+    const videoTracks = stream.getVideoTracks();
+    if (!videoTracks.length) return;
+
     console.log(`[STAGE 6] STREAM INSPECTION:`);
     console.log(`[STAGE 6]   stream.getTracks().length=${stream.getTracks().length}`);
     console.log(`[STAGE 6]   stream.getVideoTracks().length=${stream.getVideoTracks().length}`);
     console.log(`[STAGE 6]   stream.getAudioTracks().length=${stream.getAudioTracks().length}`);
 
-    const videoTracks = stream.getVideoTracks();
     if (videoTracks.length > 0) {
       console.log(`[STAGE 6]   videoTrack[0].id=${videoTracks[0].id}, readyState=${videoTracks[0].readyState}, enabled=${videoTracks[0].enabled}`);
     }
@@ -629,7 +635,7 @@ const StreamVideo = ({ stream }) => {
       video.removeEventListener('loadstart', handleLoadStart);
       if (video) video.srcObject = null;
     };
-  }, [stream]);
+  }, [stream, stream?.getVideoTracks().length]);
 
   return <video ref={ref} autoPlay playsInline muted controls={false} style={{ width: '100%', height: '160px', objectFit: 'cover', background: '#000' }} />;
 }
