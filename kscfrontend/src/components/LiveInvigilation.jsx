@@ -122,7 +122,7 @@ const LiveInvigilation = ({ examId, sessionId }) => {
       const alreadyAttached = existingTracks.some((existingTrack) => existingTrack.id === track.id);
 
       if (!alreadyAttached) {
-        const rebuiltStream = new MediaStream(existingTracks);
+        const rebuiltStream = existingStream ? new MediaStream(existingTracks) : new MediaStream();
         rebuiltStream.addTrack(track);
         next[studentKey] = rebuiltStream;
         console.log(`[TEACHER] ➕ Added ${track.kind} track to stream ${studentKey}`);
@@ -575,6 +575,7 @@ const LiveInvigilation = ({ examId, sessionId }) => {
 // Student Card Component for Grid View
 const StreamVideo = ({ stream }) => {
   const ref = React.useRef(null);
+  const [isReady, setIsReady] = React.useState(false);
 
   React.useEffect(() => {
     const video = ref.current;
@@ -584,7 +585,6 @@ const StreamVideo = ({ stream }) => {
     if (!videoTracks.length) return;
 
     const videoTrack = videoTracks[0];
-    const videoOnlyStream = new MediaStream([videoTrack]);
 
     console.log(`[STAGE 6] STREAM INSPECTION:`);
     console.log(`[STAGE 6]   stream.getTracks().length=${stream.getTracks().length}`);
@@ -592,29 +592,30 @@ const StreamVideo = ({ stream }) => {
     console.log(`[STAGE 6]   stream.getAudioTracks().length=${stream.getAudioTracks().length}`);
     console.log(`[STAGE 6]   videoTrack[0].id=${videoTrack.id}, readyState=${videoTrack.readyState}, enabled=${videoTrack.enabled}`);
 
-    video.srcObject = videoOnlyStream;
-    video.muted = true;
-    video.playsInline = true;
-    video.autoplay = true;
-    video.defaultMuted = true;
-    video.setAttribute('playsinline', 'true');
-    video.setAttribute('webkit-playsinline', 'true');
+    const attachStream = () => {
+      if (video.srcObject !== stream) {
+        video.srcObject = stream;
+      }
+      video.muted = true;
+      video.playsInline = true;
+      video.autoplay = true;
+      video.defaultMuted = true;
+      video.setAttribute('playsinline', 'true');
+      video.setAttribute('webkit-playsinline', 'true');
+      setIsReady(true);
+    };
 
     const tryPlay = () => {
+      if (!video || video.readyState < 2) return;
       video.play().catch((err) => {
         console.error(`[STAGE 6] VIDEO PLAY: ERROR`, err?.name || err);
-
-        if (err?.name === 'NotAllowedError' || err?.name === 'AbortError') {
-          const resumePlayback = () => {
-            video.play().catch(() => {});
-            window.removeEventListener('pointerdown', resumePlayback);
-            window.removeEventListener('keydown', resumePlayback);
-          };
-          window.addEventListener('pointerdown', resumePlayback, { once: true });
-          window.addEventListener('keydown', resumePlayback, { once: true });
-        }
       });
     };
+
+    attachStream();
+    const timer = window.setTimeout(tryPlay, 100);
+    const timer2 = window.setTimeout(tryPlay, 500);
+    const timer3 = window.setTimeout(tryPlay, 1500);
 
     const handleLoadedMetadata = () => {
       console.log(`[STAGE 6] VIDEO EVENT: loadedmetadata`);
@@ -626,6 +627,7 @@ const StreamVideo = ({ stream }) => {
     };
     const handlePlaying = () => {
       console.log(`[STAGE 6] VIDEO EVENT: playing`);
+      setIsReady(true);
     };
     const handleLoadStart = () => {
       console.log(`[STAGE 6] VIDEO EVENT: loadstart`);
@@ -636,11 +638,10 @@ const StreamVideo = ({ stream }) => {
     video.addEventListener('playing', handlePlaying);
     video.addEventListener('loadstart', handleLoadStart);
 
-    setTimeout(tryPlay, 0);
-    setTimeout(tryPlay, 300);
-    setTimeout(tryPlay, 1000);
-
     return () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(timer2);
+      window.clearTimeout(timer3);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('canplay', handleCanPlay);
       video.removeEventListener('playing', handlePlaying);
@@ -649,7 +650,7 @@ const StreamVideo = ({ stream }) => {
     };
   }, [stream]);
 
-  return <video ref={ref} autoPlay playsInline muted controls={false} style={{ width: '100%', height: '160px', objectFit: 'cover', background: '#000' }} />;
+  return <video ref={ref} autoPlay playsInline muted controls={false} style={{ width: '100%', height: '160px', objectFit: 'cover', background: '#000', opacity: isReady ? 1 : 0.9 }} />;
 }
 
 const StudentCard = ({ session, onSelect }) => {
