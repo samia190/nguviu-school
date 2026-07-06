@@ -130,6 +130,24 @@ const LiveInvigilation = ({ examId, sessionId }) => {
     });
   }, []);
 
+  const ensurePlayback = useCallback((videoEl) => {
+    if (!videoEl) return;
+
+    if (videoEl.readyState >= 2 || videoEl.currentTime > 0) {
+      videoEl.play().catch(() => {});
+      return;
+    }
+
+    const tryPlay = () => {
+      videoEl.play().catch(() => {});
+    };
+
+    videoEl.addEventListener('loadedmetadata', tryPlay, { once: true });
+    videoEl.addEventListener('canplay', tryPlay, { once: true });
+    setTimeout(tryPlay, 200);
+    setTimeout(tryPlay, 800);
+  }, []);
+
   // Auto-refresh effect
   useEffect(() => {
     if (!isAutoRefresh) return;
@@ -558,11 +576,11 @@ const StreamVideo = ({ stream }) => {
     const video = ref.current;
     if (!video || !stream) return;
 
-    // STAGE 6: Browser - Stream Inspection
     console.log(`[STAGE 6] STREAM INSPECTION:`);
     console.log(`[STAGE 6]   stream.getTracks().length=${stream.getTracks().length}`);
     console.log(`[STAGE 6]   stream.getVideoTracks().length=${stream.getVideoTracks().length}`);
     console.log(`[STAGE 6]   stream.getAudioTracks().length=${stream.getAudioTracks().length}`);
+
     const videoTracks = stream.getVideoTracks();
     if (videoTracks.length > 0) {
       console.log(`[STAGE 6]   videoTrack[0].id=${videoTracks[0].id}, readyState=${videoTracks[0].readyState}, enabled=${videoTracks[0].enabled}`);
@@ -577,53 +595,43 @@ const StreamVideo = ({ stream }) => {
     video.playsInline = true;
     video.autoplay = true;
     video.setAttribute('playsinline', 'true');
-    
-    // STAGE 6: Video Element Inspection
-    console.log(`[STAGE 6] VIDEO ELEMENT BEFORE PLAY:`);
-    console.log(`[STAGE 6]   video.srcObject=${video.srcObject ? 'PRESENT' : 'NULL'}`);
-    console.log(`[STAGE 6]   video.readyState=${video.readyState}`);
-    console.log(`[STAGE 6]   video.videoWidth=${video.videoWidth}`);
-    console.log(`[STAGE 6]   video.videoHeight=${video.videoHeight}`);
-    console.log(`[STAGE 6]   video.paused=${video.paused}`);
-    console.log(`[STAGE 6]   video.muted=${video.muted}`);
-    console.log(`[STAGE 6]   video.autoplay=${video.autoplay}`);
-    console.log(`[STAGE 6]   video.playsInline=${video.playsInline}`);
-    
-    video.addEventListener('loadedmetadata', () => {
+    video.setAttribute('webkit-playsinline', 'true');
+
+    const handleLoadedMetadata = () => {
       console.log(`[STAGE 6] VIDEO EVENT: loadedmetadata`);
-    });
-    video.addEventListener('canplay', () => {
+      video.play().catch(() => {});
+    };
+    const handleCanPlay = () => {
       console.log(`[STAGE 6] VIDEO EVENT: canplay`);
-    });
-    video.addEventListener('playing', () => {
+      video.play().catch(() => {});
+    };
+    const handlePlaying = () => {
       console.log(`[STAGE 6] VIDEO EVENT: playing`);
-    });
-    video.addEventListener('loadstart', () => {
+    };
+    const handleLoadStart = () => {
       console.log(`[STAGE 6] VIDEO EVENT: loadstart`);
-    });
-    
-    video.play()
-      .then(() => {
-        console.log(`[STAGE 6] VIDEO PLAY: SUCCESS`);
-        setTimeout(() => {
-          console.log(`[STAGE 6] VIDEO ELEMENT AFTER PLAY (100ms delay):`);
-          console.log(`[STAGE 6]   video.readyState=${video.readyState}`);
-          console.log(`[STAGE 6]   video.videoWidth=${video.videoWidth}`);
-          console.log(`[STAGE 6]   video.videoHeight=${video.videoHeight}`);
-          console.log(`[STAGE 6]   video.paused=${video.paused}`);
-        }, 100);
-      })
-      .catch((err) => {
-        console.error(`[STAGE 6] VIDEO PLAY: ERROR`, err);
-      });
+    };
+
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('canplay', handleCanPlay);
+    video.addEventListener('playing', handlePlaying);
+    video.addEventListener('loadstart', handleLoadStart);
+
+    const tryPlay = () => video.play().catch(() => {});
+    setTimeout(tryPlay, 0);
+    setTimeout(tryPlay, 300);
+    setTimeout(tryPlay, 1000);
 
     return () => {
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('canplay', handleCanPlay);
+      video.removeEventListener('playing', handlePlaying);
+      video.removeEventListener('loadstart', handleLoadStart);
       if (video) video.srcObject = null;
     };
   }, [stream]);
 
-  return <video ref={ref} autoPlay playsInline muted style={{ width: '100%', height: '160px', objectFit: 'cover' }} />;
-
+  return <video ref={ref} autoPlay playsInline muted controls={false} style={{ width: '100%', height: '160px', objectFit: 'cover', background: '#000' }} />;
 }
 
 const StudentCard = ({ session, onSelect }) => {
