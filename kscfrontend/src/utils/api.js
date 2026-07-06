@@ -1,7 +1,7 @@
 // api.js
 
 // Simple fetch helper with upload support and automatic Authorization header
-const API_ORIGIN = (() => {
+export function getApiOrigin() {
   // Priority: explicit runtime window override -> Vite env var -> Node env var -> sensible defaults
   try {
     if (typeof window !== "undefined" && window.__API_ORIGIN) return window.__API_ORIGIN;
@@ -11,7 +11,6 @@ const API_ORIGIN = (() => {
     if (typeof import.meta !== "undefined") {
       if (import.meta.env?.VITE_API_URL) {
         const apiUrl = import.meta.env.VITE_API_URL;
-        // Only return if not empty
         if (apiUrl && apiUrl.trim()) {
           return apiUrl;
         }
@@ -26,20 +25,26 @@ const API_ORIGIN = (() => {
     }
   } catch {}
 
-  // If we're in a production build and no env was provided, return empty string
-  // This allows the frontend to make relative API calls to the same domain
-  // or you can set window.__API_ORIGIN at runtime
   try {
     if (typeof import.meta !== "undefined" && import.meta.env?.MODE === "production") {
-      // Production: use empty string for relative URLs (same domain)
-      // Or set VITE_API_URL for different domain
       return "";
     }
   } catch {}
 
-  // Local development: use empty origin so relative `/api/...` hits the Vite proxy
   return "";
-})();
+}
+
+const API_ORIGIN = getApiOrigin();
+
+export function resolveApiUrl(url) {
+  if (!url || typeof url !== "string") return url;
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//")) return url;
+
+  const origin = getApiOrigin();
+  if (!origin || origin.trim() === "") return url;
+
+  return `${origin.replace(/\/+$/, "")}${url.startsWith("/") ? "" : "/"}${url}`;
+}
 
 // Socket.IO server origin (for live streaming signaling)
 if (typeof window !== 'undefined' && !window.__SOCKET_ORIGIN) {
@@ -66,7 +71,7 @@ async function apiFetch(url, options = {}) {
   const isFormData = options.body instanceof FormData;
 
   // Ensure we correctly concatenate origin + path
-  const resolvedUrl = url.startsWith("http") ? url : `${API_ORIGIN.replace(/\/+$/,'')}${url.startsWith("/")?"":'/'}${url}`;
+  const resolvedUrl = resolveApiUrl(url);
 
   const res = await fetch(resolvedUrl, {
     method: options.method || "GET",
