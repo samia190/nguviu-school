@@ -235,7 +235,7 @@ url: {
                                   ^^^^ Triple slash - example is wrong
 
 ✅ SHOULD BE:
-// "https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.pdf"
+// "https://kangarugirls.sc.ke/uploads/file.pdf"
 ```
 
 ---
@@ -690,7 +690,7 @@ items.forEach((section) => {
 **To verify fixes:**
 ```bash
 # Test image loading
-curl -I https://kangarugirlsseniorschool-sc-ke.onrender.com/header/logo new.PNG
+curl -I https://kangarugirls.sc.ke/header/logo new.PNG
 # Should return 200, not 404
 
 # Test srcset parsing

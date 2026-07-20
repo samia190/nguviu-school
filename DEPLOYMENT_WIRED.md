@@ -5,7 +5,7 @@
 ```
 ┌─────────────────────────────────────────────────────┐
 │  Frontend: kangarugirlsschool-sc-ke.onrender.com    │
-│  ➜ Calls API: https://kangarugirlsseniorschool-sc-ke.onrender.com
+│  ➜ Calls API: https://kangarugirls.sc.ke
 └─────────────────────────────────────────────────────┘
               ↓ (Cross-Origin API Requests)
 ┌─────────────────────────────────────────────────────┐
@@ -20,12 +20,12 @@
 
 1. **kscfrontend/.env.production**
    ```
-   VITE_API_URL=https://kangarugirlsseniorschool-sc-ke.onrender.com
+   VITE_API_URL=https://kangarugirls.sc.ke
    ```
 
 2. **kscbackend/.env**
    ```
-   CORS_ORIGINS=http://localhost:5173,http://localhost:4000,https://kangarugirlsseniorschool-sc-ke.onrender.com,https://kangarugirlsseniorschool-sc-ke.onrender.com
+   CORS_ORIGINS=http://localhost:5173,http://localhost:4000,https://kangarugirls.sc.ke,https://kangarugirls.sc.ke
    ```
 
 ---
@@ -33,13 +33,13 @@
 ## Deployment Status
 
 ### Backend ✅ DEPLOYED
-- **URL**: https://kangarugirlsseniorschool-sc-ke.onrender.com
+- **URL**: https://kangarugirls.sc.ke
 - **Status**: Running
 - **Database**: Connected to MongoDB Atlas
 - **Test**: `/api/footer-links` ✅ Responding
 
 ### Frontend ⚠️ NEEDS REBUILD & REDEPLOY
-- **URL**: https://kangarugirlsseniorschool-sc-ke.onrender.com
+- **URL**: https://kangarugirls.sc.ke
 - **Status**: Running (but API calls failing)
 - **Reason**: Using old configuration pointing to localhost:4000
 - **Fix**: Rebuild with new env var, then push to git
@@ -89,8 +89,8 @@ Verify these variables are set:
 MONGO_URI=mongodb+srv://kangach:kangach19%4019@cluster0.7bmfdr8.mongodb.net/kangaru_girls_db?retryWrites=true&w=majority
 NODE_ENV=production
 PORT=4000
-CLIENT_ORIGIN=https://kangarugirlsseniorschool-sc-ke.onrender.com
-CORS_ORIGINS=http://localhost:5173,http://localhost:4000,https://kangarugirlsseniorschool-sc-ke.onrender.com,https://kangarugirlsseniorschool-sc-ke.onrender.com
+CLIENT_ORIGIN=https://kangarugirls.sc.ke
+CORS_ORIGINS=http://localhost:5173,http://localhost:4000,https://kangarugirls.sc.ke,https://kangarugirls.sc.ke
 JWT_SECRET=de3a3d92e5f44e87b8fa2cc4c2123b7cf3a09d0e7b6a69c4bba45fee29f8b3494tf5hj7knjhhg3
 JWT_EXPIRES_IN=7d
 SMTP_HOST=smtp.gmail.com
@@ -108,20 +108,20 @@ If any are missing, add them and redeploy backend.
 ### 1. Check Frontend Console (F12)
 ```
 Expected: No errors about localhost:4000
-Expected: API calls go to https://kangarugirlsseniorschool-sc-ke.onrender.com/api/*
+Expected: API calls go to https://kangarugirls.sc.ke/api/*
 ```
 
 ### 2. Network Tab (F12 → Network)
 Click on Network, reload page, check requests:
 ```
-✅ https://kangarugirlsseniorschool-sc-ke.onrender.com/api/footer-links → 200
-✅ https://kangarugirlsseniorschool-sc-ke.onrender.com/api/content/home → 200
-✅ https://kangarugirlsseniorschool-sc-ke.onrender.com/images/* → 200
+✅ https://kangarugirls.sc.ke/api/footer-links → 200
+✅ https://kangarugirls.sc.ke/api/content/home → 200
+✅ https://kangarugirls.sc.ke/images/* → 200
 ```
 
 ### 3. Test Live Site
 ```
-https://kangarugirlsseniorschool-sc-ke.onrender.com
+https://kangarugirls.sc.ke
 
 Should see:
 ✅ Logo loading
@@ -133,10 +133,10 @@ Should see:
 
 ### 4. Quick API Test
 ```bash
-curl https://kangarugirlsseniorschool-sc-ke.onrender.com/api/content/home
+curl https://kangarugirls.sc.ke/api/content/home
 # Should return JSON with home page content
 
-curl https://kangarugirlsseniorschool-sc-ke.onrender.com/api/footer-links
+curl https://kangarugirls.sc.ke/api/footer-links
 # Should return footer links JSON
 ```
 
@@ -153,9 +153,9 @@ VITE_API_URL: (empty - uses Vite proxy)
 
 ### Production (Render)
 ```
-Frontend: https://kangarugirlsseniorschool-sc-ke.onrender.com
-Backend: https://kangarugirlsseniorschool-sc-ke.onrender.com
-VITE_API_URL: https://kangarugirlsseniorschool-sc-ke.onrender.com
+Frontend: https://kangarugirls.sc.ke
+Backend: https://kangarugirls.sc.ke
+VITE_API_URL: https://kangarugirls.sc.ke
 ```
 
 ---
@@ -203,7 +203,7 @@ VITE_API_URL: https://kangarugirlsseniorschool-sc-ke.onrender.com
 1. **Rebuild frontend**: `npm run build`
 2. **Push to git**: `git add . && git commit -m "..." && git push`
 3. **Wait for redeploy**: 2-3 minutes on Render
-4. **Test**: https://kangarugirlsseniorschool-sc-ke.onrender.com
+4. **Test**: https://kangarugirls.sc.ke
 5. **Verify API calls** in F12 Network tab
 
 **You're done once:**

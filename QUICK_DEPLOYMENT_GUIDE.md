@@ -129,7 +129,7 @@ cat orphaned-urls-report.txt
 
 ### Test 1: Image Loading (3 min)
 
-**Open**: `https://kangarugirlsseniorschool-sc-ke.onrender.com`
+**Open**: `https://kangarugirls.sc.ke`
 
 **Check**:
 1. Header logo loads (top-left)
@@ -185,15 +185,15 @@ console.log(broken.length === 0 ? '✅ All images loaded' : '❌ Broken:', broke
 ```bash
 # Test /uploads CORS
 curl -I -H "Origin: http://localhost:5173" \
-  https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/test.jpg
+  https://kangarugirls.sc.ke/uploads/test.jpg
 
 # Test /downloads CORS  
 curl -I -H "Origin: http://localhost:5173" \
-  https://kangarugirlsseniorschool-sc-ke.onrender.com/downloads/test.pdf
+  https://kangarugirls.sc.ke/downloads/test.pdf
 
 # Test /images CORS
 curl -I -H "Origin: http://localhost:5173" \
-  https://kangarugirlsseniorschool-sc-ke.onrender.com/images/test.png
+  https://kangarugirls.sc.ke/images/test.png
 ```
 
 **Expected Output** (All three):

@@ -86,7 +86,7 @@ CORS_ORIGINS=https://kangaru-girls-senior-school-kangaru girls-girls-senior-scho
 
 ### Frontend (.env.production)
 ```env
-VITE_API_URL=https://kangarugirlsseniorschool-sc-ke.onrender.com
+VITE_API_URL=https://kangarugirls.sc.ke
 ```
 
 ## Debugging Tools
@@ -100,7 +100,7 @@ VITE_API_URL=https://kangarugirlsseniorschool-sc-ke.onrender.com
 
 ### Check Browser Console For:
 1. "Uploading pdf: [filename] Size: [size]MB"
-2. "Upload URL: https://kangarugirlsseniorschool-sc-ke.onrender.com/api/files/upload"
+2. "Upload URL: https://kangarugirls.sc.ke/api/files/upload"
 3. "Upload response status: 200"
 4. "Upload success: {url: '...', ...}"
 5. "Magazine saved successfully: {_id: '...', ...}"

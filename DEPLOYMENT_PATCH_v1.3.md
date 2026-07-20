@@ -79,9 +79,9 @@ CORS_ORIGINS=https://kangaru-girls.ac.ke,https://api.kangaru-girls.ac.ke,http://
 # AFTER
 # Examples:
 #   Development: http://localhost:5173,http://localhost:4000
-#   Production Render: https://kangarugirlsseniorschool-sc-ke.onrender.com,https://kangarugirlsseniorschool-sc-ke.onrender.com
+#   Production Render: https://kangarugirls.sc.ke,https://kangarugirls.sc.ke
 #   Production Custom Domain: https://kangaru-girls.ac.ke,https://api.kangaru-girls.ac.ke
-CORS_ORIGINS=https://kangarugirlsseniorschool-sc-ke.onrender.com,https://kangarugirlsseniorschool-sc-ke.onrender.com,http://localhost:5173,http://localhost:4000
+CORS_ORIGINS=https://kangarugirls.sc.ke,https://kangarugirls.sc.ke,http://localhost:5173,http://localhost:4000
 ```
 
 **Impact:** ✅ Template now correctly shows Render subdomain URLs; reduces setup errors
@@ -153,11 +153,11 @@ Follow [RENDER_ENV_SETUP.md](RENDER_ENV_SETUP.md) to set Render environment vari
 ### Step 3: Verification
 ```bash
 # Health checks
-curl https://kangarugirlsseniorschool-sc-ke.onrender.com/api/health
-curl https://kangarugirlsseniorschool-sc-ke.onrender.com/
+curl https://kangarugirls.sc.ke/api/health
+curl https://kangarugirls.sc.ke/
 
 # Browser console test (DevTools → Console)
-fetch('https://kangarugirlsseniorschool-sc-ke.onrender.com/api/home-news')
+fetch('https://kangarugirls.sc.ke/api/home-news')
   .then(r => r.json())
   .then(d => console.log('✓ API working:', d.length, 'items'))
 ```

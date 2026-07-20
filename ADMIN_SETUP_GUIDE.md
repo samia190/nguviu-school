@@ -6,7 +6,7 @@ The system uses **MongoDB** for user authentication, but there is currently no a
 
 ## Solution
 
-### Option 1: Create Admin Using Script (Recommended)
+### Option 1: Create Admin Using Script (Recommended) best option
 
 1. **Navigate to backend directory:**
    ```powershell
@@ -25,7 +25,7 @@ The system uses **MongoDB** for user authentication, but there is currently no a
 
 4. **⚠️ IMPORTANT:** Change the password immediately after first login!
 
-### Option 2: Create Admin Via Registration
+### Option 2: Create Admin Via Registration 
 
 1. Go to the signup page
 2. Register with any email/password

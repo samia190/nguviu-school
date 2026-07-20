@@ -192,7 +192,7 @@ npm run build:render
 
 Set environment variable:
 ```
-VITE_API_URL=https://kangarugirlsseniorschool-sc-ke.onrender.com
+VITE_API_URL=https://kangarugirls.sc.ke
 ```
 
 ---

@@ -46,7 +46,7 @@ Open browser DevTools → Console:
 const formData = new FormData();
 formData.append('files', new Blob(['test'], {type: 'text/plain'}), 'test.txt');
 
-fetch('https://kangarugirlsseniorschool-sc-ke.onrender.com/api/some-upload-endpoint', {
+fetch('https://kangarugirls.sc.ke/api/some-upload-endpoint', {
   method: 'POST',
   body: formData
 })
@@ -55,7 +55,7 @@ fetch('https://kangarugirlsseniorschool-sc-ke.onrender.com/api/some-upload-endpo
 .catch(e => console.error('❌ Upload failed:', e.message));
 
 // Test 2: Check if Cloudinary is enabled
-fetch('https://kangarugirlsseniorschool-sc-ke.onrender.com/api/health')
+fetch('https://kangarugirls.sc.ke/api/health')
   .then(r => r.json())
   .then(d => console.log('✅ Backend OK:', d))
   .catch(e => console.error('❌ Backend error:', e));

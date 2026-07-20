@@ -4,7 +4,7 @@
 
 ```
 A resource is blocked by OpaqueResponseBlocking
-GET https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/1771840325075-DSC_5353.webp
+GET https://kangarugirls.sc.ke/uploads/1771840325075-DSC_5353.webp
 NS_BINDING_ABORTED
 ```
 
@@ -16,7 +16,7 @@ Multiple images failing to load from Gallery, StudentLife, Events, Staff pages.
 
 ### "OpaqueResponseBlocking"
 - Your browser is running on: `http://localhost:5173`
-- It's trying to load from: `https://kangarugirlsseniorschool-sc-ke.onrender.com`  
+- It's trying to load from: `https://kangarugirls.sc.ke`  
 - These are **different domains** = cross-origin request
 - Browser sees response but can't read it (opaque)
 - Browser blocks it as security measure
@@ -35,10 +35,10 @@ Multiple images failing to load from Gallery, StudentLife, Events, Staff pages.
 ### Timeline of Events:
 ```
 ✓ Week 1: Upload images → Backend saves to /uploads/
-✓ Week 2: Frontend receives: https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg
-✓ Week 3: Frontend stores in database: https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg
+✓ Week 2: Frontend receives: https://kangarugirls.sc.ke/uploads/file.jpg
+✓ Week 3: Frontend stores in database: https://kangarugirls.sc.ke/uploads/file.jpg
 ✗ Week 4: Developer runs frontend on localhost:5173
-✗ Frontend requests image from: https://kangarugirlsseniorschool-sc-ke.onrender.com
+✗ Frontend requests image from: https://kangarugirls.sc.ke
 ✗ Browser blocks cross-origin request
 ✗ Images fail to load
 ```
@@ -47,7 +47,7 @@ Multiple images failing to load from Gallery, StudentLife, Events, Staff pages.
 From your files.js route:
 ```javascript
 return res.json({
-  url: toAbsoluteUrl(req, doc.url),  // Returns: https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/...
+  url: toAbsoluteUrl(req, doc.url),  // Returns: https://kangarugirls.sc.ke/uploads/...
   path: doc.url,                      // Also has: /uploads/...
 });
 ```
@@ -105,7 +105,7 @@ But if that's stored as absolute URL in database pointing to production→ same 
                  ▼
 ┌─────────────────────────────────────────┐
 │ Backend (localhost:4000)                 │
-│ Returns: { url: "https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg" }
+│ Returns: { url: "https://kangarugirls.sc.ke/uploads/file.jpg" }
 └────────────────┬────────────────────────┘
                  │
                  ▼
@@ -143,11 +143,11 @@ But if that's stored as absolute URL in database pointing to production→ same 
 ### Part 1: Fix Database (Normalize to Relative)
 **Current state** (database):
 ```
-Gallery: attachments[0].url = "https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg"
+Gallery: attachments[0].url = "https://kangarugirls.sc.ke/uploads/file.jpg"
 StudentLife: imageUrl = "/images/old-file.jpg"
-Events: imageUrl = "https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg"
+Events: imageUrl = "https://kangarugirls.sc.ke/uploads/file.jpg"
 Staff: photoUrl = "/images/staff/Principal.PNG"
-HomeNews: imageUrl = "https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg"
+HomeNews: imageUrl = "https://kangarugirls.sc.ke/uploads/file.jpg"
 ```
 
 **Desired state** (all relative):
@@ -221,13 +221,13 @@ Frontend loads from localhost:4000 (same domain) ✓ No CORS error
 ```
 Same flow, but:
 POST /api/upload with file
-← Returns: https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg
+← Returns: https://kangarugirls.sc.ke/uploads/file.jpg
 ↓
 Backend still stores relative: /uploads/file.jpg
 ↓
 GET /api/student-life/:id
 ↓
-Returns: { imageUrl: "https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg" }
+Returns: { imageUrl: "https://kangarugirls.sc.ke/uploads/file.jpg" }
 ↓
 Frontend loads from production domain (same domain) ✓ No CORS error
 ```

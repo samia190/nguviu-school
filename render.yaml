@@ -28,9 +28,9 @@ services:
       - key: ID_CARD_SECRET
         generateValue: true
       - key: FRONTEND_URL
-        value: https://kangarugirlsseniorschool-sc-ke.onrender.com
+        value: https://kangarugirls.sc.ke
       - key: CORS_ORIGINS
-        value: https://kangarugirlsseniorschool-sc-ke.onrender.com,https://kangarugirlsschool.onrender.com
+        value: https://kangarugirls.sc.ke,https://kangarugirlsschool.onrender.com
       - key: PUBLIC_ORIGIN
         value: https://kangarugirlsschool.onrender.com
       - key: CLOUDINARY_CLOUD_NAME
@@ -90,6 +90,6 @@ services:
       - key: VITE_BACKEND_URL
         value: https://kangarugirlsschool.onrender.com
       - key: VITE_FRONTEND_URL
-        value: https://kangarugirlsseniorschool-sc-ke.onrender.com
+        value: https://kangarugirls.sc.ke
       - key: NODE_VERSION
         value: "18"

@@ -24,7 +24,7 @@ Decoded:     https://kangaru girls-school.onrender.com/api/home-news
 - Could be in an old vite config from before November
 - Likely from commit **before** `f43651d` (from 2-3 weeks ago)
 
-**Current local .env shows:** `VITE_API_URL=https://kangarugirlsseniorschool-sc-ke.onrender.com` ✅ (correct)
+**Current local .env shows:** `VITE_API_URL=https://kangarugirls.sc.ke` ✅ (correct)
 
 ---
 
@@ -81,7 +81,7 @@ Render deployed:
 
 ### Where It's Coming From
 ```
-Frontend tries: GET https://kangarugirlsseniorschool-sc-ke.onrender.com/images/DSC_5454.jpg
+Frontend tries: GET https://kangarugirls.sc.ke/images/DSC_5454.jpg
 Render static site: No such file (never, existed, never will)
 Result: 404
 ```
@@ -97,7 +97,7 @@ Result: 404
 
 ---
 
-## ERROR 5: `Dropped srcset candidate "https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/gallery-1771837586951-DSC_5372"` (NO FILE EXTENSION)
+## ERROR 5: `Dropped srcset candidate "https://kangarugirls.sc.ke/uploads/gallery-1771837586951-DSC_5372"` (NO FILE EXTENSION)
 
 ### Where It's Coming From
 ```

@@ -275,7 +275,7 @@ Open gallery in browser and verify:
 ```
 Steps:
 1. Open http://localhost:5173    (dev server)
-   OR https://kangarugirlsseniorschool-sc-ke.onrender.com  (production)
+   OR https://kangarugirls.sc.ke  (production)
 
 2. Navigate to Gallery page
 

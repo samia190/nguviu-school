@@ -234,7 +234,7 @@ function MenuButton({ route, setRoute, setLoading, user }) {
 
 // Helper: Get route from URL path
 // ── Per-route SEO metadata ────────────────────────────────────────────────────
-const BASE_URL = "https://kangarugirlsseniorschool-sc-ke.onrender.com";
+const BASE_URL = "https://kangarugirls.sc.ke";
 const OG_IMAGE = `${BASE_URL}/header/logo-new.png`;
 const SITE_NAME = "Kangaru Girls Senior School";
 

@@ -4,7 +4,7 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://kangarugirlsseniorschool-sc-ke.onrender.com/sitemap.xml
+Sitemap: https://kangarugirls.sc.ke/sitemap.xml
 
 # Disallow admin and private/authenticated areas
 Disallow: /admin

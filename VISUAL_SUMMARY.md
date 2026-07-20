@@ -5,7 +5,7 @@
 ```
 Browser Console:
 ❌ A resource is blocked by OpaqueResponseBlocking
-❌ GET https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg
+❌ GET https://kangarugirls.sc.ke/uploads/file.jpg
 ❌ NS_BINDING_ABORTED
 
 Visual Result:
@@ -30,7 +30,7 @@ Visual Result:
    ┌────────────────────────────────────────┐
    │ DATABASE                               │
    │ Gallery.attachments[0].url:           │
-   │ "https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg"
+   │ "https://kangarugirls.sc.ke/uploads/file.jpg"
    │                                        │
    │ (☓ WRONG: Absolute URL to production) │
    └─────────────────────────────────────────┘
@@ -38,7 +38,7 @@ Visual Result:
         │
    ┌────────────────────────────────────────┐
    │ API RESPONSE                           │
-   │ Returns: https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg
+   │ Returns: https://kangarugirls.sc.ke/uploads/file.jpg
    │                                        │
    │ (☓ WRONG: Still pointing to production)│
    └─────────────────────────────────────────┘
@@ -114,10 +114,10 @@ Visual Result:
 
 ### Current (Broken) Process
 ```
-Database:    https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file
+Database:    https://kangarugirls.sc.ke/uploads/file
            (absolute, points to production)
     ↓
-API:         Returns same: https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file
+API:         Returns same: https://kangarugirls.sc.ke/uploads/file
            (doesn't change anything)
     ↓
 Frontend:    Tries to fetch from production domain
@@ -153,14 +153,14 @@ Result:      ✓ Image loads
 
 ```
 PRODUCTION DEPLOYMENT
-Frontend: https://kangarugirlsseniorschool-sc-ke.onrender.com
-Backend:  https://kangarugirlsseniorschool-sc-ke.onrender.com
+Frontend: https://kangarugirls.sc.ke
+Backend:  https://kangarugirls.sc.ke
 
 Database:      /uploads/file
              (relative, doesn't change)
     ↓
 API:           Converts to absolute based on REQUEST:
-             https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file
+             https://kangarugirls.sc.ke/uploads/file
              (uses production domain from request)
     ↓
 Frontend:      Requests from production domain
@@ -181,8 +181,8 @@ Result:        ✓ Image loads
 ### 1️⃣ DATABASE NORMALIZATION
 ```
 BEFORE:
-Gallery.attachments[0].url = "https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg"
-StudentLife.imageUrl = "https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/image.jpg"
+Gallery.attachments[0].url = "https://kangarugirls.sc.ke/uploads/file.jpg"
+StudentLife.imageUrl = "https://kangarugirls.sc.ke/uploads/image.jpg"
 Events.imageUrl = "/images/event.jpg"
 Staff.photoUrl = "/images/staff/Principal.PNG"
 
@@ -232,7 +232,7 @@ const item = new Model({ imageUrl });
 ┌─────────────────────────────────────────────────────┐
 │ UPLOAD TO /api/files/upload                        │
 │ File sent → Saved to disk at: /uploads/file.jpg   │
-│ Returns: https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.jpg
+│ Returns: https://kangarugirls.sc.ke/uploads/file.jpg
 │                                                    │
 │ ⚠️  Problem: Returns absolute URL                 │
 └──────────────────┬──────────────────────────────────┘

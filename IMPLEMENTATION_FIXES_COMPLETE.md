@@ -209,7 +209,7 @@ createdAt: { type: Date, default: Date.now, index: true }
 ```javascript
 // Full absolute URL example corrected
 // Before: "http:///uploads/file.pdf"
-// After:  "https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/file.pdf"
+// After:  "https://kangarugirls.sc.ke/uploads/file.pdf"
 
 // Added extension field for consistency
 extension: {
@@ -415,7 +415,7 @@ document.querySelectorAll('img').forEach(img => {
 ```bash
 curl -H "Origin: http://localhost:5173" \
      -H "Access-Control-Request-Method: GET" \
-     https://kangarugirlsseniorschool-sc-ke.onrender.com/uploads/test.jpg
+     https://kangarugirls.sc.ke/uploads/test.jpg
 # Should include: Access-Control-Allow-Origin header
 ```
 
