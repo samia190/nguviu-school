@@ -231,7 +231,43 @@ export async function consume(roomId, producerId) {
               console.log(`[mediasoupClient] 🎬 Remote track arrived for consumer ${consumer.id}: ${track?.kind}`);
               console.log(`[STAGE 5] REMOTE TRACK ARRIVED: id=${track.id}, kind=${track.kind}, readyState=${track.readyState}, enabled=${track.enabled}`);
             });
+
+            // Start a lightweight poll to collect consumer stats (packets/frames)
+            try {
+              const startStatsPolling = () => {
+                const interval = setInterval(async () => {
+                  try {
+                    if (consumer.getStats) {
+                      const s = await consumer.getStats();
+                      console.log(`[mediasoupClient] consumer.getStats ${consumer.id}:`, s);
+                    } else if (consumer._rtpReceiver && consumer._rtpReceiver.getStats) {
+                      const s = await consumer._rtpReceiver.getStats();
+                      console.log(`[mediasoupClient] rtpReceiver.getStats ${consumer.id}:`, s);
+                    } else if (transport && transport.getStats) {
+                      const s = await transport.getStats();
+                      console.log(`[mediasoupClient] transport.getStats ${transport.id}:`, s);
+                    }
+                  } catch (e) {
+                    console.warn('[mediasoupClient] Stats poll error:', e);
+                  }
+                }, 3000);
+                consumer._statsInterval = interval;
+              };
+              startStatsPolling();
+            } catch (err) {
+              console.warn('[mediasoupClient] ⚠️ Failed to start stats polling for consumer', err);
+            }
+
             await consumer.resume();
+
+            // Ensure we stop polling when the consumer/producer/transport closes
+            consumer.on('producerclose', () => {
+              if (consumer._statsInterval) clearInterval(consumer._statsInterval);
+            });
+            consumer.on('transportclose', () => {
+              if (consumer._statsInterval) clearInterval(consumer._statsInterval);
+            });
+
             resolve({ consumer, transport });
           } catch (err) {
             console.error(`[mediasoupClient] ❌ Failed to create consumer:`, err);

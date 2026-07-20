@@ -58,6 +58,10 @@ const LiveInvigilation = ({ examId, sessionId }) => {
 
   // Fetch monitoring sessions
   const fetchMonitoringSessions = useCallback(async () => {
+    if (!examId) {
+      console.warn('[TEACHER] fetchMonitoringSessions skipped: examId is missing');
+      return;
+    }
     try {
       const token = getToken();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -74,6 +78,10 @@ const LiveInvigilation = ({ examId, sessionId }) => {
 
   // Fetch alerts
   const fetchAlerts = useCallback(async () => {
+    if (!examId) {
+      console.warn('[TEACHER] fetchAlerts skipped: examId is missing');
+      return;
+    }
     try {
       const token = getToken();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -118,16 +126,28 @@ const LiveInvigilation = ({ examId, sessionId }) => {
     setProducerStreams((prev) => {
       const next = { ...prev };
       const existingStream = next[studentKey];
-      const existingTracks = existingStream ? Array.from(existingStream.getTracks()) : [];
-      const alreadyAttached = existingTracks.some((existingTrack) => existingTrack.id === track.id);
 
-      if (!alreadyAttached) {
-        const rebuiltStream = existingStream ? new MediaStream(existingTracks) : new MediaStream();
-        rebuiltStream.addTrack(track);
-        next[studentKey] = rebuiltStream;
-        console.log(`[TEACHER] ➕ Added ${track.kind} track to stream ${studentKey}`);
-      } else {
+      if (existingStream) {
+        // Reuse the existing MediaStream instance instead of creating a new one
+        const existingTracks = existingStream.getTracks();
+        if (!existingTracks.some((t) => t.id === track.id)) {
+          try {
+            existingStream.addTrack(track);
+            console.log(`[TEACHER] ➕ Added ${track.kind} track to existing stream ${studentKey}`);
+          } catch (err) {
+            console.warn(`[TEACHER] ⚠️ Failed to add track to existing stream ${studentKey}:`, err);
+          }
+        }
         next[studentKey] = existingStream;
+      } else {
+        const ms = new MediaStream();
+        try {
+          ms.addTrack(track);
+          console.log(`[TEACHER] ➕ Created new MediaStream and added ${track.kind} track for ${studentKey}`);
+        } catch (err) {
+          console.warn(`[TEACHER] ⚠️ Failed to add track to new MediaStream for ${studentKey}:`, err);
+        }
+        next[studentKey] = ms;
       }
 
       return next;
@@ -594,6 +614,7 @@ const StreamVideo = ({ stream }) => {
 
     const attachStream = () => {
       if (video.srcObject !== stream) {
+        // Attach new stream (reuse existing MediaStream object when possible)
         video.srcObject = stream;
       }
       video.muted = true;
@@ -603,10 +624,14 @@ const StreamVideo = ({ stream }) => {
       video.setAttribute('playsinline', 'true');
       video.setAttribute('webkit-playsinline', 'true');
       setIsReady(true);
+
+      // Quick inspection of rendering state
+      console.log(`[STAGE 6] VIDEO PROPS: videoWidth=${video.videoWidth}, videoHeight=${video.videoHeight}, readyState=${video.readyState}, networkState=${video.networkState}`);
     };
 
     const tryPlay = () => {
-      if (!video || video.readyState < 2) return;
+      if (!video) return;
+      if (video.readyState < 2) return;
       video.play().catch((err) => {
         console.error(`[STAGE 6] VIDEO PLAY: ERROR`, err?.name || err);
       });
@@ -619,6 +644,7 @@ const StreamVideo = ({ stream }) => {
 
     const handleLoadedMetadata = () => {
       console.log(`[STAGE 6] VIDEO EVENT: loadedmetadata`);
+      console.log(`[STAGE 6] VIDEO META: videoWidth=${video.videoWidth}, videoHeight=${video.videoHeight}, readyState=${video.readyState}`);
       tryPlay();
     };
     const handleCanPlay = () => {
@@ -646,9 +672,17 @@ const StreamVideo = ({ stream }) => {
       video.removeEventListener('canplay', handleCanPlay);
       video.removeEventListener('playing', handlePlaying);
       video.removeEventListener('loadstart', handleLoadStart);
-      if (video) video.srcObject = null;
+      // Do NOT null `srcObject` here — avoid racing with the next stream assignment.
     };
   }, [stream]);
+
+  // Clear the video element's srcObject only on unmount to avoid intermediate nulling during stream swaps
+  React.useEffect(() => {
+    return () => {
+      const v = ref.current;
+      if (v) v.srcObject = null;
+    };
+  }, []);
 
   return <video ref={ref} autoPlay playsInline muted controls={false} style={{ width: '100%', height: '160px', objectFit: 'cover', background: '#000', opacity: isReady ? 1 : 0.9 }} />;
 }
