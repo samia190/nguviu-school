@@ -308,20 +308,34 @@ export default function App() {
 
   // Wrapper to sync route state with browser URL
   const setRoute = (newRoute) => {
-    setRouteState((prev) => {
-      // Push to history stack for back button
-      try {
-        window.__routeStack = window.__routeStack || [];
-        window.__routeStack.push(prev);
-      } catch (err) {}
-      
-      // Update browser URL without page reload
-      const newPath = newRoute === 'home' ? '/' : `/${newRoute}`;
-      window.history.pushState({ route: newRoute }, '', newPath);
-      
-      return newRoute;
-    });
-  };
+  // Already on this page?
+  if (route === newRoute) {
+    setLoading(false);
+    return;
+  }
+
+  setLoading(true);
+
+  setRouteState((prev) => {
+    window.__routeStack = window.__routeStack || [];
+    window.__routeStack.push(prev);
+
+    const newPath =
+      newRoute === "home"
+        ? "/"
+        : `/${newRoute}`;
+
+    if (window.location.pathname !== newPath) {
+      window.history.pushState(
+        { route: newRoute },
+        "",
+        newPath
+      );
+    }
+
+    return newRoute;
+  });
+};
 
   // Handle browser back/forward buttons
   useEffect(() => {

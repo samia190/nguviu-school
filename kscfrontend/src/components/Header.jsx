@@ -4,9 +4,22 @@ import OptimizedImage from "./OptimizedImage";
 
 export default function Header({ route, setRoute, setLoading, user, logout }) {
   const go = (r) => {
-    if (typeof setLoading === "function") setLoading(true);
-    setRoute && setRoute(r);
-  };
+
+    // Already on this route?
+    if (route === r) {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+
+        return;
+    }
+
+    if (typeof setLoading === "function")
+        setLoading(true);
+
+    setRoute?.(r);
+};
 
   const navButtonStyle = (active) => ({
     background: active ? "purple" : "transparent",
