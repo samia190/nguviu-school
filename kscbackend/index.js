@@ -189,9 +189,9 @@ app.use("/images", cors(), express.static(imagesDir, {
 }));
 
 // Mount routes
+app.use("/api/home", homePageRoutes);
 app.use("/api/auth", authRoutes);
 // Mount new unified home routes FIRST (highest priority)
-app.use("/api/home", homePageRoutes);
 // Mount new unified about routes (highest priority for about)
 app.use("/api/about", aboutPageRoutes);
 // Mount dedicated content routes BEFORE the generic content router so they take precedence

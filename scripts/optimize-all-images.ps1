@@ -1,11 +1,11 @@
-# ============================================================================
+out==================================
 # Image Optimization Script - Convert to WebP and Compress
-# ============================================================================
+out==================================
 # This script:
 # 1. Converts all JPG/PNG/JPEG images to WebP format (70-80% smaller)
 # 2. Keeps original files as backup
 # 3. Processes all images in frontend/public and backend/public folders
-# ============================================================================
+out==================================
 
 param(
     [int]$Quality = 85,  # WebP quality (80-90 recommended)
