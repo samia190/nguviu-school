@@ -80,14 +80,14 @@ const knowledgeDomains = {
   },
   
   academics: {
-    keywords: ['curriculum', 'subject', 'syllabus', 'learning', 'study', 'course', 'cbc', 'pathways', 'stem', 'sciences', 'arts', 'lessons'],
+    keywords: ['curriculum', 'subject', 'syllabus', 'learning', 'study', 'course', 'CBE', 'pathways', 'stem', 'sciences', 'arts', 'lessons'],
     phrases: ['how do i study', 'learning pathway', 'subject selection', 'what subjects', 'academic support'],
     responses: {
-      student: "We offer CBC (Competency Based Curriculum) with three pathways: STEM, Social Sciences, and Arts & Sports Science. Engage actively with your teachers, form study groups, and don't hesitate to ask questions. What subject would you like help with?",
-      parent: "Kangaru offers modern CBC pathways in STEM, Social Sciences, and Arts & Sports Science. This ensures your child can pursue their interests while gaining valuable skills.",
-      teacher: "Our CBC implementation covers three pathways. Focus on competency development, student engagement, and practical application of concepts.",
-      admin: "Curriculum includes CBC pathways: STEM, Social Sciences, Arts & Sports Science. Monitor implementation quality and student outcomes.",
-      default: "Kangaru Girls High School offers CBC with multiple pathways. Contact admissions or visit our website for detailed curriculum information.",
+      student: "We offer CBE (Competency Based Curriculum) with three pathways: STEM, Social Sciences, and Arts & Sports Science. Engage actively with your teachers, form study groups, and don't hesitate to ask questions. What subject would you like help with?",
+      parent: "Kangaru offers modern CBE pathways in STEM, Social Sciences, and Arts & Sports Science. This ensures your child can pursue their interests while gaining valuable skills.",
+      teacher: "Our CBE implementation covers three pathways. Focus on competency development, student engagement, and practical application of concepts.",
+      admin: "Curriculum includes CBE pathways: STEM, Social Sciences, Arts & Sports Science. Monitor implementation quality and student outcomes.",
+      default: "Kangaru Girls High School offers CBE with multiple pathways. Contact admissions or visit our website for detailed curriculum information.",
     }
   },
 

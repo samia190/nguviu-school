@@ -9,7 +9,7 @@ const InviteTokenSchema = new mongoose.Schema(
     linkType: {
       type: String,
       required: true,
-      enum: ["student-cbc", "student-844", "teacher", "staff", "parent"],
+      enum: ["student-CBE", "student-844", "teacher", "staff", "parent"],
     },
 
     // The role that will be assigned to users who register using this link

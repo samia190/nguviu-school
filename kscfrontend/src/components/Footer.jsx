@@ -231,7 +231,7 @@ export default function Footer() {
                 />
               </a>
               <a
-                href="https://www.cbc.go.ke"
+                href="https://www.CBE.go.ke"
                 target="_blank"
                 rel="noopener noreferrer"
               >

@@ -16,7 +16,7 @@
 │  📅 Date of Birth: [YYYY-MM-DD]               │
 │                                                │
 │  🔢 Assessment Number: [__________]           │
-│     (For CBC Students)                         │
+│     (For CBE Students)                         │
 │                                                │
 │  [Verify & View Results] 🔍                   │
 └────────────────────────────────────────────────┘
@@ -36,7 +36,7 @@
 │  📌 LATEST RESULT             Grade: A (85%)  │
 │  ═══════════════════════════════════════════  │
 │  Term 3 2024                                  │
-│  End of Term • CBC System  📄 PDF Uploaded    │
+│  End of Term • CBE System  📄 PDF Uploaded    │
 │                                                │
 │  ┌──────────────────────────────────────────┐ │
 │  │ Total: 680  Average: 85%  Position: 5/40│ │
@@ -82,7 +82,7 @@
 
 ┌────────────────────────────────────────────────┐
 │  Term 3 2024                     Grade: A     │
-│  End of Term • CBC • 📄 PDF                   │
+│  End of Term • CBE • 📄 PDF                   │
 │  ┌──────────────────────────────────────────┐ │
 │  │ Total: 680  Average: 85%  Position: 5/40│ │
 │  └──────────────────────────────────────────┘ │
@@ -91,7 +91,7 @@
 
 ┌────────────────────────────────────────────────┐
 │  Term 2 2024                     Grade: A-    │
-│  End of Term • CBC                            │
+│  End of Term • CBE                            │
 │  ┌──────────────────────────────────────────┐ │
 │  │ Total: 640  Average: 80%  Position: 8/40│ │
 │  └──────────────────────────────────────────┘ │
@@ -100,7 +100,7 @@
 
 ┌────────────────────────────────────────────────┐
 │  Term 1 2024                     Grade: B+    │
-│  End of Term • CBC                            │
+│  End of Term • CBE                            │
 │  ┌──────────────────────────────────────────┐ │
 │  │ Total: 624  Average: 78%  Position: 12/40│ │
 │  └──────────────────────────────────────────┘ │
@@ -141,7 +141,7 @@
 │  Create New Result                             │
 │                                                │
 │  Student: [Select Student ▼]                  │
-│  Curriculum: [CBC ▼]  Term: [Term 3 ▼]       │
+│  Curriculum: [CBE ▼]  Term: [Term 3 ▼]       │
 │  Year: [2024]  Exam Type: [End of Term ▼]    │
 │  Assessment Number: [ASS2024001]              │
 │                                                │
@@ -201,7 +201,7 @@
 ┌────────────────────────────────────────────────────────────────────────────────┐
 │ Student      │ Class │ Curriculum │ Type    │ Term/Year │ Grade │ Avg │ Status│
 ├──────────────┼───────┼────────────┼─────────┼───────────┼───────┼─────┼───────┤
-│ JANE DOE     │ F2    │ 🔵 CBC     │ 📄 PDF  │ Term 3    │  A    │85.0%│ 🟢 Pub│
+│ JANE DOE     │ F2    │ 🔵 CBE     │ 📄 PDF  │ Term 3    │  A    │85.0%│ 🟢 Pub│
 │ ADM2024001   │ East  │            │         │ 2024      │       │     │       │
 ├──────────────┼───────┼────────────┼─────────┼───────────┼───────┼─────┼───────┤
 │ MARY SMITH   │ F3    │ 🟠 8-4-4   │✍️Manual │ Term 3    │  B+   │78.5%│ 🟡 Dra│
@@ -286,7 +286,7 @@
 ### Buttons & Badges:
 - 🟣 **Purple Gradient:** Manual entry button, download report
 - 🔴 **Pink Gradient:** PDF upload button, view PDF
-- 🔵 **Blue Badge:** CBC curriculum
+- 🔵 **Blue Badge:** CBE curriculum
 - 🟠 **Orange Badge:** 8-4-4 curriculum
 - 🔴 **Pink Badge:** PDF type
 - 🟢 **Green Badge:** Manual type

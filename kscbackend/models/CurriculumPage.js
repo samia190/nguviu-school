@@ -45,7 +45,7 @@ const curriculumPageSchema = new mongoose.Schema(
     subtitle: {
       type: String,
       default:
-        "Comprehensive academic programs preparing students for excellence in the CBC and 8-4-4 curriculum systems",
+        "Comprehensive academic programs preparing students for excellence in the CBE and 8-4-4 curriculum systems",
     },
     heroImage: { type: String, default: "" },
     heroOverlayText: { type: String, default: "Curriculum at Kangaru Girls" },
@@ -139,7 +139,7 @@ export const defaultSections = [
   {
     key: "overview",
     heading: "Curriculum Overview",
-    body: "Our school follows both the 8-4-4 and CBC curriculum systems, offering a comprehensive education that prepares students for national examinations and beyond. The curriculum emphasizes critical thinking, practical skills, and holistic development.",
+    body: "Our school follows both the 8-4-4 and CBE curriculum systems, offering a comprehensive education that prepares students for national examinations and beyond. The curriculum emphasizes critical thinking, practical skills, and holistic development.",
     active: true,
     displayOrder: 1,
   },

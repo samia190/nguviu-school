@@ -112,8 +112,8 @@ router.post("/register", authLimiter, async (req, res) => {
     await user.save();
 
     // --- Create role-specific profile (only for invited users with a linkType) ---
-    if (linkType === "student-cbc" || linkType === "student-844") {
-      const curriculum = linkType === "student-cbc" ? "CBC" : "8-4-4";
+    if (linkType === "student-CBE" || linkType === "student-844") {
+      const curriculum = linkType === "student-CBE" ? "CBE" : "8-4-4";
       await StudentProfile.create({
         user: user._id,
         curriculum,

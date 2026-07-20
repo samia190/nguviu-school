@@ -7,7 +7,7 @@ import OptimizedImage from "./OptimizedImage";
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
 const LINK_TYPE_LABELS = {
-  "student-cbc": "Student (CBC Curriculum)",
+  "student-CBE": "Student (CBE Curriculum)",
   "student-844": "Student (8-4-4 Curriculum)",
   "teacher": "Teacher",
   "staff": "Staff Member",
@@ -178,8 +178,8 @@ export default function SignUp({ onAuth, navigate }) {
   }
 
   const { linkType } = inviteInfo;
-  const isStudent = linkType === "student-cbc" || linkType === "student-844";
-  const isCBC = linkType === "student-cbc";
+  const isStudent = linkType === "student-CBE" || linkType === "student-844";
+  const isCBE = linkType === "student-CBE";
   const isTeacher = linkType === "teacher";
   const isStaff = linkType === "staff";
   const isParent = linkType === "parent";
@@ -280,7 +280,7 @@ export default function SignUp({ onAuth, navigate }) {
                 <div><p className="si-label">Admission Number</p><input name="admissionNumber" placeholder="e.g. 62191" className="si-input" /></div>
                 <div><p className="si-label">Stream / Class</p><input name="stream" placeholder="e.g. East" className="si-input" /></div>
               </div>
-              {isCBC ? (
+              {isCBE ? (
                 <div><p className="si-label">Grade</p>
                   <select name="grade" className="si-input" style={{ cursor:"pointer" }} defaultValue="">
                     <option value="" disabled>Select grade</option>

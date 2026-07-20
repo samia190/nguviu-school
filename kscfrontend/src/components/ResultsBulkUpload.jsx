@@ -3,8 +3,8 @@ import { post } from "../utils/api";
 
 // ── 8-4-4 template ──────────────────────────────────────────────────────────
 const SUBJECTS_844 = ["English", "Kiswahili", "Mathematics", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE"];
-// ── CBC template ─────────────────────────────────────────────────────────────
-const SUBJECTS_CBC = ["English", "Kiswahili", "Mathematics", "Integrated Science", "Social Studies", "Creative Arts", "Physical Education", "CRE", "Life Skills"];
+// ── CBE template ─────────────────────────────────────────────────────────────
+const SUBJECTS_CBE = ["English", "Kiswahili", "Mathematics", "Integrated Science", "Social Studies", "Creative Arts", "Physical Education", "CRE", "Life Skills"];
 // Kept for backwards compatibility (unused after refactor)
 const TEMPLATE_SUBJECTS = SUBJECTS_844;
 
@@ -22,23 +22,23 @@ function template844() {
   return [h.join(","), e.join(",")].join("\n");
 }
 
-function templateCBC() {
-  const h = ["admissionNumber", ...SUBJECTS_CBC, "teacherRemarks"];
+function templateCBE() {
+  const h = ["admissionNumber", ...SUBJECTS_CBE, "teacherRemarks"];
   const e = ["ADM001", "EE", "ME", "ME", "AE", "ME", "EE", "ME", "ME", "AE", "Good learner"];
   return [h.join(","), e.join(",")].join("\n");
 }
 
-// CBC competency level badge colours
-const CBC_BADGE = {
+// CBE competency level badge colours
+const CBE_BADGE = {
   EE: { bg: "#dcfce7", color: "#166534", title: "Exceeding Expectations" },
   ME: { bg: "#dbeafe", color: "#1e40af", title: "Meeting Expectations" },
   AE: { bg: "#fef3c7", color: "#92400e", title: "Approaching Expectations" },
   BE: { bg: "#fee2e2", color: "#991b1b", title: "Below Expectations" }
 };
 
-function CbcBadge({ val }) {
+function CBEBadge({ val }) {
   const key = (val || "").toUpperCase();
-  const s = CBC_BADGE[key];
+  const s = CBE_BADGE[key];
   if (!s) return <span>{val}</span>;
   return <span title={s.title} style={{ padding: "2px 7px", borderRadius: "4px", fontSize: "11px", fontWeight: 700, background: s.bg, color: s.color }}>{key}</span>;
 }
@@ -59,10 +59,10 @@ function parseCSVText(text) {
 
 // ── Per-curriculum upload form ───────────────────────────────────────────────
 function UploadForm({ curriculum }) {
-  const isCBC = curriculum === "CBC";
-  const accent = isCBC ? "#059669" : "#667eea";
-  const accentLight = isCBC ? "#d1fae5" : "#ede9fe";
-  const accentDark = isCBC ? "#065f46" : "#5b21b6";
+  const isCBE = curriculum === "CBE";
+  const accent = isCBE ? "#059669" : "#667eea";
+  const accentLight = isCBE ? "#d1fae5" : "#ede9fe";
+  const accentDark = isCBE ? "#065f46" : "#5b21b6";
 
   const [step, setStep] = useState(1);
   const [config, setConfig] = useState({
@@ -99,7 +99,7 @@ function UploadForm({ curriculum }) {
         curriculum,
         term: config.term,
         year: parseInt(config.year),
-        examType: isCBC ? "End of Term" : config.examType
+        examType: isCBE ? "End of Term" : config.examType
       });
       setResult(data);
       setStep(4);
@@ -148,7 +148,7 @@ function UploadForm({ curriculum }) {
               <label style={lbl}>Year</label>
               <input style={inp} type="number" min="2020" max="2030" value={config.year} onChange={e => setConfig(c => ({ ...c, year: e.target.value }))} />
             </div>
-            {!isCBC && (
+            {!isCBE && (
               <div>
                 <label style={lbl}>Exam Type</label>
                 <select style={inp} value={config.examType} onChange={e => setConfig(c => ({ ...c, examType: e.target.value }))}>
@@ -161,18 +161,18 @@ function UploadForm({ curriculum }) {
           <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "16px", marginBottom: "20px" }}>
             <p style={{ fontWeight: 600, fontSize: "14px", marginBottom: "6px" }}>📥 Download CSV Template</p>
             <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "12px" }}>
-              {isCBC
-                ? <>First column: <strong>admissionNumber</strong>. Then one column per learning area with values <strong>EE / ME / AE / BE</strong>. <strong>Add any extra learning area columns</strong> in Excel — the system will pick them up automatically. No position column (CBC doesn't rank students).</>
+              {isCBE
+                ? <>First column: <strong>admissionNumber</strong>. Then one column per learning area with values <strong>EE / ME / AE / BE</strong>. <strong>Add any extra learning area columns</strong> in Excel — the system will pick them up automatically. No position column (CBE doesn't rank students).</>
                 : <>First column: <strong>admissionNumber</strong>. Then subject columns with marks <strong>0–100</strong>. <strong>Add, remove, or rename subject columns freely</strong> in Excel — every column that isn't <em>admissionNumber / position / outOf / teacherRemarks / stream</em> is treated as a subject automatically. Grades are calculated from marks.</>
               }
             </p>
-            <button style={btnSecondary} onClick={() => isCBC
-              ? downloadCsv(templateCBC(), "cbc_results_template.csv")
+            <button style={btnSecondary} onClick={() => isCBE
+              ? downloadCsv(templateCBE(), "CBE_results_template.csv")
               : downloadCsv(template844(), "844_results_template.csv")
             }>⬇ Download Template</button>
           </div>
 
-          {isCBC && (
+          {isCBE && (
             <div style={{ background: "#f0fdf4", border: "1px solid #86efac", borderRadius: "8px", padding: "12px", marginBottom: "20px", fontSize: "13px" }}>
               <strong>Competency Key: &nbsp;</strong>
               {[["EE", "#dcfce7", "#166534", "Exceeding Expectations"],
@@ -224,7 +224,7 @@ function UploadForm({ curriculum }) {
         <div style={card}>
           <h3 style={{ fontSize: "15px", marginBottom: "4px", color: "#1e293b" }}>Preview</h3>
           <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "14px" }}>
-            {preview.rows.length} student(s) · {config.term} {config.year}{!isCBC && ` · ${config.examType}`}
+            {preview.rows.length} student(s) · {config.term} {config.year}{!isCBE && ` · ${config.examType}`}
           </p>
 
           <div style={{ overflowX: "auto", maxHeight: "310px", overflowY: "auto", marginBottom: "18px" }}>
@@ -241,7 +241,7 @@ function UploadForm({ curriculum }) {
                   <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
                     {row.map((val, j) => (
                       <td key={j} style={{ padding: "7px 10px", whiteSpace: "nowrap" }}>
-                        {isCBC && j > 0 && j < row.length - 1 ? <CbcBadge val={val} /> : val}
+                        {isCBE && j > 0 && j < row.length - 1 ? <CBEBadge val={val} /> : val}
                       </td>
                     ))}
                   </tr>
@@ -318,7 +318,7 @@ export default function ResultsBulkUpload() {
 
       {/* Curriculum tab switcher */}
       <div style={{ display: "flex", marginBottom: "24px", border: "1px solid #e5e7eb", borderRadius: "10px", overflow: "hidden", width: "fit-content" }}>
-        {[["8-4-4", "📋 8-4-4 Results"], ["CBC", "📗 CBC Results"]].map(([key, label]) => (
+        {[["8-4-4", "📋 8-4-4 Results"], ["CBE", "📗 CBE Results"]].map(([key, label]) => (
           <button
             key={key}
             onClick={() => setCurriculum(key)}
@@ -326,7 +326,7 @@ export default function ResultsBulkUpload() {
               padding: "11px 30px", border: "none", cursor: "pointer",
               fontWeight: curriculum === key ? 700 : 400,
               fontSize: "14px",
-              background: curriculum === key ? (key === "CBC" ? "#059669" : "#667eea") : "#fff",
+              background: curriculum === key ? (key === "CBE" ? "#059669" : "#667eea") : "#fff",
               color: curriculum === key ? "#fff" : "#64748b",
               borderRight: key === "8-4-4" ? "1px solid #e5e7eb" : "none",
               transition: "all 0.15s"

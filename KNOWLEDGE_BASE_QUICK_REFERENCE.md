@@ -24,7 +24,7 @@ A comprehensive, production-ready AI knowledge base with **28 topic categories**
 
 ### Academics (4 topics)
 - `academics` - Academic programs and subjects offered
-- `curriculum` - CBC implementation and learning pathways
+- `curriculum` - CBE implementation and learning pathways
 - `performance` - Historical KCSE performance data
 - `kcse2024` - Latest 2024 KCSE results and grades
 
@@ -161,7 +161,7 @@ Kangaru Girls Knowledge Base
 ├── Academics (85% coverage)
 │   ├── Programs and subjects ✓
 │   ├── KCSE performance ✓
-│   ├── CBC pathways ✓
+│   ├── CBE pathways ✓
 │   ├── Specific achievement metrics ✗ (need updates)
 │   └── Teaching staff ✓
 │

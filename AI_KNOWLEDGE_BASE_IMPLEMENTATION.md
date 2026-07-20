@@ -33,7 +33,7 @@ You now have a **production-ready, comprehensive digital archive and virtual ass
 | `admissions` | admission, apply, enroll, transfer | Application procedures | ✅ Complete (Login req) |
 | `fees` | fees, cost, tuition, bursary | Fee information | ✅ Complete (Login req) |
 | `academics` | academics, curriculum, subjects | Academic programs | ✅ Complete |
-| `curriculum` | CBC, 8-4-4, STEM, pathways | CBC implementation details | ✅ Complete |
+| `curriculum` | CBE, 8-4-4, STEM, pathways | CBE implementation details | ✅ Complete |
 | `performance` | KCSE, results, grades, ranking | Historical KCSE data | ✅ Complete |
 | `kcse2024` | 2024 results, latest KCSE | Detailed 2024 grade distribution | ✅ Complete |
 | `facilities` | facilities, library, lab, infrastructure | Campus infrastructure | ✅ Complete |
@@ -112,7 +112,7 @@ export function getKnowledgeBaseStats()              // Coverage statistics
 
 ### ✅ Academic Information (Complete)
 
-- CBC pathways (STEM, Social Sciences, Arts & Sports)
+- CBE pathways (STEM, Social Sciences, Arts & Sports)
 - Subject offerings (Mathematics, Sciences, Languages, Humanities, etc.)
 - 2019 KCSE: Mean 8.01 (B-), Rank 82 nationally
 - 2020 KCSE: Mean 7.9 (B-), 75%+ university entry
@@ -143,7 +143,7 @@ export function getKnowledgeBaseStats()              // Coverage statistics
 - Dormitories (boarding houses)
 - Dining hall
 - Sports grounds (Athletics, Volleyball, Netball)
-- CBC learning spaces
+- CBE learning spaces
 - Administration block
 
 ### ✅ School Identity (Complete)
@@ -168,7 +168,7 @@ export function getKnowledgeBaseStats()              // Coverage statistics
 
 - 2025: Strong KCSE results celebrations
 - 2026: Student unrest incident (March)
-- Ongoing: CBC implementation
+- Ongoing: CBE implementation
 - Continuous: Academic excellence initiatives
 
 ### ✅ School Relationships (Complete)

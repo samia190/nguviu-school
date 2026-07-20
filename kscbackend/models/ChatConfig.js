@@ -152,7 +152,7 @@ const defaultCategories = [
     id: "academics",
     icon: "📚",
     label: "Academics",
-    keywords: ["academic", "academics", "subject", "subjects", "curriculum", "CBC", "8-4-4", "course", "class", "stream", "pathway", "STEM", "arts"],
+    keywords: ["academic", "academics", "subject", "subjects", "curriculum", "CBE", "8-4-4", "course", "class", "stream", "pathway", "STEM", "arts"],
     reply: "",
     dataSource: "curriculum-page",
     dataField: "overview",

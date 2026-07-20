@@ -123,7 +123,7 @@ export default function Curriculum() {
 
       {/* Content Sections */}
       {page.sections?.length > 0 && (
-        <section id="cbc-curriculum">
+        <section id="CBE-curriculum">
           {/* Section nav pills */}
           {page.sections.length > 1 && (
             <div className="curriculum-section-pills" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>

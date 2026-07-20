@@ -321,7 +321,7 @@ export const guestResponses = {
       "when is application"
     ],
     response:
-      "Admissions to Kangaru Girls Senior School: Student Recruitment: Qualified students from across Kenya including Nairobi\n\nAs an Extra-County Girls' School (C2 Classification):\n• Status: Public boarding institution\n• Gender: Girls only\n• Curriculum: 8-4-4 and CBC\n\nFor Detailed and accurate Information:\n• Visit our Admissions page\n• Sign in to access the admissions portal\n• Contact the administration office\n• \nImportant Application procedures, requirements, and important dates are available on our Admissions page.",
+      "Admissions to Kangaru Girls Senior School: Student Recruitment: Qualified students from across Kenya including Nairobi\n\nAs an Extra-County Girls' School (C2 Classification):\n• Status: Public boarding institution\n• Gender: Girls only\n• Curriculum: 8-4-4 and CBE\n\nFor Detailed and accurate Information:\n• Visit our Admissions page\n• Sign in to access the admissions portal\n• Contact the administration office\n• \nImportant Application procedures, requirements, and important dates are available on our Admissions page.",
     followUp: [
       "What are the admission requirements?",
       "When are applications submitted?",
@@ -371,7 +371,7 @@ export const guestResponses = {
       "bursary"
     ],
     response:
-      "School Fees Information:\n\nFee Structure:\n• Varies by class level (Form 1, 2, 3, 4), CBC (Grade 10,11,12)\n• May differ based on academic year\n• \nFee Categories:\n• Tuition fees\n• Boarding fees\n• Facilities fees\n• Activity fees\n• Other approved charges\n\nPayment Methods & Support:\n• Multiple payment options available\n• Payment deadlines per term\n• Bursary programs  students\n• Financial aid opportunities\n• Scholarship considerations\n\nFor Personalized Fee Information:\n• Sign in or create an account\n• Visit the Fee Structure page\n• Contact the finance/administration office\n• Inquire about financial assistance options\n\nNote: Specific fee amounts require login access or direct contact with the school to ensure accuracy and currency of information.",
+      "School Fees Information:\n\nFee Structure:\n• Varies by class level (Form 1, 2, 3, 4), CBE (Grade 10,11,12)\n• May differ based on academic year\n• \nFee Categories:\n• Tuition fees\n• Boarding fees\n• Facilities fees\n• Activity fees\n• Other approved charges\n\nPayment Methods & Support:\n• Multiple payment options available\n• Payment deadlines per term\n• Bursary programs  students\n• Financial aid opportunities\n• Scholarship considerations\n\nFor Personalized Fee Information:\n• Sign in or create an account\n• Visit the Fee Structure page\n• Contact the finance/administration office\n• Inquire about financial assistance options\n\nNote: Specific fee amounts require login access or direct contact with the school to ensure accuracy and currency of information.",
     followUp: [
       "What payment methods are accepted?",
       "Are there bursary opportunities?",
@@ -419,9 +419,9 @@ export const guestResponses = {
       "learning pathways"
     ],
     response:
-      "Academic Programs at Kangaru Girls Senior School:\n\nCurrent Curriculum System:\n• Transitioning from 8-4-4 to Competency-Based Curriculum (CBC)\n• Modern teaching methodologies and learning spaces\n• Focus on 21st-century skills and competencies\n\nCore Subjects:\n✓ Mathematics\n✓ English Language\n✓ Kiswahili Language\n✓ Physics\n✓ Chemistry\n✓ Biology\n✓ Geography\n✓ History and Government\n✓ Christian Religious Education (CRE)\n✓ Computer Studies\n✓ Business Studies\n✓ Home Science\n\nLearning Pathways (CBC):\n1. STEM Pathway: Mathematics, Sciences, Computer Studies\n2. Social Sciences Pathway: Geography, History, Business Studies, CRE\n3. Arts & Sports Science Pathway: Languages, Humanities, Physical Education\n\nAcademic Support:\n• Qualified teachers across all departments\n• Regular academic clinics and reviews\n• Individual student performance monitoring\n• Subject-specific enrichment programs\n\nFor detailed curriculum information, visit the Curriculum page or sign in to access full academic resources.",
+      "Academic Programs at Kangaru Girls Senior School:\n\nCurrent Curriculum System:\n• Transitioning from 8-4-4 to Competency-Based Curriculum (CBE)\n• Modern teaching methodologies and learning spaces\n• Focus on 21st-century skills and competencies\n\nCore Subjects:\n✓ Mathematics\n✓ English Language\n✓ Kiswahili Language\n✓ Physics\n✓ Chemistry\n✓ Biology\n✓ Geography\n✓ History and Government\n✓ Christian Religious Education (CRE)\n✓ Computer Studies\n✓ Business Studies\n✓ Home Science\n\nLearning Pathways (CBE):\n1. STEM Pathway: Mathematics, Sciences, Computer Studies\n2. Social Sciences Pathway: Geography, History, Business Studies, CRE\n3. Arts & Sports Science Pathway: Languages, Humanities, Physical Education\n\nAcademic Support:\n• Qualified teachers across all departments\n• Regular academic clinics and reviews\n• Individual student performance monitoring\n• Subject-specific enrichment programs\n\nFor detailed curriculum information, visit the Curriculum page or sign in to access full academic resources.",
     followUp: [
-      "What is CBC?",
+      "What is CBE?",
       "Can I choose my learning pathway?",
       "How are students assessed?"
     ],
@@ -430,7 +430,7 @@ export const guestResponses = {
 
   curriculum: {
     keywords: [
-      "cbc",
+      "CBE",
       "competency based curriculum",
       "8-4-4",
       "pathways",
@@ -446,12 +446,12 @@ export const guestResponses = {
       "technology",
       "engineering",
       "math subjects",
-      "cbc pathways"
+      "CBE pathways"
     ],
     trainingPhrases: [
-      "do you offer cbc",
-      "what is cbc",
-      "how is cbc implemented",
+      "do you offer CBE",
+      "what is CBE",
+      "how is CBE implemented",
       "what pathways do you offer",
       "what stem subjects do you offer",
       "what stem courses are available",
@@ -459,19 +459,19 @@ export const guestResponses = {
       "what science subjects do you offer",
       "do you offer computer science",
       "what technology subjects are available",
-      "what are the cbc pathways",
+      "what are the CBE pathways",
       "do you offer arts and sports science",
       "do you offer social sciences",
       "which pathway is best",
       "how do i choose a pathway",
-      "when will cbc start",
+      "when will CBE start",
       "are you transitioning from 8-4-4",
       "what stems do you offer",
       "do you have stem",
       "which pathways are available"
     ],
     response:
-      "Competency-Based Curriculum (CBC) at Kangaru Girls:\n\nWhat is CBC?\nThe Competency-Based Curriculum is Kenya's modern education framework focusing on:\n• Practical skills over rote memorization\n• Critical thinking and problem-solving\n• Collaboration and communication\n• Digital literacy and technology\n• Leadership and entrepreneurship\n• Social and emotional learning\n\nLearning Pathways Available:\n\n1. STEM Pathway (Science, Technology, Engineering, Mathematics)\n   • Mathematics\n   • Physics\n   • Chemistry\n   • Biology\n   • Computer Studies\n   • Technology applications\n\n2. Social Sciences Pathway\n   • Geography\n   • History and Government\n   • Business Studies\n   • Christian Religious Education\n   • Civic engagement\n\n3. Arts & Sports Science Pathway\n   • English Language\n   • Kiswahili Language\n   • Humanities\n   • Physical Education\n   • Creative arts\n\nTransition Plan:\nThe school is implementing CBC while maintaining excellence in traditional academics. This ensures continuity and quality education during the curriculum change.\n\nFor more details on CBC pathways, visit our Curriculum page.",
+      "Competency-Based Curriculum (CBE) at Kangaru Girls:\n\nWhat is CBE?\nThe Competency-Based Curriculum is Kenya's modern education framework focusing on:\n• Practical skills over rote memorization\n• Critical thinking and problem-solving\n• Collaboration and communication\n• Digital literacy and technology\n• Leadership and entrepreneurship\n• Social and emotional learning\n\nLearning Pathways Available:\n\n1. STEM Pathway (Science, Technology, Engineering, Mathematics)\n   • Mathematics\n   • Physics\n   • Chemistry\n   • Biology\n   • Computer Studies\n   • Technology applications\n\n2. Social Sciences Pathway\n   • Geography\n   • History and Government\n   • Business Studies\n   • Christian Religious Education\n   • Civic engagement\n\n3. Arts & Sports Science Pathway\n   • English Language\n   • Kiswahili Language\n   • Humanities\n   • Physical Education\n   • Creative arts\n\nTransition Plan:\nThe school is implementing CBE while maintaining excellence in traditional academics. This ensures continuity and quality education during the curriculum change.\n\nFor more details on CBE pathways, visit our Curriculum page.",
     requiresLogin: false,
   },
 
@@ -577,7 +577,7 @@ export const guestResponses = {
       "what resources do students access"
     ],
     response:
-      "Kangaru Girls Senior School: Campus Facilities\n\nAcademic Facilities:\n✓ Science Laboratories: Physics, Chemistry, Biology labs with modern equipment\n✓ Computer/ICT Laboratories: Multiple computer rooms with internet connectivity\n✓ Library: Resource center with books, journals, and digital materials\n✓ Classrooms: Well-equipped learning spaces for all form levels\n✓ CBC Learning Spaces: Dedicated areas for competency-based learning activities\n\nBoarding & Residential Facilities:\n✓ Dormitories: Multiple boarding houses for student accommodation\n✓ Dining Hall: Centralized food service facility\n✓ Staff Housing: Residential quarters for teaching and non-teaching staff\n\nAdministrative Facilities:\n✓ Administration Block: Main office and management areas\n✓ Principal's Office: Administrative headquarters\n✓ Reception & Records: Student documentation and registration\n✓ Board Room: Meeting spaces\n\nSports & Recreation:\n✓ Sports Grounds: Athletic fields for various sports\n✓ Volleyball Court: Dedicated volleyball facility\n✓ Netball Court: Basketball/netball area\n✓ Assembly Grounds: Large outdoor gathering space\n✓ Recreation Areas: Student leisure facilities\n\nUtility Infrastructure:\n✓ Water Storage Facilities: Reliable water supply systems\n✓ Electricity Supply: Campus-wide power infrastructure\n✓ Sanitation Facilities: Modern bathrooms and latrines\n✓ Medical/Health Services: Basic healthcare facilities\n✓ Security Infrastructure: Campus safety systems\n\nRecent Infrastructure Development:\nThe school continues to improve facilities in line with:\n• Government digital learning policies\n• CBC implementation requirements\n• Student capacity increases\n• Modern educational standards\n\nFor campus tours and detailed facility information, contact the school administration.",
+      "Kangaru Girls Senior School: Campus Facilities\n\nAcademic Facilities:\n✓ Science Laboratories: Physics, Chemistry, Biology labs with modern equipment\n✓ Computer/ICT Laboratories: Multiple computer rooms with internet connectivity\n✓ Library: Resource center with books, journals, and digital materials\n✓ Classrooms: Well-equipped learning spaces for all form levels\n✓ CBE Learning Spaces: Dedicated areas for competency-based learning activities\n\nBoarding & Residential Facilities:\n✓ Dormitories: Multiple boarding houses for student accommodation\n✓ Dining Hall: Centralized food service facility\n✓ Staff Housing: Residential quarters for teaching and non-teaching staff\n\nAdministrative Facilities:\n✓ Administration Block: Main office and management areas\n✓ Principal's Office: Administrative headquarters\n✓ Reception & Records: Student documentation and registration\n✓ Board Room: Meeting spaces\n\nSports & Recreation:\n✓ Sports Grounds: Athletic fields for various sports\n✓ Volleyball Court: Dedicated volleyball facility\n✓ Netball Court: Basketball/netball area\n✓ Assembly Grounds: Large outdoor gathering space\n✓ Recreation Areas: Student leisure facilities\n\nUtility Infrastructure:\n✓ Water Storage Facilities: Reliable water supply systems\n✓ Electricity Supply: Campus-wide power infrastructure\n✓ Sanitation Facilities: Modern bathrooms and latrines\n✓ Medical/Health Services: Basic healthcare facilities\n✓ Security Infrastructure: Campus safety systems\n\nRecent Infrastructure Development:\nThe school continues to improve facilities in line with:\n• Government digital learning policies\n• CBE implementation requirements\n• Student capacity increases\n• Modern educational standards\n\nFor campus tours and detailed facility information, contact the school administration.",
     followUp: [
       "Does the school have internet?",
       "What sports facilities are available?",
@@ -974,7 +974,7 @@ export const guestResponses = {
       "twin school"
     ],
     response:
-      "Kangaru School & Historical Relationship:\n\nShared Heritage:\nKangaru Girls Senior School and Kangaru School (boys' institution) share a profound historical connection spanning over 75 years.\n\nHistorical Timeline:\n\n1948: Kangaru School opens as the primary educational institution\n\n1949: First girls admitted as day scholars to Kangaru School\n\n1973 (July): Embu Girls Secondary School merges with Kangaru School, creating a mixed co-educational institution\n• One principal leads both\n• Two deputy principals oversee operations\n• Educational merger aims to improve performance through healthy competition between boys and girls\n\n1989: Historic Separation\n• Mixed institution splits into separate institutions\n• Kangaru School (boys): Continues as boys' institution\n• Kangaru Girls Senior School: Established as independent girls' institution\n• This marks the official founding of Kangaru Girls as a standalone school\n\nCurrent Relationship:\n✓ Sister Schools: Maintained strong educational partnership\n✓ Shared Identity: Both trace heritage to 1948 founding\n✓ Community Ties: Families educate children at both schools\n✓ Alumni Networks: Many families have members of both communities\n✓ Academic Competition: Inter-school sports and academic events\n✓ Shared Facilities: May coordinate certain programs or activities\n✓ Joint Celebrations: Commemorate shared history\n\nSchool Identity Sharing:\n• School Colours: Both share green and white colours (historically significant)\n• Symbols: Kangaru School's lion mascot and \"Serve and Lead\" motto are historically shared\n• Location: Adjacent campuses in Kangaru area\n• Community: Both view themselves as serving Eastern Kenya communities\n\nDifferences:\n• Kangaru School: Boys' institution, co-educational history\n• Kangaru Girls: Girls' institution, separate since 1989\n• Governance: Independently managed institutions\n• Leadership: Separate principals and administrative structures\n• Curriculum: Both implement CBC but with independent planning\n\nLegacy of the Merger/Separation:\nThe 1973 merger and 1989 separation represent important milestones in Kenyan education:\n• Reflected broader education policies of those eras\n• Demonstrated commitment to gender-specific education\n• Showcased educational excellence in Eastern Kenya\n• Illustrates evolution of secondary education in Kenya\n\nThe two institutions continue to honor their shared heritage while maintaining distinct identities and missions.",
+      "Kangaru School & Historical Relationship:\n\nShared Heritage:\nKangaru Girls Senior School and Kangaru School (boys' institution) share a profound historical connection spanning over 75 years.\n\nHistorical Timeline:\n\n1948: Kangaru School opens as the primary educational institution\n\n1949: First girls admitted as day scholars to Kangaru School\n\n1973 (July): Embu Girls Secondary School merges with Kangaru School, creating a mixed co-educational institution\n• One principal leads both\n• Two deputy principals oversee operations\n• Educational merger aims to improve performance through healthy competition between boys and girls\n\n1989: Historic Separation\n• Mixed institution splits into separate institutions\n• Kangaru School (boys): Continues as boys' institution\n• Kangaru Girls Senior School: Established as independent girls' institution\n• This marks the official founding of Kangaru Girls as a standalone school\n\nCurrent Relationship:\n✓ Sister Schools: Maintained strong educational partnership\n✓ Shared Identity: Both trace heritage to 1948 founding\n✓ Community Ties: Families educate children at both schools\n✓ Alumni Networks: Many families have members of both communities\n✓ Academic Competition: Inter-school sports and academic events\n✓ Shared Facilities: May coordinate certain programs or activities\n✓ Joint Celebrations: Commemorate shared history\n\nSchool Identity Sharing:\n• School Colours: Both share green and white colours (historically significant)\n• Symbols: Kangaru School's lion mascot and \"Serve and Lead\" motto are historically shared\n• Location: Adjacent campuses in Kangaru area\n• Community: Both view themselves as serving Eastern Kenya communities\n\nDifferences:\n• Kangaru School: Boys' institution, co-educational history\n• Kangaru Girls: Girls' institution, separate since 1989\n• Governance: Independently managed institutions\n• Leadership: Separate principals and administrative structures\n• Curriculum: Both implement CBE but with independent planning\n\nLegacy of the Merger/Separation:\nThe 1973 merger and 1989 separation represent important milestones in Kenyan education:\n• Reflected broader education policies of those eras\n• Demonstrated commitment to gender-specific education\n• Showcased educational excellence in Eastern Kenya\n• Illustrates evolution of secondary education in Kenya\n\nThe two institutions continue to honor their shared heritage while maintaining distinct identities and missions.",
     followUp: [
       "When were the schools separated?",
       "Do the schools compete together?",
@@ -1076,7 +1076,7 @@ export const guestResponses = {
       "need assistance"
     ],
     response:
-      "Welcome to Kangaru Girls Senior School!\n\n👋 Hello! I'm your school's AI Assistant & Digital Historian.\n\nI'm here to provide comprehensive information about Kangaru Girls Senior School, including:\n\n📚 HISTORY & HERITAGE:\nLearn about our founding in 1989, roots in Kangaru School (1948), and journey to becoming a leading extra-county school.\n\n🎓 ACADEMICS:\nExplore our CBC curriculum, KCSE performance (2024: 99%+ pass rate), and academic programs across STEM, Social Sciences, and Arts.\n\n🏫 FACILITIES & STUDENT LIFE:\nDiscover boarding life, co-curricular activities, sports, clubs, and vibrant student community.\n\n📍 PRACTICAL INFORMATION:\nFind location details, contact information, admissions procedures, and how to get in touch.\n\n🌟 COMMUNITY:\nUnderstand our service areas across Eastern Kenya, alumni network, and relationships with communities.\n\n🔍 SCHOOL ARCHIVE:\nAccess historical records, timelines, notable events, and information about school records and how to access them.\n\nYou can ask about:\n✓ School history and timeline\n✓ Admissions and enrollment\n✓ Academic programs and KCSE results\n✓ Facilities and boarding\n✓ Student life and activities\n✓ Location and directions\n✓ Contact information\n✓ Alumni and community\n✓ School culture and values\n✓ Events and celebrations\n✓ And much more!\n\nWhat would you like to know about Kangaru Girls Senior School?",
+      "Welcome to Kangaru Girls Senior School!\n\n👋 Hello! I'm your school's AI Assistant & Digital Historian.\n\nI'm here to provide comprehensive information about Kangaru Girls Senior School, including:\n\n📚 HISTORY & HERITAGE:\nLearn about our founding in 1989, roots in Kangaru School (1948), and journey to becoming a leading extra-county school.\n\n🎓 ACADEMICS:\nExplore our CBE curriculum, KCSE performance (2024: 99%+ pass rate), and academic programs across STEM, Social Sciences, and Arts.\n\n🏫 FACILITIES & STUDENT LIFE:\nDiscover boarding life, co-curricular activities, sports, clubs, and vibrant student community.\n\n📍 PRACTICAL INFORMATION:\nFind location details, contact information, admissions procedures, and how to get in touch.\n\n🌟 COMMUNITY:\nUnderstand our service areas across Eastern Kenya, alumni network, and relationships with communities.\n\n🔍 SCHOOL ARCHIVE:\nAccess historical records, timelines, notable events, and information about school records and how to access them.\n\nYou can ask about:\n✓ School history and timeline\n✓ Admissions and enrollment\n✓ Academic programs and KCSE results\n✓ Facilities and boarding\n✓ Student life and activities\n✓ Location and directions\n✓ Contact information\n✓ Alumni and community\n✓ School culture and values\n✓ Events and celebrations\n✓ And much more!\n\nWhat would you like to know about Kangaru Girls Senior School?",
     followUp: [
       "Tell me about school history",
       "What are the academic programs?",

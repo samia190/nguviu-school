@@ -88,9 +88,9 @@
     <priority>0.7</priority>
   </url>
 
-  <!-- Curriculum – CBC Curriculum -->
+  <!-- Curriculum – CBE Curriculum -->
   <url>
-    <loc>https://kangarugirls.sc.ke/curriculum#cbc-curriculum</loc>
+    <loc>https://kangarugirls.sc.ke/curriculum#CBE-curriculum</loc>
     <lastmod>2026-03-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

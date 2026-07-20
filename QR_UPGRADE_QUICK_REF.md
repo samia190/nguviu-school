@@ -3,7 +3,7 @@
 ## ✨ What Changed
 
 ### QR Codes Now Include:
-- ✅ **Assessment Number** (CBC students)
+- ✅ **Assessment Number** (CBE students)
 - ✅ **Class & Stream** 
 - ✅ **School Website** (https://kangaru girls.ac.ke)
 - ✅ **Student Photo** (if available)
@@ -22,7 +22,7 @@
 ✓ Student Photo (if uploaded)
 ✓ Full Name
 ✓ Admission Number
-✓ Assessment Number (CBC only)
+✓ Assessment Number (CBE only)
 ✓ Class and Stream
 ✓ School Website Link (clickable)
 ✓ Year of Admission
@@ -86,7 +86,7 @@ Photo URL: https://example.com/student-photo.jpg
 
 ### Optional: Update Existing Students
 ```bash
-# Add assessment numbers for CBC students
+# Add assessment numbers for CBE students
 # Add photo URLs where available
 # Regenerate QR codes for full data
 ```

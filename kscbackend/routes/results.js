@@ -126,13 +126,13 @@ router.post("/verify-and-fetch", verifyLimiter, requireAuth, async (req, res) =>
       });
     }
     
-    // Check if any CBC results exist and assessment number is required
-    const hasCBCResults = results.some(r => r.curriculum === "CBC");
+    // Check if any CBE results exist and assessment number is required
+    const hasCBEResults = results.some(r => r.curriculum === "CBE");
     
-    if (hasCBCResults && assessmentNumber) {
-      // Verify assessment number matches for CBC results
-      const cbcResults = results.filter(r => r.curriculum === "CBC");
-      const mismatch = cbcResults.some(r => 
+    if (hasCBEResults && assessmentNumber) {
+      // Verify assessment number matches for CBE results
+      const CBEResults = results.filter(r => r.curriculum === "CBE");
+      const mismatch = CBEResults.some(r => 
         r.assessmentNumber && r.assessmentNumber !== assessmentNumber
       );
       
@@ -1170,17 +1170,17 @@ function calcSubjectGrade(marks) {
 }
 function calcOverallGrade(avg) { return calcSubjectGrade(avg); }
 
-// ─── CBC competency helpers ───────────────────────────────────────────────────
+// ─── CBE competency helpers ───────────────────────────────────────────────────
 // Accepts short (EE/ME/AE/BE) or long form, returns canonical short form or null
-const CBC_ALIASES = {
+const CBE_ALIASES = {
   'EE': 'EE', 'EXCEEDING EXPECTATIONS': 'EE', 'EXCEEDING': 'EE',
   'ME': 'ME', 'MEETING EXPECTATIONS': 'ME', 'MEETING': 'ME',
   'AE': 'AE', 'APPROACHING EXPECTATIONS': 'AE', 'APPROACHING': 'AE',
   'BE': 'BE', 'BELOW EXPECTATIONS': 'BE', 'BELOW': 'BE'
 };
-const CBC_FULL = { EE: 'Exceeding Expectations', ME: 'Meeting Expectations', AE: 'Approaching Expectations', BE: 'Below Expectations' };
+const CBE_FULL = { EE: 'Exceeding Expectations', ME: 'Meeting Expectations', AE: 'Approaching Expectations', BE: 'Below Expectations' };
 // Scale to 0-100 for compatibility with performance analysis maths
-const CBC_SCORE = { EE: 100, ME: 75, AE: 50, BE: 25 };
+const CBE_SCORE = { EE: 100, ME: 75, AE: 50, BE: 25 };
 // Map average score back to competency label
 function scoreToCompetency(avg) {
   if (avg >= 87.5) return 'EE';
@@ -1188,8 +1188,8 @@ function scoreToCompetency(avg) {
   if (avg >= 37.5) return 'AE';
   return 'BE';
 }
-function parseCBCLevel(val) {
-  return CBC_ALIASES[(val || '').toString().trim().toUpperCase()] || null;
+function parseCBELevel(val) {
+  return CBE_ALIASES[(val || '').toString().trim().toUpperCase()] || null;
 }
 
 // Simple CSV parser (handles quoted fields + CRLF)
@@ -1211,11 +1211,11 @@ function parseCSV(text) {
 // CSV bulk import (ADMIN only)
 // Body: { csv: "...", term, year, examType, curriculum }
 // 8-4-4 columns: admissionNumber, [subjects with 0-100 marks], [position], [outOf], [teacherRemarks]
-// CBC columns:   admissionNumber, [subjects with EE/ME/AE/BE], [teacherRemarks]
+// CBE columns:   admissionNumber, [subjects with EE/ME/AE/BE], [teacherRemarks]
 router.post("/admin/csv-import", requireRole('admin'), async (req, res) => {
   try {
     const { csv, term, year, examType = 'End of Term', curriculum = '8-4-4' } = req.body;
-    const isCBC = curriculum === 'CBC';
+    const isCBE = curriculum === 'CBE';
 
     if (!csv || !term || !year) {
       return res.status(400).json({ error: "csv, term and year are required" });
@@ -1273,18 +1273,18 @@ router.post("/admin/csv-import", requireRole('admin'), async (req, res) => {
 
         let subjects, totalMarks, averageMarks, overallGrade;
 
-        if (isCBC) {
-          // ── CBC: parse competency levels ──────────────────────────────
+        if (isCBE) {
+          // ── CBE: parse competency levels ──────────────────────────────
           subjects = subjectCols
             .map(({ h, i }) => {
-              const level = parseCBCLevel(row[i]);
+              const level = parseCBELevel(row[i]);
               if (!level) return null;
               return {
                 subjectName: h,
-                marks: CBC_SCORE[level],
+                marks: CBE_SCORE[level],
                 grade: level,
-                competencyLevel: CBC_FULL[level],
-                remarks: CBC_FULL[level]
+                competencyLevel: CBE_FULL[level],
+                remarks: CBE_FULL[level]
               };
             })
             .filter(Boolean);
@@ -1320,8 +1320,8 @@ router.post("/admin/csv-import", requireRole('admin'), async (req, res) => {
 
         const posStr = getCol('position');
         const outOfStr = getCol('outOf');
-        const position = (!isCBC && posStr) ? parseInt(posStr) : undefined;
-        const outOf = (!isCBC && outOfStr) ? parseInt(outOfStr) : undefined;
+        const position = (!isCBE && posStr) ? parseInt(posStr) : undefined;
+        const outOf = (!isCBE && outOfStr) ? parseInt(outOfStr) : undefined;
 
         const result = new Result({
           studentId: student._id,

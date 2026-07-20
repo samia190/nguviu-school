@@ -6,7 +6,7 @@ const SubjectResultSchema = new mongoose.Schema({
   marks: { type: Number, required: true },
   grade: { type: String, required: true },
   remarks: { type: String },
-  // CBC specific fields
+  // CBE specific fields
   competencyLevel: { 
     type: String,
     enum: ['Exceeding Expectations', 'Meeting Expectations', 'Approaching Expectations', 'Below Expectations', ''],
@@ -28,14 +28,14 @@ const ResultSchema = new mongoose.Schema({
   class: { type: String, required: true },
   stream: { type: String },
   
-  // Assessment number for CBC students
+  // Assessment number for CBE students
   assessmentNumber: { type: String, index: true },
   
   // Curriculum system
   curriculum: {
     type: String,
     required: true,
-    enum: ['8-4-4', 'CBC'],
+    enum: ['8-4-4', 'CBE'],
     default: '8-4-4'
   },
   

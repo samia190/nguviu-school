@@ -94,7 +94,7 @@ const StudentResults = ({ user }) => {
     // Curriculum badge
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    const curriculumText = result.curriculum === "CBC" ? "CBC System (Competency-Based)" : "8-4-4 System";
+    const curriculumText = result.curriculum === "CBE" ? "CBE System (Competency-Based)" : "8-4-4 System";
     doc.text(curriculumText, pageWidth / 2, 56, { align: "center" });
 
     // Student information
@@ -115,7 +115,7 @@ const StudentResults = ({ user }) => {
     yPos += 10;
 
     // Subject results table
-    const tableColumns = result.curriculum === "CBC" 
+    const tableColumns = result.curriculum === "CBE" 
       ? ['#', 'Subject', 'Marks', 'Grade', 'Competency Level', 'Remarks']
       : ['#', 'Subject', 'Marks', 'Grade', 'Remarks'];
 
@@ -128,7 +128,7 @@ const StudentResults = ({ user }) => {
         subject.grade || "N/A"
       ];
       
-      if (result.curriculum === "CBC") {
+      if (result.curriculum === "CBE") {
         baseRow.push(subject.competencyLevel || "N/A");
       }
       
@@ -297,7 +297,7 @@ const StudentResults = ({ user }) => {
         }}>
           <h2 style={{ marginTop: 0, color: "#333" }}>Verify Your Identity</h2>
           <p style={{ color: "#666", marginBottom: "30px" }}>
-            Please enter your details below to access your results. CBC students must also provide their assessment number.
+            Please enter your details below to access your results. CBE students must also provide their assessment number.
           </p>
 
           {error && (
@@ -415,14 +415,14 @@ const StudentResults = ({ user }) => {
                 fontWeight: "600",
                 color: "#333"
               }}>
-                Assessment Number <span style={{ fontSize: "12px", color: "#666" }}>(For CBC Students)</span>
+                Assessment Number <span style={{ fontSize: "12px", color: "#666" }}>(For CBE Students)</span>
               </label>
               <input
                 type="text"
                 name="assessmentNumber"
                 value={formData.assessmentNumber}
                 onChange={handleInputChange}
-                placeholder="Enter if you're a CBC student"
+                placeholder="Enter if you're a CBE student"
                 style={{
                   width: "100%",
                   padding: "12px",
@@ -777,7 +777,7 @@ const StudentResults = ({ user }) => {
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                       {latestResult.weakSubjects.map((subject, idx) => (
                         <span key={idx} style={{
-                          background: "#ffccbc",
+                          background: "#ffcCBE",
                           color: "#bf360c",
                           padding: "4px 10px",
                           borderRadius: "12px",

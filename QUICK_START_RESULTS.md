@@ -26,7 +26,7 @@ Three major enhancements to the student results system:
 1. Click **"➕ Add New Result"** button (purple)
 2. Select student
 3. Add subjects one by one with marks/grades
-4. For CBC: add competency levels
+4. For CBE: add competency levels
 5. Enter attendance, conduct, remarks
 6. Check "Published" to make visible
 7. Click **"Create Result"**
@@ -47,7 +47,7 @@ Enter 4 details:
 - ✅ Admission number
 - ✅ Full name
 - ✅ Date of birth
-- ✅ Assessment number (if CBC student)
+- ✅ Assessment number (if CBE student)
 
 ### Step 2: View Latest Result
 You'll see:
@@ -94,7 +94,7 @@ mkdir public/results
 2. Go to Results Management
 3. Click "Upload PDF Result"
 4. Select a student (e.g., ADM2024001)
-5. Choose Term 3, 2024, CBC
+5. Choose Term 3, 2024, CBE
 6. Enter grade "A" and average "85"
 7. Upload a sample PDF
 8. Check "Publish immediately"
@@ -109,7 +109,7 @@ mkdir public/results
    - Admission: ADM2024001
    - Name: [Student's name]
    - DOB: [Student's DOB]
-   - Assessment: [If CBC]
+   - Assessment: [If CBE]
 4. Click "Verify & View Results"
 
 **Expected:** 
@@ -171,7 +171,7 @@ mkdir public/results
 
 ### Problem: "Assessment number verification fails"
 **Solution:**
-- Assessment number required ONLY for CBC students
+- Assessment number required ONLY for CBE students
 - Leave blank for 8-4-4 students
 - Check student has assessment number in database
 - Verify case-sensitive match
@@ -253,7 +253,7 @@ You now have a complete, production-ready student results system with:
 ✨ **Smart Analysis:** Automatic performance tracking
 ✨ **Student Insights:** Personalized study guidance
 ✨ **History Access:** Full results archive
-✨ **Dual Curriculum:** 8-4-4 and CBC support
+✨ **Dual Curriculum:** 8-4-4 and CBE support
 ✨ **Secure Access:** 4-field verification
 
 **The system is ready to use! Start testing with real data.** 🎉

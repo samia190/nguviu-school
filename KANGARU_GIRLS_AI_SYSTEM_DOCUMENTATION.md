@@ -21,7 +21,7 @@ This document collects all Kangaru Girls School content and AI assistant model d
     - `alumni_association_info.md`
     - `amalgamation_1973.md`
     - `attendance_policy.md`
-    - `cbc_transition_details.md`
+    - `CBE_transition_details.md`
     - `contact_details_extended.md`
     - `discipline_policy.md`
     - `embu_girls_secondary_school_1962.md`

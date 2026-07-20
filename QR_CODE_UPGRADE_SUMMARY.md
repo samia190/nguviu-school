@@ -8,7 +8,7 @@ The student verification QR code system has been upgraded to include additional 
 ### Enhanced QR Code Data
 The QR codes now include the following information:
 
-1. ✅ **Assessment Number** (for CBC students)
+1. ✅ **Assessment Number** (for CBE students)
 2. ✅ **Class and Stream**
 3. ✅ **School Website Link** (https://kangaru girls.ac.ke)
 4. ✅ **Student Photo URL** (if available)
@@ -83,7 +83,7 @@ When someone scans the QR code:
    - Card is active
 5. Returns full student information including:
    - Name, photo, admission number
-   - **Assessment number** (CBC)
+   - **Assessment number** (CBE)
    - **Class and stream**
    - **School website link**
    - Card validity dates
@@ -98,7 +98,7 @@ The verification page now shows:
 ━━━━━━━━━━━━━━━━━━
 Full Name: JANE DOE
 Admission Number: 2024/001
-Assessment Number: 12345678 (for CBC students)
+Assessment Number: 12345678 (for CBE students)
 Class: Form 3 - East
 Year of Admission: 2024
 Status: Active
@@ -134,7 +134,7 @@ Valid Until: [date]
 2. Opens verification page automatically
 3. See complete student information including:
    - Student photo
-   - Assessment number (CBC)
+   - Assessment number (CBE)
    - Current class
    - School website for more info
 
@@ -181,7 +181,7 @@ Valid Until: [date]
 ## Benefits
 
 ### 1. Enhanced Student Identification
-- Assessment numbers help identify CBC students
+- Assessment numbers help identify CBE students
 - Class information shows current academic level
 - Photo verification (when available)
 
@@ -202,12 +202,12 @@ Valid Until: [date]
 
 ## Testing
 
-### Test with CBC Student
+### Test with CBE Student
 1. Create student with assessment number
 2. Generate QR code
 3. Scan and verify assessment number appears
 
-### Test with Non-CBC Student
+### Test with Non-CBE Student
 1. Create student without assessment number
 2. Generate QR code
 3. Verify page shows other data correctly

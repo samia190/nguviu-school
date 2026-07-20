@@ -25,7 +25,7 @@ Admin can now upload pre-generated PDF result slips instead of manually entering
   - New "📄 Upload PDF Result" button (pink gradient)
   - Form fields:
     * Student selection dropdown
-    * Curriculum selector (8-4-4 or CBC)
+    * Curriculum selector (8-4-4 or CBE)
     * Term, Year, Exam Type
     * Overall Grade, Average Marks
     * PDF file input (accepts .pdf only)
@@ -142,21 +142,21 @@ System analyzes student progress and provides personalized study recommendations
 ---
 
 ### 4. **Dual Curriculum Support**
-System handles both 8-4-4 and CBC (Competency-Based Curriculum) grading systems.
+System handles both 8-4-4 and CBE (Competency-Based Curriculum) grading systems.
 
 #### Implementation Details:
 - **Curriculum Field:**
-  - Enum: `['8-4-4', 'CBC']`
+  - Enum: `['8-4-4', 'CBE']`
   - Default: `'8-4-4'`
   - Shows as colored badges:
-    * 🔵 Blue badge for CBC
+    * 🔵 Blue badge for CBE
     * 🟠 Orange badge for 8-4-4
   
 - **8-4-4 System:**
   - Traditional letter grades (A, A-, B+, B, etc.)
   - Subject marks only
   
-- **CBC System:**
+- **CBE System:**
   - Requires Assessment Number (for verification)
   - Includes Competency Levels:
     * Exceeding Expectations
@@ -174,10 +174,10 @@ Security upgraded with comprehensive student identity verification.
 1. **Admission Number** - Required (primary identifier)
 2. **Full Name** - Required (case-insensitive match)
 3. **Date of Birth** - Required (exact match)
-4. **Assessment Number** - Optional (required for CBC students only)
+4. **Assessment Number** - Optional (required for CBE students only)
 
 #### User Experience:
-- Assessment number field shows hint: "(For CBC Students)"
+- Assessment number field shows hint: "(For CBE Students)"
 - Clear error messages if verification fails
 - Instructional text guides students
 
@@ -190,10 +190,10 @@ Security upgraded with comprehensive student identity verification.
 2. Navigate to Results Management
 3. Click "➕ Add New Result"
 4. Select student from dropdown
-5. Choose curriculum (8-4-4 or CBC)
+5. Choose curriculum (8-4-4 or CBE)
 6. Enter term, year, exam type
 7. Add subjects with marks/grades
-8. For CBC: add competency levels
+8. For CBE: add competency levels
 9. Enter attendance, conduct, remarks
 10. Check "Published" to make visible
 11. Click "Create Result"
@@ -219,7 +219,7 @@ Security upgraded with comprehensive student identity verification.
    - Admission number
    - Full name
    - Date of birth
-   - Assessment number (if CBC)
+   - Assessment number (if CBE)
 4. Click "Verify & View Results"
 5. **See latest result prominently with:**
    - Overall grade in large badge
@@ -252,7 +252,7 @@ Security upgraded with comprehensive student identity verification.
    - Admission number uniqueness
    - Name must match exactly (case-insensitive)
    - Date of birth must match
-   - Assessment number verified for CBC students
+   - Assessment number verified for CBE students
 
 4. **Access Control:**
    - Students can only view their own published results
@@ -291,7 +291,7 @@ kangaru girls-frontend/
 
 ### Admin Tests:
 - [ ] Create result manually (8-4-4 system)
-- [ ] Create result manually (CBC system)
+- [ ] Create result manually (CBE system)
 - [ ] Upload PDF result
 - [ ] Edit existing result
 - [ ] Publish/unpublish result
@@ -302,7 +302,7 @@ kangaru girls-frontend/
 
 ### Student Tests:
 - [ ] Verify with all 4 fields (8-4-4 student)
-- [ ] Verify with assessment number (CBC student)
+- [ ] Verify with assessment number (CBE student)
 - [ ] View latest result
 - [ ] Check performance insights appear
 - [ ] Verify trend indicator shows correctly
@@ -319,7 +319,7 @@ kangaru girls-frontend/
 - [ ] Wrong admission number
 - [ ] Wrong name
 - [ ] Wrong date of birth
-- [ ] Missing assessment number (CBC)
+- [ ] Missing assessment number (CBE)
 - [ ] Upload non-PDF file
 - [ ] Upload file > 10MB
 - [ ] View results when none published
@@ -405,9 +405,9 @@ No migrations needed - Mongoose will auto-create fields on first use.
 - **Performance Insights:** Blue-purple gradient
 - **PDF Upload Button:** Pink gradient (#f093fb to #f5576c)
 - **Manual Entry Button:** Purple gradient (#667eea to #764ba2)
-- **Weak Subjects:** Orange/Red (#ffccbc, #bf360c)
+- **Weak Subjects:** Orange/Red (#ffcCBE, #bf360c)
 - **Strong Subjects:** Green (#c8e6c9, #1b5e20)
-- **CBC Badge:** Blue (#e3f2fd, #1976d2)
+- **CBE Badge:** Blue (#e3f2fd, #1976d2)
 - **8-4-4 Badge:** Orange (#fff3e0, #e65100)
 
 ### Responsive Design:
@@ -487,7 +487,7 @@ Students can now:
 Admins can now:
 - ✅ Upload pre-generated PDF result slips
 - ✅ Manually enter results (traditional method)
-- ✅ Support both 8-4-4 and CBC systems
+- ✅ Support both 8-4-4 and CBE systems
 - ✅ View performance analysis for each result
 - ✅ Filter by curriculum, term, year, status
 - ✅ Publish/unpublish results instantly

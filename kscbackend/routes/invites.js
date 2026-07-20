@@ -11,7 +11,7 @@ router.use(requireRole(["admin", "superadmin"]));
 
 // Role mapping from linkType
 const LINK_TYPE_ROLE = {
-  "student-cbc": "student",
+  "student-CBE": "student",
   "student-844": "student",
   "teacher": "teacher",
   "staff": "staff",

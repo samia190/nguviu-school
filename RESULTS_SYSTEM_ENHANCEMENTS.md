@@ -11,7 +11,7 @@
 - Added `weakSubjects` - Array of subjects below average
 - Added `strongSubjects` - Array of subjects above average
 - Added `improvementAreas` - Suggested focus areas
-- Added `assessmentNumber` - For CBC students
+- Added `assessmentNumber` - For CBE students
 
 ### 2. Routes Updates (`routes/results.js`):
 - Added multer configuration for PDF uploads (10MB limit)
@@ -135,7 +135,7 @@ Need complete redesign with 3 views:
 - File type validation (PDF only)
 - Uploaded files stored in `/public/results/`
 - Students can only view their own PDFs
-- Assessment number verified for CBC students
+- Assessment number verified for CBE students
 
 ## 🎯 User Flow:
 

@@ -334,7 +334,7 @@ export default function StudentIDManagement({ user }) {
             <input name="class" placeholder="Class*" required style={inputStyle} />
             <input name="stream" placeholder="Stream" style={inputStyle} />
             <input name="yearOfAdmission" type="number" placeholder="Year of Admission*" required style={inputStyle} />
-            <input name="assessmentNumber" placeholder="Assessment Number (CBC)" style={inputStyle} />
+            <input name="assessmentNumber" placeholder="Assessment Number (CBE)" style={inputStyle} />
             <input name="email" type="email" placeholder="Email" style={inputStyle} />
             <input name="phoneNumber" placeholder="Phone Number" style={inputStyle} />
             <input name="guardianName" placeholder="Guardian Name*" required style={inputStyle} />

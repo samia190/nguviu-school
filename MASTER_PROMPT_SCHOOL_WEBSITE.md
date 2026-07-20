@@ -51,7 +51,7 @@ SCHOOL_CONFIG {
   SCHOOL_CLOUDINARY_FOLDER: "kangaru"  // Cloudinary folder name for this school
 
   // Curriculum system
-  CURRICULUM_SYSTEM:    "8-4-4"        // 8-4-4 | CBC | IGCSE | IB
+  CURRICULUM_SYSTEM:    "8-4-4"        // 8-4-4 | CBE | IGCSE | IB
   EXAM_SYSTEM:          "KCSE"         // KCSE | KCPE | IGCSE | IB
   GRADING_SCALE:        "KNEC_12"      // KNEC_12 | KNEC_9 | PERCENTAGE | GPA_4 | LETTER_A_E
 
@@ -319,7 +319,7 @@ idCardGenerated: Boolean default false
 isActive: Boolean default true
 qrCodeUrl: String
 barcodeData: String
-curriculumType: enum ['8-4-4','CBC','IGCSE'] default from CONFIG
+curriculumType: enum ['8-4-4','CBE','IGCSE'] default from CONFIG
 ```
 
 #### Result

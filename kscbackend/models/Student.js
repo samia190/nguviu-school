@@ -16,7 +16,7 @@ const StudentSchema = new mongoose.Schema(
     class: { type: String, required: true },
     stream: { type: String },
     yearOfAdmission: { type: Number, required: true },
-    assessmentNumber: { type: String }, // For CBC students
+    assessmentNumber: { type: String }, // For CBE students
     
     // Contact Information
     email: { type: String },

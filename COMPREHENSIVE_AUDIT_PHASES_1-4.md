@@ -26,10 +26,10 @@
 - **Backend**: N/A (frontend only)
 - **Frontend**: [ResultsManagement.jsx](kscfrontend/src/components/ResultsManagement.jsx#L200-L280)
   - Function: `calculateTotals()` at line 200
-  - Logic: Calculates average from subject marks, assigns grade based on 8-4-4 or CBC curves
+  - Logic: Calculates average from subject marks, assigns grade based on 8-4-4 or CBE curves
   - Auto-grade mapping: A, A-, B+, B, B-, C+, C, C-, D+, D, D-, E
 - **Integration**: ✅ Working in form submission
-- **Notes**: Supports both 8-4-4 and CBC grading systems
+- **Notes**: Supports both 8-4-4 and CBE grading systems
 
 ### 2. Better Error Messages
 - **Status**: ✅ COMPLETED & WORKING

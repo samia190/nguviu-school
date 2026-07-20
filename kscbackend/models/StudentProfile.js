@@ -5,14 +5,14 @@ const StudentProfileSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, unique: true },
 
-    // CBC or 8-4-4
-    curriculum: { type: String, required: true, enum: ["CBC", "8-4-4"] },
+    // CBE or 8-4-4
+    curriculum: { type: String, required: true, enum: ["CBE", "8-4-4"] },
 
     admissionNumber: { type: String, index: true, sparse: true },
     stream: { type: String },
     yearOfAdmission: { type: Number },
 
-    // CBC-specific
+    // CBE-specific
     grade: { type: String }, // e.g. "Grade 7", "Grade 8", "Grade 9"
 
     // 8-4-4-specific

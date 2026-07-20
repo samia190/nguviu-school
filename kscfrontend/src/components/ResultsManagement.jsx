@@ -215,9 +215,9 @@ const ResultsManagement = ({ user }) => {
 
     let grade = "F";
     
-    // Different grading for 8-4-4 vs CBC
-    if (formData.curriculum === "CBC") {
-      // CBC Senior School uses same letter grades but emphasizes competency
+    // Different grading for 8-4-4 vs CBE
+    if (formData.curriculum === "CBE") {
+      // CBE Senior School uses same letter grades but emphasizes competency
       if (average >= 80) grade = "A";
       else if (average >= 75) grade = "A-";
       else if (average >= 70) grade = "B+";
@@ -274,8 +274,8 @@ const ResultsManagement = ({ user }) => {
       return;
     }
 
-    if (formData.curriculum === "CBC" && !formData.assessmentNumber) {
-      setError("Assessment number is required for CBC students");
+    if (formData.curriculum === "CBE" && !formData.assessmentNumber) {
+      setError("Assessment number is required for CBE students");
       setLoading(false);
       return;
     }
@@ -956,14 +956,14 @@ const ResultsManagement = ({ user }) => {
 
               <div>
                 <label style={{ display: "block", marginBottom: "8px", fontWeight: "600" }}>
-                  Assessment Number {formData.curriculum === "CBC" && <span style={{ color: "red" }}>*</span>}
+                  Assessment Number {formData.curriculum === "CBE" && <span style={{ color: "red" }}>*</span>}
                 </label>
                 <input
                   type="text"
                   value={formData.assessmentNumber}
                   onChange={(e) => setFormData({ ...formData, assessmentNumber: e.target.value })}
-                  required={formData.curriculum === "CBC"}
-                  placeholder={formData.curriculum === "CBC" ? "Required for CBC students" : "Optional"}
+                  required={formData.curriculum === "CBE"}
+                  placeholder={formData.curriculum === "CBE" ? "Required for CBE students" : "Optional"}
                   style={{
                     width: "100%",
                     padding: "10px",
@@ -991,7 +991,7 @@ const ResultsManagement = ({ user }) => {
                   }}
                 >
                   <option value="8-4-4">8-4-4 System</option>
-                  <option value="CBC">CBC System (Competency-Based)</option>
+                  <option value="CBE">CBE System (Competency-Based)</option>
                 </select>
               </div>
 
@@ -1063,7 +1063,7 @@ const ResultsManagement = ({ user }) => {
             }}>
               <div style={{ 
                 display: "grid", 
-                gridTemplateColumns: formData.curriculum === "CBC" ? "2fr 1fr 1fr 1.5fr 2fr auto" : "2fr 1fr 1fr 2fr auto", 
+                gridTemplateColumns: formData.curriculum === "CBE" ? "2fr 1fr 1fr 1.5fr 2fr auto" : "2fr 1fr 1fr 2fr auto", 
                 gap: "10px", 
                 marginBottom: "15px" 
               }}>
@@ -1088,7 +1088,7 @@ const ResultsManagement = ({ user }) => {
                   onChange={(e) => setCurrentSubject({ ...currentSubject, grade: e.target.value })}
                   style={{ padding: "10px", border: "2px solid #e0e0e0", borderRadius: "6px" }}
                 />
-                {formData.curriculum === "CBC" && (
+                {formData.curriculum === "CBE" && (
                   <select
                     value={currentSubject.competencyLevel}
                     onChange={(e) => setCurrentSubject({ ...currentSubject, competencyLevel: e.target.value })}
@@ -1143,7 +1143,7 @@ const ResultsManagement = ({ user }) => {
                     >
                       <span>
                         <strong>{subject.subjectName}</strong>: {subject.marks} ({subject.grade})
-                        {subject.competencyLevel && formData.curriculum === "CBC" && (
+                        {subject.competencyLevel && formData.curriculum === "CBE" && (
                           <span style={{ marginLeft: "10px", fontSize: "12px", color: "#666" }}>
                             • {subject.competencyLevel}
                           </span>
@@ -1395,7 +1395,7 @@ const ResultsManagement = ({ user }) => {
                   }}
                 >
                   <option value="8-4-4">8-4-4 System</option>
-                  <option value="CBC">CBC (Competency-Based)</option>
+                  <option value="CBE">CBE (Competency-Based)</option>
                 </select>
               </div>
 
@@ -1637,7 +1637,7 @@ const ResultsManagement = ({ user }) => {
         >
           <option value="">All Curricula</option>
           <option value="8-4-4">8-4-4 System</option>
-          <option value="CBC">CBC System</option>
+          <option value="CBE">CBE System</option>
         </select>
       </div>
 
@@ -1734,8 +1734,8 @@ const ResultsManagement = ({ user }) => {
                       borderRadius: "12px",
                       fontSize: "11px",
                       fontWeight: "600",
-                      background: result.curriculum === "CBC" ? "#e3f2fd" : "#fff3e0",
-                      color: result.curriculum === "CBC" ? "#1976d2" : "#e65100"
+                      background: result.curriculum === "CBE" ? "#e3f2fd" : "#fff3e0",
+                      color: result.curriculum === "CBE" ? "#1976d2" : "#e65100"
                     }}>
                       {result.curriculum || "8-4-4"}
                     </span>

@@ -6,7 +6,7 @@ const API_BASE = import.meta.env.VITE_API_URL || "";
 
 const LINK_TYPES = [
   { value: "student-844", label: "Student — 8-4-4", icon: "🎓", color: "#3b82f6", desc: "Form 1–4 students (8-4-4 curriculum)" },
-  { value: "student-cbc", label: "Student — CBC", icon: "📚", color: "#8b5cf6", desc: "Grade 7–12 students (CBC curriculum)" },
+  { value: "student-CBE", label: "Student — CBE", icon: "📚", color: "#8b5cf6", desc: "Grade 7–12 students (CBE curriculum)" },
   { value: "teacher", label: "Teacher", icon: "👩‍🏫", color: "#059669", desc: "Teaching staff with homework access" },
   { value: "staff", label: "Staff", icon: "🏫", color: "#d97706", desc: "Non-teaching school staff" },
   { value: "parent", label: "Parent / Guardian", icon: "👨‍👩‍👧", color: "#dc2626", desc: "Parents with read-only child info access" },
