@@ -14,6 +14,7 @@ export const guestResponses = {
       "hey",
       "helo",
       "hallo",
+      "Hey",
       "good morning",
       "good afternoon",
       "good evening"
@@ -915,6 +916,7 @@ export const guestResponses = {
       "where students come from",
       "local community",
       "regional",
+      "location",
       "communities served"
     ],
     response:
@@ -922,7 +924,10 @@ export const guestResponses = {
     followUp: [
       "What is the school's relationship with Embu town?",
       "Do students return to their communities?",
-      "How does the school support local communities?"
+      "How does the school support local communities?",
+      "where is the school located",
+      "where are you located",
+      "tell me your location"
     ],
     requiresLogin: false,
   },
@@ -978,7 +983,10 @@ export const guestResponses = {
     followUp: [
       "When were the schools separated?",
       "Do the schools compete together?",
-      "Why are they sister schools?"
+      "Why are they sister schools?",
+      "Which is the nearest boys school",
+      "Tell me more about kangaru history"
+    
     ],
     requiresLogin: false,
   },
@@ -1093,8 +1101,7 @@ export const guestResponses = {
 
   fallback: {
     keywords: [],
-    response:
-      "I'm not quite sure how to answer that question, but I can help you find information about:\n\n📚 School History & Heritage\n🎓 Academic Programs & KCSE Performance\n🏫 Facilities, Boarding & Student Life\n🌟 Admissions & How to Apply\n💰 Fees & Financial Information\n📍 Location & Contact Details\n👥 Alumni & Community\n🎪 Events & Celebrations\n📋 School Leadership & Management\n🔍 School Records & Archives\n\nTry asking about any of these topics, or rephrase your question. I'm here to help you learn everything about Kangaru Girls Senior School!\n\nYou can also:\n✓ Visit our official website\n✓ Contact the school administration office\n✓ Call or email using information on our Contact page\n✓ Visit in person to speak with staff\n\nWhat specific information can I help you with?",
+    response: "I'm not quit sure how to answer that . For any specific details kindly visit the school administration through the contact page",
     requiresLogin: false,
   },
 };
