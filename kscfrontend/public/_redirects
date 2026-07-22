@@ -6,3 +6,4 @@
 # SPA routing — redirect all non-file routes to index.html
 # This allows React Router to handle all URLs
 /*    /index.html   200
+/* https://kangarugirls.sc.ke/:splat 301!
