@@ -1,6 +1,8 @@
 // models/AIAssistantConfig.js
 // Separate from support chat config, this manages AI assistant settings
 import mongoose from "mongoose";
+// In your main website, import the same models:
+import { User, ChatHistory } from "./server/models";
 
 const AIAssistantConfigSchema = new mongoose.Schema(
   {

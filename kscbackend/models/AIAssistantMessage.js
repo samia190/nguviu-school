@@ -1,6 +1,8 @@
 // models/AIAssistantMessage.js
 // Separate from support chat widget, this is for user-to-AI conversations
 import mongoose from "mongoose";
+// In your main website, import the same models:
+import { User, ChatHistory } from "./server/models";
 
 const AIAssistantMessageSchema = new mongoose.Schema(
   {

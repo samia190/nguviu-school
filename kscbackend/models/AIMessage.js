@@ -2,6 +2,9 @@
 // For AI Assistant feature (separate from ChatMessage which handles support messages)
 import mongoose from "mongoose";
 
+// In your main website, import the same models:
+import { User, ChatHistory } from "./server/models";
+
 const AIMessageSchema = new mongoose.Schema(
   {
     conversationId: { type: mongoose.Schema.Types.ObjectId, ref: "AIConversation", required: true },

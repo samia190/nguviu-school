@@ -53,7 +53,7 @@ import recordingRoutes from "./routes/recording.js";
 // New integrated routes
 import examsRoutes from "./routes/exams.js";
 import linksRoutes from "./routes/links.js";
-import aiAssistantRoutes from "./routes/aiAssistant.js";
+//import aiAssistantRoutes from "./routes/aiAssistant.js";
 
 // Initialize the Express app
 const app = express();
@@ -265,7 +265,7 @@ app.use("/api/exams", examsRoutes);
 // Link Generator Feature
 app.use("/api/links", linksRoutes);
 // AI Assistant Feature
-app.use("/api/ai", aiAssistantRoutes);
+//app.use("/api/ai", aiAssistantRoutes);
 
 // ==========================================
 // DATABASE CONNECTION
