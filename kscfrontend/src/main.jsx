@@ -48,8 +48,13 @@ const trpcClient = trpc.createClient({
   ],
 });
 
+const rootElement = document.getElementById("root");
 
-createRoot(document.getElementById("root")!).render(
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
+
+createRoot(rootElement).render(
   <trpc.Provider
     client={trpcClient}
     queryClient={queryClient}
