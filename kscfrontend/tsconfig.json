@@ -44,6 +44,14 @@
     /* Types */
     "types": ["vite/client", "node"]
   },
-  "include": ["src"],
+ "include": [
+  "src/**/*.ts",
+  "src/**/*.tsx"
+],
+"exclude": [
+  "../kangaru-scholar-ai",
+  "node_modules",
+  "dist"
+],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
