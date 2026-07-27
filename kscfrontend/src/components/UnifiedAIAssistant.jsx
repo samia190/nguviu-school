@@ -22,10 +22,10 @@ export default function UnifiedAIAssistant({ user, setRoute }) {
   const guestChatMutation = trpc.chat.guestChat.useMutation();
   const studentRevisionMutation = trpc.chat.studentRevision.useMutation();
   const teacherLessonPlanMutation = trpc.chat.teacherLessonPlan.useMutation();
-  const loadHistoryQuery = trpc.chat.loadChatHistory.useQuery(
-    { portalType: aiMode },
-    { enabled: isOpen && user }
-  );
+  const loadHistoryQuery = trpc.chat.loadChatHistory.useQuery({
+  portalType: aiMode,
+  enabled: isOpen && !!user,
+});
 
   const isLoading =
     guestChatMutation.isPending ||
