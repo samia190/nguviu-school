@@ -4,6 +4,7 @@ import { get, post, put, del, upload, getToken } from "../utils/api";
 import Loader from "./Loader";
 import TeacherExamReview from "./TeacherExamReview";
 import LiveInvigilation from "./LiveInvigilation";
+import TeacherWordPaperPanel from "./TeacherWordPaperPanel";
 
 const initialExamForm = {
   title: "",
@@ -29,16 +30,19 @@ export default function TeacherExamManagement({ user }) {
   const [editingId, setEditingId] = useState(null);
   const [status, setStatus] = useState({ message: "", error: false });
   const [reviewExam, setReviewExam] = useState(null);
+  const [paperExam, setPaperExam] = useState(null);
   const [monitoringSessions, setMonitoringSessions] = useState([]);
   const [monitoringLoading, setMonitoringLoading] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("exams"); // "exams" or "invigilation"
+  const [teacherTimetables, setTeacherTimetables] = useState([]);
 
   useEffect(() => {
     if (user && (user._id || user.id) && getToken()) {
       fetchMyExams();
       fetchMonitoringSessions();
+      get("/api/timetables/mine").then((data) => setTeacherTimetables(data.timetables || [])).catch(() => setTeacherTimetables([]));
     }
   }, [user]);
 
@@ -712,6 +716,7 @@ export default function TeacherExamManagement({ user }) {
 
         <section style={{ background: "skyblue", border: "1px solid #ddd", borderRadius: 12, padding: 20 }}>
           <h2 style={{ marginBottom: 16 }}>My Exams</h2>
+          {teacherTimetables.length > 0 && <div style={{ marginBottom: 16, padding: 14, borderRadius: 8, background: "#f5f3ff" }}><strong>My Teaching Timetable</strong>{teacherTimetables.map((timetable) => <div key={timetable._id} style={{ marginTop: 8 }}><span>{timetable.term} {timetable.year} · {timetable.class} {timetable.stream}</span><ul style={{ margin: "6px 0", paddingLeft: 18 }}>{timetable.entries.filter((entry) => entry.teacherIdentity || entry.teacherStaffId).map((entry, index) => <li key={`${entry.day}-${entry.startTime}-${index}`}>{entry.day} {entry.startTime}–{entry.endTime}: {entry.subject} ({entry.class || timetable.class} {timetable.stream})</li>)}</ul></div>)}</div>}
           {exams.length === 0 ? (
             <p style={{ color: "#555" }}>No exams created yet. Use the form above to add a new exam.</p>
           ) : (
@@ -732,6 +737,9 @@ export default function TeacherExamManagement({ user }) {
                       </button>
                       <button type="button" onClick={() => setReviewExam(exam)} style={{ padding: "10px 18px", background: "#6366f1", color: "white", border: "none", borderRadius: 8, cursor: "pointer" }}>
                         Review Working
+                      </button>
+                      <button type="button" onClick={() => setPaperExam(exam)} style={{ padding: "10px 18px", background: "#0f766e", color: "white", border: "none", borderRadius: 8, cursor: "pointer" }}>
+                        Word Paper
                       </button>
                       <button type="button" onClick={() => handleEdit(exam)} style={{ padding: "10px 18px", background: "#2563eb", color: "white", border: "none", borderRadius: 8, cursor: "pointer" }}>
                         Edit
@@ -767,6 +775,7 @@ export default function TeacherExamManagement({ user }) {
       {reviewExam && (
         <TeacherExamReview exam={reviewExam} onClose={() => setReviewExam(null)} />
       )}
+      {paperExam && <TeacherWordPaperPanel exam={paperExam} onClose={() => setPaperExam(null)} onUpdated={fetchMyExams} />}
 
         {showQuestionForm && (
           <section style={{ background: "skygreen", border: "2px solid #16a34a", borderRadius: 12, padding: 20 }}>

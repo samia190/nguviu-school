@@ -52,6 +52,7 @@ const StudentExamResultSchema = new mongoose.Schema(
 
 // Index for faster queries
 StudentExamResultSchema.index({ studentId: 1, examId: 1 });
+StudentExamResultSchema.index({ sessionId: 1 }, { unique: true });
 StudentExamResultSchema.index({ passed: 1, percentage: 1 });
 
 export default mongoose.models?.StudentExamResult || 

@@ -1,132 +1,75 @@
-// routes/submissions.js
 import express from "express";
 import mongoose from "mongoose";
 import File from "../models/File.js";
+import Exam from "../models/Exam.js";
 import { deleteFile } from "../utils/storage.js";
 import { requireRole } from "../middleware/requireAuth.js";
 
 const router = express.Router();
+router.use(requireRole(["admin", "superadmin", "teacher"]));
 
-// Only teachers and admins can access submissions management
-router.use(requireRole(["admin", "teacher"]));
+async function ownedExamFilter(user) {
+  if (["admin", "superadmin"].includes(user.role)) return {};
+  return { examId: { $in: await Exam.find({ createdBy: user.id || user._id }).distinct("_id") } };
+}
 
-// GET /api/submissions
-// supports query: search, status, studentEmail, page, limit
+async function canAccessSubmission(user, doc) {
+  if (["admin", "superadmin"].includes(user.role)) return true;
+  return Boolean(doc.examId && await Exam.exists({ _id: doc.examId, createdBy: user.id || user._id }));
+}
+
 router.get("/", async (req, res) => {
   try {
     const { search, status, studentEmail, page = 1, limit = 50 } = req.query;
-    const q = {};
+    const q = await ownedExamFilter(req.user);
     if (status) q.status = status;
     if (studentEmail) q.studentEmail = studentEmail;
-    if (search) {
-      const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      q.$or = [
-        { originalName: { $regex: safeSearch, $options: "i" } },
-        { studentEmail: { $regex: safeSearch, $options: "i" } },
-        { notes: { $regex: safeSearch, $options: "i" } },
-      ];
-    }
-
-    const skip = (Math.max(1, Number(page)) - 1) * Number(limit);
-    if (mongoose.connection.readyState !== 1) {
-      return res.json({ items: [], total: 0, page: Number(page), limit: Number(limit) });
-    }
-    const docs = await File.find(q).sort({ uploadedAt: -1 }).skip(skip).limit(Number(limit));
-    const total = await File.countDocuments(q);
-    return res.json({ items: docs, total, page: Number(page), limit: Number(limit) });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Failed to fetch submissions" });
-  }
+    if (search) { const term = String(search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); q.$or = [{ originalName: { $regex: term, $options: "i" } }, { studentEmail: { $regex: term, $options: "i" } }, { notes: { $regex: term, $options: "i" } }]; }
+    const safeLimit = Math.min(100, Math.max(1, Number(limit) || 50)); const skip = (Math.max(1, Number(page) || 1) - 1) * safeLimit;
+    if (mongoose.connection.readyState !== 1) return res.json({ items: [], total: 0, page: Number(page), limit: safeLimit });
+    const [items, total] = await Promise.all([File.find(q).sort({ uploadedAt: -1 }).skip(skip).limit(safeLimit), File.countDocuments(q)]);
+    return res.json({ items, total, page: Number(page), limit: safeLimit });
+  } catch { return res.status(500).json({ error: "Failed to fetch submissions" }); }
 });
 
-// GET /api/submissions/stats
-// Return statistics about submissions
 router.get("/stats", async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.json({ stats: { total: 0, pending: 0, approved: 0, rejected: 0 } });
-    }
-
-    const total = await File.countDocuments({});
-    const pending = await File.countDocuments({ status: "pending" });
-    const approved = await File.countDocuments({ status: "approved" });
-    const rejected = await File.countDocuments({ status: "rejected" });
-
-    return res.json({
-      stats: {
-        total,
-        pending,
-        approved,
-        rejected
-      }
-    });
-  } catch (err) {
-    console.error(err);
-    return res.json({ stats: { total: 0, pending: 0, approved: 0, rejected: 0 } });
-  }
+    if (mongoose.connection.readyState !== 1) return res.json({ stats: { total: 0, pending: 0, approved: 0, rejected: 0 } });
+    const q = await ownedExamFilter(req.user);
+    const [total, pending, approved, rejected] = await Promise.all([File.countDocuments(q), File.countDocuments({ ...q, status: "pending" }), File.countDocuments({ ...q, status: "approved" }), File.countDocuments({ ...q, status: "rejected" })]);
+    return res.json({ stats: { total, pending, approved, rejected } });
+  } catch { return res.status(500).json({ error: "Failed to fetch submission statistics" }); }
 });
 
-// GET single submission
 router.get("/:id", async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) return res.status(503).json({ error: "DB unavailable" });
-    const doc = await File.findById(req.params.id);
-    if (!doc) return res.status(404).json({ error: "Submission not found" });
+    const doc = await File.findById(req.params.id); if (!doc) return res.status(404).json({ error: "Submission not found" });
+    if (!await canAccessSubmission(req.user, doc)) return res.status(403).json({ error: "Not authorized to access this submission" });
     return res.json(doc);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Failed to fetch submission" });
-  }
+  } catch { return res.status(500).json({ error: "Failed to fetch submission" }); }
 });
 
 const updateSubmission = async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) return res.status(503).json({ error: "DB unavailable" });
-    const { status, reviewerNotes, originalName, notes } = req.body;
-    const doc = await File.findById(req.params.id);
-    if (!doc) return res.status(404).json({ error: "Submission not found" });
-
-    if (status && ["pending", "approved", "rejected"].includes(status)) {
-      doc.status = status;
-    }
-    if (typeof reviewerNotes === "string") doc.reviewerNotes = reviewerNotes;
-    if (typeof originalName === "string") doc.originalName = originalName;
-    if (typeof notes === "string") doc.notes = notes;
-    if (req.user?.id) doc.reviewedBy = req.user.id;
-
-    await doc.save();
-    return res.json(doc);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Failed to update submission" });
-  }
+    const doc = await File.findById(req.params.id); if (!doc) return res.status(404).json({ error: "Submission not found" });
+    if (!await canAccessSubmission(req.user, doc)) return res.status(403).json({ error: "Not authorized to review this submission" });
+    const { status, reviewerNotes } = req.body || {};
+    if (status && !["pending", "approved", "rejected"].includes(status)) return res.status(400).json({ error: "Invalid review status" });
+    if (status) doc.status = status; if (typeof reviewerNotes === "string") doc.reviewerNotes = reviewerNotes.slice(0, 5000); doc.reviewedBy = req.user.id || req.user._id;
+    await doc.save(); return res.json(doc);
+  } catch { return res.status(500).json({ error: "Failed to update submission" }); }
 };
 
-// PUT /api/submissions/:id  -> update status and reviewer notes
-router.put("/:id", updateSubmission);
-router.patch("/:id", updateSubmission);
-
-// DELETE /api/submissions/:id
+router.put("/:id", updateSubmission); router.patch("/:id", updateSubmission);
 router.delete("/:id", async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) return res.status(503).json({ error: "DB unavailable" });
-    const doc = await File.findById(req.params.id);
-    if (!doc) return res.status(404).json({ error: "Submission not found" });
-
-    // attempt to delete underlying file from storage (S3 or disk)
-    try {
-      await deleteFile(doc.url);
-    } catch (err) {
-      console.warn("Failed to delete file from storage:", err.message);
-    }
-
-    await doc.deleteOne();
-    return res.json({ ok: true });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Failed to delete submission" });
-  }
+    const doc = await File.findById(req.params.id); if (!doc) return res.status(404).json({ error: "Submission not found" });
+    if (!await canAccessSubmission(req.user, doc)) return res.status(403).json({ error: "Not authorized to delete this submission" });
+    await deleteFile(doc.url).catch(() => {}); await doc.deleteOne(); return res.json({ ok: true });
+  } catch { return res.status(500).json({ error: "Failed to delete submission" }); }
 });
 
 export default router;

@@ -9,6 +9,7 @@ import fs from "fs";
 import compression from "compression";
 import helmet from "helmet";
 import { connectToDatabase, isDbConnected as getDbConnected } from "./services/dbConnection.js";
+import { validateProductionConfiguration } from "./services/productionConfig.js";
 
 // Import route files
 import footerLinksRoutes from "./routes/footerLinks.js";
@@ -23,6 +24,9 @@ import downloadRoutes from "./routes/downloads.js";
 import galleryRoutes from "./routes/galleryAttachments.js";
 import galleryPageRoutes from "./routes/gallery-page.js";
 import adminRoutes from "./routes/admin.js";
+import bulkImportRoutes from "./routes/bulkImports.js";
+import schoolDirectoryRoutes from "./routes/schoolDirectory.js";
+import timetableRoutes from "./routes/timetables.js";
 import submissionsRoutes from "./routes/submissions.js";
 import submitFormRoutes from "./routes/submitForm.js";
 import studentVerificationRoutes from "./routes/studentVerification.js";
@@ -48,12 +52,16 @@ import chatRoutes from "./routes/chat.js";
 import inviteRoutes from "./routes/invites.js";
 import invitePublicRoutes from "./routes/invitePublic.js";
 import examUploadRoutes from "./routes/examUpload.js";
+import examPaperRoutes from "./routes/examPapers.js";
 import recordingRoutes from "./routes/recording.js";
 
 // New integrated routes
 import examsRoutes from "./routes/exams.js";
 import linksRoutes from "./routes/links.js";
-//import aiAssistantRoutes from "./routes/aiAssistant.js";
+import aiAssistantRoutes from "./routes/aiAssistant.js";
+
+// Validate all production-only deployment requirements before accepting traffic.
+validateProductionConfiguration();
 
 // Initialize the Express app
 const app = express();
@@ -124,14 +132,18 @@ const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(",").map((s) => s.trim()).filter(Boolean)
   : [];
 
+if (process.env.NODE_ENV === "production" && allowedOrigins.length === 0) {
+  throw new Error("CORS_ORIGINS must be explicitly configured in production");
+}
+
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (like curl, server-to-server)
       if (!origin) return callback(null, true);
 
-      // If no allowed origins provided, allow all origins
-      if (allowedOrigins.length === 0) return callback(null, true);
+      // Development may omit the list; production fails during startup above.
+      if (allowedOrigins.length === 0 && process.env.NODE_ENV !== "production") return callback(null, true);
 
       // Check if origin is allowed
       if (allowedOrigins.includes(origin)) return callback(null, true);
@@ -142,7 +154,7 @@ app.use(
   })
 );
 
-console.log("CORS allowed origins:", allowedOrigins.length ? allowedOrigins : "(all)");
+console.log("CORS allowed origins:", allowedOrigins.length ? allowedOrigins : "development default");
 
 // Body parser with larger limits for file uploads
 app.use(express.json({ limit: '1mb' }));
@@ -185,8 +197,8 @@ const setStaticCacheHeaders = (res, path) => {
     res.setHeader('Cache-Control', 'public, max-age=2592000');
     res.setHeader('Accept-Ranges', 'bytes');
   } else if (path.match(/\.(pdf|doc|docx)$/)) {
-    // Documents - cache for 1 week
-    res.setHeader('Cache-Control', 'public, max-age=604800');
+    // Sensitive documents must not be retained in shared/browser caches.
+    res.setHeader('Cache-Control', 'private, no-store');
   } else {
     // Other files - cache for 1 day
     res.setHeader('Cache-Control', 'public, max-age=86400');
@@ -194,24 +206,14 @@ const setStaticCacheHeaders = (res, path) => {
 };
 
 // Serve static folders with caching
-app.use("/uploads", cors(), express.static(uploadsDir, { 
-  setHeaders: setStaticCacheHeaders,
-  maxAge: '1y',
-  etag: true,
-  lastModified: true
-}));
-app.use("/downloads", cors(), express.static(downloadsDir, { 
-  setHeaders: setStaticCacheHeaders,
-  maxAge: '1w',
-  etag: true,
-  lastModified: true
-}));
-app.use("/images", cors(), express.static(imagesDir, { 
-  setHeaders: setStaticCacheHeaders,
-  maxAge: '1y',
-  etag: true,
-  lastModified: true
-}));
+const serveLocalUploads = process.env.NODE_ENV !== "production" || process.env.SERVE_LOCAL_UPLOADS === "true";
+if (serveLocalUploads) {
+  app.use("/uploads", express.static(uploadsDir, { setHeaders: setStaticCacheHeaders, maxAge: '1y', etag: true, lastModified: true }));
+  app.use("/downloads", express.static(downloadsDir, { setHeaders: setStaticCacheHeaders, maxAge: '1w', etag: true, lastModified: true }));
+  app.use("/images", express.static(imagesDir, { setHeaders: setStaticCacheHeaders, maxAge: '1y', etag: true, lastModified: true }));
+} else {
+  app.use(["/uploads", "/downloads", "/images"], (req, res) => res.status(404).end());
+}
 
 // Mount routes
 app.use("/api/home", homePageRoutes);
@@ -229,9 +231,14 @@ app.use("/api/files", filesRoutes);
 app.use("/api/recording", recordingRoutes);
 app.use("/api/downloads", downloadRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/admin/imports", bulkImportRoutes);
+app.use("/api/admin/directory", schoolDirectoryRoutes);
+app.use("/api/admin/timetables", timetableRoutes);
+app.use("/api/timetables", timetableRoutes);
 app.use("/api/admin/invite", inviteRoutes);
 app.use("/api/invite", invitePublicRoutes);
 app.use("/api/exams", examUploadRoutes);
+app.use("/api/exam-papers", examPaperRoutes);
 app.use("/api/submissions", submissionsRoutes);
 // Public submit form and admin helpers
 app.use("/api/submit-form", submitFormRoutes);
@@ -265,7 +272,7 @@ app.use("/api/exams", examsRoutes);
 // Link Generator Feature
 app.use("/api/links", linksRoutes);
 // AI Assistant Feature
-//app.use("/api/ai", aiAssistantRoutes);
+app.use("/api/ai", aiAssistantRoutes);
 
 // ==========================================
 // DATABASE CONNECTION
@@ -282,9 +289,9 @@ export { dbConnected };
 app.get("/api/health", (req, res) => {
   const dbReady = getDbConnected();
   if (!dbReady) {
-    return res.status(503).json({ ok: false, db: false, time: new Date().toISOString() });
+    return res.status(503).json({ ok: false, ready: false, components: { database: false }, time: new Date().toISOString() });
   }
-  res.json({ ok: true, db: true, time: new Date().toISOString() });
+  res.json({ ok: true, ready: true, components: { database: true, realtime: Boolean(globalThis.__IO_INSTANCE) }, time: new Date().toISOString() });
 });
 
 // 404 handler for unmatched API routes

@@ -8,7 +8,7 @@ const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 // GET students for dropdown/selection (minimal data)
-router.get("/list/simple", requireRole(['admin']), async (req, res) => {
+router.get("/list/simple", requireRole(['admin', 'superadmin']), async (req, res) => {
   try {
     const students = await Student.find({ status: "Active" })
       .select("_id admissionNumber firstName lastName class stream assessmentNumber")
@@ -22,7 +22,7 @@ router.get("/list/simple", requireRole(['admin']), async (req, res) => {
 });
 
 // GET all students
-router.get("/", requireRole(['admin']), async (req, res) => {
+router.get("/", requireRole(['admin', 'superadmin']), async (req, res) => {
   try {
     const { class: studentClass, status, searchTerm } = req.query;
     const filter = {};
@@ -51,7 +51,7 @@ router.get("/", requireRole(['admin']), async (req, res) => {
 });
 
 // GET single student
-router.get("/:id", requireRole(['admin']), async (req, res) => {
+router.get("/:id", requireRole(['admin', 'superadmin']), async (req, res) => {
   try {
     const student = await Student.findById(req.params.id).select("-idCardSecret");
     if (!student) {
@@ -65,7 +65,7 @@ router.get("/:id", requireRole(['admin']), async (req, res) => {
 });
 
 // POST create new student
-router.post("/", requireRole(['admin']), async (req, res) => {
+router.post("/", requireRole(['admin', 'superadmin']), async (req, res) => {
   try {
     const {
       admissionNumber,
@@ -76,6 +76,9 @@ router.post("/", requireRole(['admin']), async (req, res) => {
       gender,
       class: studentClass,
       stream,
+      curriculum,
+      grade,
+      form,
       yearOfAdmission,
       assessmentNumber,
       email,
@@ -111,6 +114,9 @@ router.post("/", requireRole(['admin']), async (req, res) => {
       gender,
       class: studentClass,
       stream,
+      curriculum,
+      grade,
+      form,
       yearOfAdmission: yearOfAdmission || new Date().getFullYear(),
       assessmentNumber,
       email,
@@ -124,7 +130,8 @@ router.post("/", requireRole(['admin']), async (req, res) => {
       ward,
       village,
       photoUrl,
-      status: "Active"
+      status: "Active",
+      accountStatus: "pre_registered"
     });
 
     // Generate ID card secret for student
@@ -144,7 +151,7 @@ router.post("/", requireRole(['admin']), async (req, res) => {
 });
 
 // PUT update student
-router.put("/:id", requireRole(['admin']), async (req, res) => {
+router.put("/:id", requireRole(['admin', 'superadmin']), async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) {
@@ -159,6 +166,9 @@ router.put("/:id", requireRole(['admin']), async (req, res) => {
       gender,
       class: studentClass,
       stream,
+      curriculum,
+      grade,
+      form,
       yearOfAdmission,
       assessmentNumber,
       email,
@@ -183,6 +193,9 @@ router.put("/:id", requireRole(['admin']), async (req, res) => {
     if (gender) student.gender = gender;
     if (studentClass) student.class = studentClass;
     if (stream) student.stream = stream;
+    if (curriculum) student.curriculum = curriculum;
+    if (grade) student.grade = grade;
+    if (form) student.form = form;
     if (yearOfAdmission) student.yearOfAdmission = yearOfAdmission;
     if (assessmentNumber) student.assessmentNumber = assessmentNumber;
     if (email) student.email = email;
@@ -212,7 +225,7 @@ router.put("/:id", requireRole(['admin']), async (req, res) => {
 });
 
 // DELETE student
-router.delete("/:id", requireRole(['admin']), async (req, res) => {
+router.delete("/:id", requireRole(['admin', 'superadmin']), async (req, res) => {
   try {
     const student = await Student.findByIdAndDelete(req.params.id);
     if (!student) {

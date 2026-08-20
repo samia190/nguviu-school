@@ -37,14 +37,15 @@ const LiveInvigilation = ({ examId, sessionId }) => {
   const [recordingSession, setRecordingSession] = useState(null);
   const [connectionState, setConnectionState] = useState('connecting');
   const [connectionMessage, setConnectionMessage] = useState('Connecting to the live feed service...');
+  const activeSessionId = sessionId || selectedStudent?._id || null;
 
   // Fetch recording state
   const fetchRecordingState = useCallback(async () => {
-    if (!examId) return;
+    if (!activeSessionId) return;
     try {
       const token = getToken();
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const response = await fetch(`/api/recording/rooms/${examId}/recording`, { headers });
+      const response = await fetch(`/api/recording/sessions/${activeSessionId}/recording`, { headers });
       const data = await response.json();
       if (data?.ok && data.recording) {
         const enabled = Boolean(data.recording.recordingEnabled || data.recording.status === 'recording');
@@ -54,7 +55,7 @@ const LiveInvigilation = ({ examId, sessionId }) => {
     } catch (error) {
       console.error('Error fetching recording state:', error);
     }
-  }, [examId]);
+  }, [activeSessionId]);
 
   // Fetch monitoring sessions
   const fetchMonitoringSessions = useCallback(async () => {
@@ -69,6 +70,7 @@ const LiveInvigilation = ({ examId, sessionId }) => {
       const data = await response.json();
       if (data.ok) {
         setMonitoringSessions(data.sessions || []);
+        setSelectedStudent((current) => current || data.sessions?.[0] || null);
         updateStats(data.sessions || []);
       }
     } catch (error) {
@@ -239,7 +241,7 @@ const LiveInvigilation = ({ examId, sessionId }) => {
         }
         try {
           console.log(`[TEACHER] 🍽️ Starting consume for producer ${producerId}...`);
-          const cons = await consume(examId, producerId);
+          const cons = await consume(activeSessionId, producerId);
           console.log(`[TEACHER] ✅ Consume successful, consumer ready`);
           
           const consumer = cons.consumer;
@@ -301,7 +303,7 @@ const LiveInvigilation = ({ examId, sessionId }) => {
         socket.emit('monitoring:subscribe', { examId });
         console.log(`[TEACHER] 📡 Producer events attached`);
 
-        const roomId = examId;
+        const roomId = activeSessionId;
         console.log(`[TEACHER] 🚪 Joining room ${roomId} as teacher...`);
         // STAGE 4: Teacher Join
         console.log(`[STAGE 4] TEACHER JOINING: roomId=${roomId}`);
@@ -372,7 +374,7 @@ const LiveInvigilation = ({ examId, sessionId }) => {
       }
     };
 
-    if (view === 'grid' && examId) {
+    if (view === 'grid' && examId && activeSessionId) {
       setProducerStreams({});
       initConsumers();
     }
@@ -385,7 +387,7 @@ const LiveInvigilation = ({ examId, sessionId }) => {
         socket.off('monitoringEvent');
       }
     };
-  }, [view, examId]);
+  }, [view, examId, activeSessionId]);
 
   // Acknowledge alert
   const acknowledgeAlert = async (alertId) => {
@@ -404,8 +406,8 @@ const LiveInvigilation = ({ examId, sessionId }) => {
 
   const toggleRecording = () => {
     const socketInstance = getSocket();
-    if (!socketInstance) return;
-    socketInstance.emit('toggleRecording', { roomId: examId, enabled: !recordingEnabled }, (resp) => {
+    if (!socketInstance || !activeSessionId) return;
+    socketInstance.emit('toggleRecording', { roomId: activeSessionId, enabled: !recordingEnabled }, (resp) => {
       if (resp?.ok) {
         setRecordingEnabled(Boolean(resp.enabled));
         setRecordingSession(resp.recordingSession || null);

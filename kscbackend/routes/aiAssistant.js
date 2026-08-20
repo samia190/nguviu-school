@@ -1,6 +1,7 @@
 // routes/aiAssistant.js (ESM)
 import express from "express";
 import { requireRole } from "../middleware/requireAuth.js";
+import { aiLimiter } from "../middleware/rateLimiter.js";
 import {
   createConversation,
   getUserConversations,
@@ -15,6 +16,9 @@ import {
   toggleMessageFavorite,
   guestChat,
   authenticatedChat,
+  streamGuestChat,
+  streamAuthenticatedChat,
+  streamStudentResultsSupport,
   ingestKnowledgeDocument,
   ingestKnowledgeDirectory,
 } from "../controllers/aiController.js";
@@ -22,10 +26,13 @@ import {
 const router = express.Router();
 
 // Public guest chat endpoint (no authentication required)
-router.post("/chat/guest", guestChat);
+router.post("/chat/guest", aiLimiter, guestChat);
+router.post("/stream/guest", aiLimiter, streamGuestChat);
 
 // Authenticated chat endpoint
-router.post("/chat", requireRole(["user", "student", "teacher", "admin", "superadmin", "staff", "parent"]), authenticatedChat);
+router.post("/chat", requireRole(["user", "student", "teacher", "admin", "superadmin", "staff", "parent"]), aiLimiter, authenticatedChat);
+router.post("/stream", requireRole(["user", "student", "teacher", "admin", "superadmin", "staff", "parent"]), aiLimiter, streamAuthenticatedChat);
+router.post("/results/stream", requireRole(["student"]), aiLimiter, streamStudentResultsSupport);
 
 // All remaining routes require authentication
 router.use(requireRole(["user", "student", "teacher", "admin", "superadmin", "staff", "parent"]));

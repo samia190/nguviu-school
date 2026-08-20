@@ -8,6 +8,7 @@ import { guestResponses } from "../data/kangaruGirlsKnowledgeBase.js";
 import * as knowledgeBaseService from "../services/knowledgeBaseService.js";
 import * as aiService from "../services/aiService.js";
 import * as documentProcessor from "../services/documentProcessor.js";
+import { buildStudentSupportContext, getStudentPublishedResultsContext } from "../services/studentResultsContext.js";
 import Fuse from "fuse.js";
 
 // Normalizes user input: lowercases, removes punctuation, collapses spaces
@@ -763,5 +764,86 @@ export const authenticatedChat = async (req, res) => {
   } catch (error) {
     console.error("Error in authenticated chat:", error);
     res.status(500).json({ ok: false, error: error.message });
+  }
+};
+
+const MAX_STREAM_MESSAGE_LENGTH = 5000;
+const MAX_STREAM_HISTORY = 12;
+
+const normalizeStreamHistory = (history) => Array.isArray(history)
+  ? history.filter((entry) => entry && (entry.role === "user" || entry.role === "assistant") && typeof entry.content === "string" && entry.content.trim()).slice(-MAX_STREAM_HISTORY).map((entry) => ({ sender: entry.role, text: entry.content.trim() }))
+  : [];
+
+const writeSse = (res, payload) => res.write(`data: ${JSON.stringify(payload)}\n\n`);
+
+const streamResponse = async (req, res, role, overrides = {}) => {
+  const { message, history = [], conversationId } = req.body || {};
+  if (!message || typeof message !== "string" || !message.trim() || message.length > MAX_STREAM_MESSAGE_LENGTH) {
+    return res.status(400).json({ ok: false, error: "Message must be between 1 and 5000 characters." });
+  }
+
+  let conversationHistory = normalizeStreamHistory(history);
+  if (conversationId && req.user) {
+    const conversation = await AIAssistantConversation.findById(conversationId).lean();
+    if (conversation && conversation.userId?.toString() === req.user.id?.toString()) {
+      const stored = await AIAssistantMessage.find({ conversationId }).sort({ timestamp: 1 }).limit(MAX_STREAM_HISTORY).lean();
+      conversationHistory = stored.map((entry) => ({ sender: entry.role, text: entry.content }));
+    }
+  }
+
+  const controller = new AbortController();
+  let completed = false;
+  res.status(200);
+  res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders?.();
+  res.on("close", () => { if (!completed) controller.abort(); });
+
+  try {
+    const result = await aiService.streamAIResponse(message, role, conversationHistory, {
+      userId: req.user?.id,
+      conversationId,
+      contextNotes: overrides.contextNotes || null,
+      systemPrompt: overrides.systemPrompt || null,
+      maxTokens: overrides.maxTokens || 450,
+      temperature: overrides.temperature ?? 0.2,
+    }, (token) => writeSse(res, { type: "token", token }), controller.signal);
+    writeSse(res, { type: "done", source: result.source, model: result.model });
+  } catch (error) {
+    if (!controller.signal.aborted) {
+      console.error("AI stream error:", error?.message || error);
+      writeSse(res, { type: "error", message: "The assistant could not respond right now. Please try again." });
+    }
+  } finally {
+    completed = true;
+    res.end();
+  }
+};
+
+export const streamGuestChat = (req, res) => streamResponse(req, res, "guest");
+export const streamAuthenticatedChat = (req, res) => streamResponse(req, res, req.user?.role || "user");
+
+// This endpoint deliberately ignores any result data supplied by the browser.
+// It derives a minimal published-results context from the authenticated student.
+export const streamStudentResultsSupport = async (req, res) => {
+  try {
+    const resultContext = await getStudentPublishedResultsContext(req.user.id);
+    const supportPrompt = [
+      "You are Kangaru Scholar's student results support assistant.",
+      "Give encouraging, practical study guidance based only on the server-provided published results context.",
+      "State uncertainty clearly. Do not diagnose health or wellbeing, predict a student's future as certain, compare the student to named peers, give disciplinary advice, or make decisions for staff.",
+      "For serious concerns, encourage the student to speak with a trusted teacher, counsellor, or guardian.",
+      "Never reveal private data or information about any other student.",
+    ].join(" ");
+    return streamResponse(req, res, "student", {
+      contextNotes: buildStudentSupportContext(resultContext),
+      systemPrompt: supportPrompt,
+      maxTokens: 420,
+      temperature: 0.15,
+    });
+  } catch (error) {
+    return res.status(error.status || 500).json({ ok: false, error: "Unable to prepare results support" });
   }
 };

@@ -4,6 +4,7 @@ import RecordingSession from './models/RecordingSession.js';
 import ExamSession from './models/ExamSession.js';
 import { createWorkerPool, getWorker } from './services/mediasoupWorker.js';
 import { attachMonitoringSocket } from './services/realtimeMonitoring.js';
+import { authorizeInvigilationSession } from './services/invigilationAccess.js';
 
 const rooms = new Map();
 
@@ -92,7 +93,10 @@ function cleanupSocket(socket, io) {
 export async function initSocketServer(httpServer) {
   await createWorkerPool();
 
-  const corsOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(o => o.trim()) : '*';
+  if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGINS) {
+    throw new Error('CORS_ORIGINS must be explicitly configured in production');
+  }
+  const corsOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(o => o.trim()) : [];
   console.log('[Socket.IO] CORS origins:', corsOrigins);
 
   const io = new Server(httpServer, {
@@ -157,16 +161,20 @@ export async function initSocketServer(httpServer) {
       }
     });
 
+    const requireJoinedSession = async (roomId, requirement = 'any') => {
+      if (!roomId || socket.data.roomId !== roomId) throw new Error('Join an authorized exam session before using media controls.');
+      const access = await authorizeInvigilationSession(roomId, socket.user, { requireActiveForStudent: requirement !== 'staff' });
+      if (requirement === 'student' && access.memberRole !== 'student') throw new Error('Student session access required.');
+      if (requirement === 'staff' && access.memberRole !== 'staff') throw new Error('Assigned staff access required.');
+      return access;
+    };
+
     socket.on('joinRoom', async ({ roomId, role }, cb) => {
       try {
         if (!roomId) throw new Error('roomId required');
-        const allowedRole = socket.user?.role || role || 'student';
-        if (role === 'teacher' && !['teacher', 'admin', 'superadmin'].includes(allowedRole)) {
-          throw new Error('Only teachers/admins can join as teacher');
-        }
-        if (role === 'student' && allowedRole !== 'student') {
-          throw new Error('Only students can join as student');
-        }
+        const access = await authorizeInvigilationSession(roomId, socket.user);
+        const allowedRole = access.memberRole;
+        if (role && role !== allowedRole && !(role === 'teacher' && allowedRole === 'staff')) throw new Error('Requested role does not match authorized session access.');
 
         const room = await ensureRoom(roomId);
         const userId = socket.user?.id;
@@ -178,10 +186,13 @@ export async function initSocketServer(httpServer) {
 
         room.members.set(userId, { socketId: socket.id, role: allowedRole, joinedAt: Date.now() });
         socket.data.roomId = roomId;
+        socket.data.examSessionId = String(access.session._id);
+        socket.data.examId = String(access.exam._id);
+        socket.data.memberRole = allowedRole;
         socket.join(roomId);
         
         // STAGE 4: Teacher Join Logging
-        if (role === 'teacher') {
+        if (allowedRole === 'staff') {
           console.log(`[STAGE 4] TEACHER JOINED:`);
           console.log(`[STAGE 4]   Room ID: ${roomId}`);
           console.log(`[STAGE 4]   User ID: ${userId}`);
@@ -201,6 +212,7 @@ export async function initSocketServer(httpServer) {
 
     socket.on('createWebRtcTransport', async ({ roomId }, cb) => {
       try {
+        await requireJoinedSession(roomId);
         const room = await ensureRoom(roomId);
         const transport = await room.router.createWebRtcTransport({
           listenIps: getListenIps(),
@@ -239,6 +251,7 @@ export async function initSocketServer(httpServer) {
 
     socket.on('connectTransport', async ({ roomId, transportId, dtlsParameters }, cb) => {
       try {
+        await requireJoinedSession(roomId);
         const room = await ensureRoom(roomId);
         const transport = room.transports.get(transportId);
         if (!transport) throw new Error('Transport not found');
@@ -252,6 +265,7 @@ export async function initSocketServer(httpServer) {
 
     socket.on('restartTransport', async ({ roomId, transportId }, cb) => {
       try {
+        await requireJoinedSession(roomId);
         const room = await ensureRoom(roomId);
         const transport = room.transports.get(transportId);
         if (!transport) throw new Error('Transport not found');
@@ -265,8 +279,8 @@ export async function initSocketServer(httpServer) {
 
     socket.on('produce', async ({ roomId, transportId, kind, rtpParameters, appData }, cb) => {
       try {
-        console.log(`[Socket.IO] 🎙️ PRODUCE from student: kind=${kind}, user=${socket.user?.id}`);
-        if (socket.user?.role !== 'student') throw new Error('Only students can produce streams');
+        await requireJoinedSession(roomId, 'student');
+        if (!['audio', 'video'].includes(kind)) throw new Error('Unsupported media kind.');
         
         const room = await ensureRoom(roomId);
         const transport = room.transports.get(transportId);
@@ -295,8 +309,7 @@ export async function initSocketServer(httpServer) {
 
     socket.on('consume', async ({ roomId, producerId, rtpCapabilities }, cb) => {
       try {
-        console.log(`[Socket.IO] 🍽️ CONSUME from teacher: producerId=${producerId}`);
-        if (!['teacher', 'admin', 'superadmin'].includes(socket.user?.role)) throw new Error('Only teachers/admins can consume streams');
+        await requireJoinedSession(roomId, 'staff');
         
         const room = await ensureRoom(roomId);
         const producerEntry = room.producers.get(producerId);
@@ -363,8 +376,9 @@ export async function initSocketServer(httpServer) {
       }
     });
 
-    socket.on('getProducers', ({ roomId }, cb) => {
+    socket.on('getProducers', async ({ roomId }, cb) => {
       try {
+        await requireJoinedSession(roomId, 'staff');
         const room = rooms.get(roomId);
         if (!room) return cb({ ok: true, producers: [] });
         
@@ -388,9 +402,12 @@ export async function initSocketServer(httpServer) {
 
     socket.on('toggleRecording', async ({ roomId, enabled }, cb) => {
       try {
-        if (!['teacher', 'admin', 'superadmin'].includes(socket.user?.role)) throw new Error('Only teachers/admins can toggle recording');
+        const access = await requireJoinedSession(roomId, 'staff');
         const room = await ensureRoom(roomId);
         const nextEnabled = Boolean(enabled);
+        if (nextEnabled && !process.env.RECORDING_STORAGE_BUCKET) {
+          throw new Error('Recording is disabled until secure recording storage is configured.');
+        }
         room.recording = nextEnabled;
         const payload = buildRecordingSessionPayload({
           roomId,
@@ -400,7 +417,7 @@ export async function initSocketServer(httpServer) {
         });
         room.recordingSession = payload;
 
-        const examSession = await ExamSession.findOne({ _id: roomId }).lean();
+        const examSession = access.session;
         if (examSession) {
           const doc = await RecordingSession.findOneAndUpdate(
             { roomId, sessionId: examSession._id, status: nextEnabled ? 'recording' : 'stopped' },
@@ -415,7 +432,7 @@ export async function initSocketServer(httpServer) {
                 endedAt: nextEnabled ? undefined : new Date(payload.endedAt),
                 createdBy: socket.user?.id,
                 createdByRole: socket.user?.role,
-                metadata: { roomId },
+                metadata: { roomId, storageConfigured: Boolean(process.env.RECORDING_STORAGE_BUCKET), mediaStored: false },
               },
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }

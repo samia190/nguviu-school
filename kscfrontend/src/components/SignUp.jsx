@@ -21,6 +21,8 @@ export default function SignUp({ onAuth, navigate }) {
     length: false, uppercase: false, number: false, special: false, isValid: false
   });
   const [status, setStatus] = useState("");
+  const [schoolIdentifier, setSchoolIdentifier] = useState("");
+  const [checkingRecord, setCheckingRecord] = useState(false);
 
   // Check for invite token on mount — if none, allow public registration as "user"
   // Reads from hash fragment (#invite=TOKEN) — hash is never sent to the server so
@@ -85,7 +87,7 @@ export default function SignUp({ onAuth, navigate }) {
     try {
       const payload = {
         name: f.name,
-        email: f.email,
+        identifier: f.identifier,
         password: f.password,
         ...(inviteToken ? { inviteToken } : {}),
         admissionNumber: f.admissionNumber || undefined,
@@ -122,6 +124,16 @@ export default function SignUp({ onAuth, navigate }) {
     }
   }
 
+  async function checkSchoolRecord() {
+    if (!schoolIdentifier.trim()) return setStatus("Enter the admission number, staff ID, school email, or approved phone number.");
+    setCheckingRecord(true); setStatus("");
+    try {
+      const response = await post("/api/auth/eligibility", { identifier: schoolIdentifier.trim() });
+      setStatus(response.message || "Please contact the school administration.");
+    } catch (error) { setStatus(error?.body?.message || error?.body?.error || "We could not confirm a school record. Please contact the school administration."); }
+    finally { setCheckingRecord(false); }
+  }
+
   const isPublic = !inviteToken || !inviteInfo;
   const linkType = inviteInfo?.linkType;
   const isStudent = linkType === "student-CBE" || linkType === "student-844";
@@ -130,6 +142,20 @@ export default function SignUp({ onAuth, navigate }) {
   const isStaff = linkType === "staff";
   const isParent = linkType === "parent";
   const formValid = passwordStrength.isValid && confirmPassword === password && confirmPassword.length > 0;
+
+  if (isPublic && !inviteLoading) return (
+    <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"linear-gradient(135deg,#064e3b 0%,#065f46 50%,#0f172a 100%)", padding:"20px" }}>
+      <section style={{ width:"100%", maxWidth:460, background:"rgba(255,255,255,0.06)", backdropFilter:"blur(24px)", borderRadius:24, padding:"40px 36px", color:"#e2e8f0", border:"1px solid rgba(52,211,153,0.2)", boxShadow:"0 24px 64px rgba(0,0,0,0.5)" }}>
+        <h2 style={{ marginTop:0, color:"#a7f3d0" }}>School account activation</h2>
+        <p style={{ lineHeight:1.6, color:"rgba(226,232,240,0.82)" }}>Students, teachers, staff, and administrators must first be registered in the school directory. Enter your official identifier to confirm whether the school office has your record. The office must issue your one-time activation link before an account can be created.</p>
+        <label className="si-label">Admission number, staff ID, email, or approved phone</label>
+        <input value={schoolIdentifier} onChange={(event) => setSchoolIdentifier(event.target.value)} placeholder="e.g. KG-2026-001 or name@school.ac.ke" className="si-input" />
+        <button type="button" className="si-btn" style={{ marginTop:14 }} onClick={checkSchoolRecord} disabled={checkingRecord}>{checkingRecord ? "Checking…" : "Check school record"}</button>
+        {status && <p style={{ marginTop:14, padding:"10px 14px", borderRadius:8, background:"rgba(255,255,255,0.08)", color:"#d1fae5", lineHeight:1.5 }}>{status}</p>}
+        <p style={{ textAlign:"center", marginTop:18, color:"rgba(167,243,208,0.7)", fontSize:14 }}>Already activated? <button type="button" onClick={() => navigate && navigate("login")} style={{ background:"none", border:0, color:"#34d399", textDecoration:"underline", cursor:"pointer", fontWeight:600 }}>Sign in</button></p>
+      </section>
+    </div>
+  );
 
   if (inviteLoading) {
     return (
@@ -295,8 +321,8 @@ export default function SignUp({ onAuth, navigate }) {
             <input name="name" placeholder="Enter your full name" required className="si-input" />
           </div>
           <div>
-            <p className="si-label">Email Address</p>
-            <input name="email" type="email" placeholder="your@email.com" required className="si-input" />
+            <p className="si-label">School Email, Admission Number, or Staff ID</p>
+            <input name="identifier" placeholder="your@email.com, admission number, or staff ID" required className="si-input" />
           </div>
 
           <div>

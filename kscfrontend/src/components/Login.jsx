@@ -24,8 +24,8 @@ export default function Login({ onAuth, navigate }) {
     e.preventDefault();
 
     const formData = Object.fromEntries(new FormData(e.target));
-    if (formData.email) {
-      formData.email = formData.email.toLowerCase().trim();
+    if (formData.identifier) {
+      formData.identifier = formData.identifier.trim();
     }
     setStatus("Logging in...");
 
@@ -91,7 +91,7 @@ export default function Login({ onAuth, navigate }) {
     setResetStatus("Sending reset link...");
 
     try {
-      const response = await post("/api/auth/forgot-password", { email: resetEmail });
+      const response = await post("/api/auth/forgot-password", { identifier: resetEmail });
       setResetStatus(response.message || "Password reset link sent to your email!");
       setTimeout(() => {
         setShowForgotPassword(false);
@@ -312,9 +312,9 @@ export default function Login({ onAuth, navigate }) {
         <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
-              Email Address
+              Email, Admission Number, or Staff ID
             </label>
-            <input name="email" type="email" placeholder="your@email.com" required className="classic-input" />
+            <input name="identifier" placeholder="your@email.com, admission number, or staff ID" required className="classic-input" />
           </div>
 
           <div>
@@ -382,10 +382,10 @@ export default function Login({ onAuth, navigate }) {
               marginBottom: '10px', textAlign: 'center', marginTop: 0,
             }}>Reset Password</h3>
             <p style={{ color: '#64748b', fontSize: '14px', textAlign: 'center', marginBottom: '24px' }}>
-              Enter your email and we'll send you a reset link.
+              Enter your registered email, admission number, staff ID, or approved phone number. The reset link is sent only to the email held by the school office.
             </p>
             <form onSubmit={handleForgotPassword} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <input type="email" placeholder="Enter your email" value={resetEmail}
+              <input placeholder="Email, admission number, staff ID, or phone" value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)} required className="classic-input" />
               <div style={{ display: 'flex', gap: '12px' }}>
                 <button type="button"

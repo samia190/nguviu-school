@@ -30,6 +30,9 @@ import RoleManagement from "./RoleManagement";
 import MagazineManagement from "./MagazineManagement";
 import HomeworkManagement from "./admin/HomeworkManagement";
 import InviteManagement from "./admin/InviteManagement";
+import BulkImportManager from "./admin/BulkImportManager";
+import SchoolDirectoryManager from "./admin/SchoolDirectoryManager";
+import TimetableImportManager from "./admin/TimetableImportManager";
 import UserList from "./admin/UserList";
 import DirectAccountCreate from "./admin/DirectAccountCreate";
 import ChatManagement from "./ChatManagement";
@@ -168,7 +171,7 @@ export default function AdminDashboard({ user }) {
       .finally(() => setLoading(false));
   }
 
-  if (user?.role !== "admin") {
+  if (!["admin", "superadmin"].includes(user?.role)) {
     return (
       <section style={{ padding: 20, color: "#a00" }}>
         <h2>Access Denied</h2>
@@ -195,6 +198,9 @@ export default function AdminDashboard({ user }) {
     { key: "home", label: "Home Page", icon: "🏡", color: "#14b8a6" },
     { key: "homework", label: "Homework & Notes", icon: "📚", color: "#FF6B6B" },
     { key: "invites", label: "Invite Links", icon: "🔗", color: "#0ea5e9" },
+    { key: "bulkImports", label: "Excel Imports", icon: "📥", color: "#0f766e" },
+    { key: "schoolDirectory", label: "School Directory", icon: "🏫", color: "#0369a1" },
+    { key: "timetables", label: "Timetables", icon: "🗓️", color: "#7c3aed" },
     { key: "legal", label: "Legal", icon: "⚖️", color: "#64748b" },
     { key: "magazine", label: "Magazine", icon: "📖", color: "#6366f1" },
     { key: "newsletters", label: "Newsletters", icon: "📰", color: "#06b6d4" },
@@ -403,6 +409,12 @@ export default function AdminDashboard({ user }) {
         {activeSection === "homeNews" && <HomeNewsManagement />}
 
         {activeSection === "homework" && <HomeworkManagement user={user} />}
+
+        {activeSection === "bulkImports" && <BulkImportManager user={user} />}
+
+        {activeSection === "schoolDirectory" && <SchoolDirectoryManager />}
+
+        {activeSection === "timetables" && <TimetableImportManager />}
 
         {activeSection === "studentAdmin" && <StudentAdminManagement />}
 

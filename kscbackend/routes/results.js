@@ -9,6 +9,7 @@ import multer from "multer";
 import { uploadBuffer, deleteFile } from "../utils/storage.js";
 import { performCompleteAnalysis } from "../utils/performanceAnalysis.js";
 import { extractResultFromPDF } from "../utils/pdfExtraction.js";
+import { buildStudentSupportContext, getStudentPublishedResultsContext } from "../services/studentResultsContext.js";
 
 const router = express.Router();
 
@@ -58,6 +59,26 @@ router.post("/verify-and-fetch", verifyLimiter, requireAuth, async (req, res) =>
     if (req.user.role !== "student") {
       return res.status(403).json({ error: "Student access only" });
     }
+
+    // A signed-in student may only retrieve records linked to their JWT. The
+    // legacy body fields below remain temporarily unreachable for compatibility
+    // review; they are never used as an identity proof.
+    const context = await getStudentPublishedResultsContext(req.user.id);
+    if (!context.results.length) {
+      return res.status(404).json({
+        error: "No results found",
+        message: "Your results are not yet available. Please check back later."
+      });
+    }
+    return res.json({
+      success: true,
+      student: context.student,
+      latestResult: context.latestResult ? { ...context.latestResult, ...context.analysis } : null,
+      results: context.results,
+      materials: context.materials,
+      hasHistory: context.results.length > 1,
+      totalResults: context.results.length,
+    });
     
     const { admissionNumber, studentName, dateOfBirth, assessmentNumber } = req.body;
     
@@ -173,6 +194,17 @@ router.post("/verify-and-fetch", verifyLimiter, requireAuth, async (req, res) =>
   } catch (err) {
     console.error("Verify and fetch error:", err);
     return res.status(500).json({ error: "Failed to fetch results" });
+  }
+});
+
+// Server-owned, minimised context for student-support AI. It never contains DOB,
+// staff comments, unpublished records, or data for a different student.
+router.get("/me/assistant-context", requireRole(["student"]), async (req, res) => {
+  try {
+    const context = await getStudentPublishedResultsContext(req.user.id);
+    return res.json({ ok: true, context: buildStudentSupportContext(context), materials: context.materials, hasResults: Boolean(context.latestResult) });
+  } catch (err) {
+    return res.status(err.status || 500).json({ ok: false, error: "Unable to prepare student support context" });
   }
 });
 

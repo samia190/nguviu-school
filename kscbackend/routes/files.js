@@ -5,6 +5,8 @@ import path from "path";
 import fs from "fs";
 import mongoose from "mongoose";
 import File from "../models/File.js";
+import Exam from "../models/Exam.js";
+import ExamSession from "../models/ExamSession.js";
 import { uploadBuffer } from "../utils/storage.js";
 import { requireRole } from "../middleware/requireAuth.js";
 // ========== MEDIA OPTIMIZATION ==========
@@ -34,8 +36,56 @@ function toAbsoluteUrl(req, relativePath) {
   return `${origin}${relativePath}`;
 }
 
+const permittedExamMimeTypes = new Set([
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "text/plain",
+]);
+
+async function bindAuthenticatedUpload(req) {
+  const { examId, sessionId } = req.body || {};
+  const isExamEvidence = Boolean(examId || sessionId);
+
+  if (!isExamEvidence) {
+    req.body.studentEmail = req.user?.email || "";
+    req.body.studentRole = req.user?.role || "";
+    return;
+  }
+
+  if (req.user?.role !== "student" || !sessionId) {
+    const error = new Error("A signed-in student and active exam session are required for exam evidence uploads.");
+    error.status = 403;
+    throw error;
+  }
+
+  const session = await ExamSession.findById(sessionId);
+  if (!session || session.studentId?.toString() !== req.user.id?.toString() || session.status !== "in_progress") {
+    const error = new Error("Exam session is not active or does not belong to the signed-in student.");
+    error.status = 403;
+    throw error;
+  }
+  if (examId && session.examId?.toString() !== String(examId)) {
+    const error = new Error("Exam session does not match the requested exam.");
+    error.status = 400;
+    throw error;
+  }
+  if ((req.files || []).some((file) => !permittedExamMimeTypes.has(file.mimetype))) {
+    const error = new Error("Exam evidence must be a PDF, image, or plain-text file.");
+    error.status = 400;
+    throw error;
+  }
+
+  // Never trust exam/session/student values from the browser.
+  req.body.examId = String(session.examId);
+  req.body.sessionId = String(session._id);
+  req.body.studentEmail = req.user.email || "";
+  req.body.studentRole = req.user.role;
+}
+
 // ✅ POST: single file upload (used by Events, StudentLife, Staff, News, Magazine admin panels)
-router.post("/upload", upload.single("file"), optimizeMedia(), async (req, res) => {
+router.post("/upload", requireRole(["admin", "superadmin", "teacher", "staff"]), upload.single("file"), optimizeMedia(), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
@@ -87,8 +137,9 @@ router.post("/upload", upload.single("file"), optimizeMedia(), async (req, res) 
 });
 
 // ✅ POST: upload student homework (multiple files)
-router.post("/", upload.array("attachments", 10), optimizeMedia(), async (req, res) => {
+router.post("/", requireRole(["student", "teacher", "admin", "superadmin", "staff"]), upload.array("attachments", 10), optimizeMedia(), async (req, res) => {
   try {
+    await bindAuthenticatedUpload(req);
     const { level, subject, notes, studentEmail, studentRole, examId, sessionId, questionId, type } = req.body;
 
     if (!req.files || req.files.length === 0) {
@@ -164,7 +215,12 @@ router.get("/", requireRole(["admin","teacher"]), async (req, res) => {
     if (mongoose.connection.readyState !== 1) {
       return res.json([]);
     }
-    const files = await File.find().sort({ uploadedAt: -1 });
+    const query = {};
+    if (req.user.role === "teacher") {
+      const ownedExamIds = await Exam.find({ createdBy: req.user.id || req.user._id }).distinct("_id");
+      query.examId = { $in: ownedExamIds };
+    }
+    const files = await File.find(query).sort({ uploadedAt: -1 });
 
     const response = files.map((doc) => ({
       ...doc.toObject(),

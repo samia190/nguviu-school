@@ -9,12 +9,18 @@ const ExamSessionSchema = new mongoose.Schema(
     // Session timing
     startTime: { type: Date, required: true },
     endTime: { type: Date },
+    expiresAt: { type: Date, required: true },
+    attemptNumber: { type: Number, required: true, default: 1 },
+    submissionKey: { type: String, index: true, sparse: true },
+    answerVersion: { type: Number, default: 0 },
+    paperVersionId: { type: mongoose.Schema.Types.ObjectId, ref: "ExamPaperVersion" },
+    paperChecksum: { type: String },
     lastActivityAt: { type: Date },
     
     // Session status
     status: { 
       type: String, 
-      enum: ["not_started", "in_progress", "submitted", "graded", "abandoned"], 
+      enum: ["not_started", "in_progress", "submitted", "graded", "abandoned", "expired"], 
       default: "not_started" 
     },
     
@@ -86,6 +92,7 @@ const ExamSessionSchema = new mongoose.Schema(
 
 // Index for faster queries
 ExamSessionSchema.index({ examId: 1, studentId: 1 });
+ExamSessionSchema.index({ examId: 1, studentId: 1, attemptNumber: 1 }, { unique: true });
 ExamSessionSchema.index({ studentId: 1, status: 1 });
 ExamSessionSchema.index({ startTime: 1 });
 

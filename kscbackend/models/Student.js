@@ -10,11 +10,14 @@ const StudentSchema = new mongoose.Schema(
     lastName: { type: String, required: true },
     otherNames: { type: String },
     dateOfBirth: { type: Date, required: true },
-    gender: { type: String, enum: ["Female", "Male", "Other"], required: true },
+    gender: { type: String, enum: ["Female", "Male", "Other"], default: "Female" },
     
     // Academic Information
     class: { type: String, required: true },
     stream: { type: String },
+    curriculum: { type: String, enum: ["CBE", "8-4-4"] },
+    grade: { type: String },
+    form: { type: String },
     yearOfAdmission: { type: Number, required: true },
     assessmentNumber: { type: String }, // For CBE students
     
@@ -23,8 +26,8 @@ const StudentSchema = new mongoose.Schema(
     phoneNumber: { type: String },
     
     // Guardian Information
-    guardianName: { type: String, required: true },
-    guardianPhone: { type: String, required: true },
+    guardianName: { type: String },
+    guardianPhone: { type: String },
     guardianEmail: { type: String },
     guardianRelationship: { type: String },
     
@@ -41,7 +44,7 @@ const StudentSchema = new mongoose.Schema(
     websiteUrl: { type: String, default: "https://kangaru girls.ac.ke" },
     
     // ID Card Security
-    idCardSecret: { type: String, required: true }, // Unique secret for this student
+    idCardSecret: { type: String, required: true, default: () => crypto.randomBytes(32).toString("hex") }, // Unique secret for this student
     idCardIssueDate: { type: Date },
     idCardExpiryDate: { type: Date },
     idCardActive: { type: Boolean, default: true },
@@ -53,6 +56,11 @@ const StudentSchema = new mongoose.Schema(
     
     // Status
     status: { type: String, enum: ["Active", "Suspended", "Graduated", "Transferred"], default: "Active" }
+    ,
+    accountStatus: { type: String, enum: ["pre_registered", "invited", "active", "blocked"], default: "pre_registered", index: true },
+    accountUser: { type: mongoose.Schema.Types.ObjectId, ref: "User", sparse: true, unique: true },
+    registrationLocked: { type: Boolean, default: false },
+    registrationInvitationIssuedAt: { type: Date }
   },
   {
     timestamps: true

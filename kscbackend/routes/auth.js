@@ -10,6 +10,10 @@ import StudentProfile from "../models/StudentProfile.js";
 import TeacherProfile from "../models/TeacherProfile.js";
 import StaffProfile from "../models/StaffProfile.js";
 import ParentProfile from "../models/ParentProfile.js";
+import DirectoryIdentity from "../models/DirectoryIdentity.js";
+import Student from "../models/Student.js";
+import { SCHOOL_ROLES, canActivateDirectoryIdentity, canUseDirectoryRecovery, canUseSchoolAccount, matchesActivationIdentifier } from "../services/directoryAccountPolicy.js";
+import { getOptionalIdentityProviderStatus } from "../services/optionalIdentityProviders.js";
 import { sendEmail } from "../utils/email.js";
 import { authLimiter } from "../middleware/rateLimiter.js";
 
@@ -39,11 +43,37 @@ const validatePasswordStrength = (password) => {
   
   return { isValid: true, message: "Password is valid" };
 };
+
+const normalizeIdentifier = (value) => String(value || "").trim().toLowerCase();
+
+async function findDirectoryIdentity(identifier) {
+  const raw = String(identifier || "").trim();
+  const value = normalizeIdentifier(raw);
+  if (!value) return null;
+  return DirectoryIdentity.findOne({ $or: [{ email: value }, { admissionNumber: raw }, { staffId: raw }, { phone: raw }] });
+}
+
+function invalidSchoolAccess(res) {
+  return res.status(401).json({ error: "Invalid credentials or this school account is not active. Contact the school administration if you need assistance." });
+}
+
+router.post("/eligibility", authLimiter, async (req, res) => {
+  try {
+    const identity = await findDirectoryIdentity(req.body?.identifier);
+    if (!identity || identity.registrationLocked || identity.accountStatus === "blocked") return res.status(404).json({ eligible: false, message: "We could not confirm an active school record. Please contact the school administration." });
+    if (identity.accountStatus === "active") return res.json({ eligible: false, message: "This school record already has an active account. Please sign in or reset the password." });
+    return res.json({ eligible: true, message: "Your school record is available. Use the one-time activation link issued by the school office to create your account." });
+  } catch (error) { return res.status(500).json({ error: "Unable to check the school record right now." }); }
+});
+router.get("/providers", (req, res) => res.json(getOptionalIdentityProviderStatus()));
 router.post("/register", authLimiter, async (req, res) => {
+  let createdUser = null;
+  let linkedIdentity = null;
   try {
     const {
       name,
       email,
+      identifier,
       password,
       inviteToken,
       // Role-specific profile fields (all optional at signup)
@@ -66,8 +96,9 @@ router.post("/register", authLimiter, async (req, res) => {
       providedAdmissionNumbers,
     } = req.body;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: "Name, email, and password are required" });
+    const activationIdentifier = identifier || email;
+    if (!name || !activationIdentifier || !password) {
+      return res.status(400).json({ error: "Name, school email/admission number/staff ID, and password are required" });
     }
 
     // Validate password strength
@@ -80,69 +111,59 @@ router.post("/register", authLimiter, async (req, res) => {
       return res.status(500).json({ error: "JWT_SECRET is not set in .env" });
     }
 
-    // --- Invite token validation (optional — public registration assigns role "user") ---
-    let assignedRole = "user";
+    // School accounts can only be claimed through a single-use activation link bound to a verified directory record.
+    let assignedRole = null;
     let linkType = null;
     let invite = null;
+    if (!inviteToken) return res.status(403).json({ error: "School accounts can only be created from a one-time activation link issued by the school administration." });
+    invite = await InviteToken.findOne({ token: inviteToken }).populate("directoryIdentity");
+    if (!invite || !invite.directoryIdentity) return res.status(400).json({ error: "Invalid activation link" });
+    if (invite.revoked || invite.expiresAt < new Date() || (invite.maxUses !== null && invite.useCount >= invite.maxUses)) return res.status(410).json({ error: "This activation link is no longer available." });
+    const identity = invite.directoryIdentity;
+    linkedIdentity = identity;
+    if (!canActivateDirectoryIdentity(identity, invite)) return res.status(403).json({ error: "This school record cannot be activated. Please contact the school administration." });
+    if (!matchesActivationIdentifier(identity, activationIdentifier)) return res.status(403).json({ error: "Use the school email, student admission number, or staff ID registered by the school office for this activation link." });
+    assignedRole = invite.role;
+    linkType = invite.linkType;
+    const verifiedStudent = identity.student ? await Student.findById(identity.student).lean() : null;
+    if (assignedRole === "student" && !verifiedStudent) return res.status(403).json({ error: "The linked student directory record is unavailable. Please contact the school administration." });
 
-    if (inviteToken) {
-      invite = await InviteToken.findOne({ token: inviteToken });
-      if (!invite) {
-        return res.status(400).json({ error: "Invalid invite link" });
-      }
-      if (invite.revoked) {
-        return res.status(410).json({ error: "This invite link has been revoked" });
-      }
-      if (invite.expiresAt < new Date()) {
-        return res.status(410).json({ error: "This invite link has expired" });
-      }
-      if (invite.maxUses !== null && invite.useCount >= invite.maxUses) {
-        return res.status(410).json({ error: "This invite link has reached its usage limit" });
-      }
-      // Role comes from the invite, never from the request body
-      assignedRole = invite.role;
-      linkType = invite.linkType;
-    }
-
-    const existing = await User.findOne({ email: email.toLowerCase().trim() });
+    const existing = await User.findOne({ email: identity.email });
     if (existing) return res.status(409).json({ error: "An account with this email already exists" });
 
-    const hash = await bcrypt.hash(password, 10);
-    const user = new User({ name, email: email.toLowerCase().trim(), passwordHash: hash, role: assignedRole });
+    const hash = await bcrypt.hash(password, 12);
+    const user = new User({ name: identity.name, email: identity.email, passwordHash: hash, role: assignedRole, isActive: true, admissionNumber: identity.admissionNumber || undefined, dateOfBirth: verifiedStudent?.dateOfBirth ? new Date(verifiedStudent.dateOfBirth).toISOString().slice(0, 10) : undefined, phone: identity.phone || undefined, stream: identity.stream || undefined });
+    createdUser = user;
     await user.save();
 
-    // --- Create role-specific profile (only for invited users with a linkType) ---
+    // Profiles copy only school-verified directory data; browser-supplied class, role, and staff identifiers are ignored.
     if (linkType === "student-CBE" || linkType === "student-844") {
       const curriculum = linkType === "student-CBE" ? "CBE" : "8-4-4";
       await StudentProfile.create({
         user: user._id,
         curriculum,
-        admissionNumber: admissionNumber || undefined,
-        stream: stream || undefined,
-        yearOfAdmission: yearOfAdmission || undefined,
-        grade: grade || undefined,
-        form: form || undefined,
-        dateOfBirth: dateOfBirth || undefined,
-        guardianName: guardianName || undefined,
-        guardianPhone: guardianPhone || undefined,
-        guardianRelation: guardianRelation || undefined,
+        admissionNumber: identity.admissionNumber,
+        stream: identity.stream || undefined,
+        yearOfAdmission: verifiedStudent?.yearOfAdmission || undefined,
+        grade: identity.grade || undefined,
+        form: identity.form || undefined,
+        dateOfBirth: verifiedStudent?.dateOfBirth ? new Date(verifiedStudent.dateOfBirth).toISOString().slice(0, 10) : undefined,
       });
     } else if (linkType === "teacher") {
       await TeacherProfile.create({
         user: user._id,
-        staffId: staffId || undefined,
-        subjects: subjects ? (Array.isArray(subjects) ? subjects : [subjects]) : [],
-        department: department || undefined,
-        qualifications: qualifications || undefined,
-        phone: phone || undefined,
+        staffId: identity.staffId || undefined,
+        subjects: identity.subjects || [],
+        department: identity.department || undefined,
+        phone: identity.phone || undefined,
       });
     } else if (linkType === "staff") {
       await StaffProfile.create({
         user: user._id,
-        staffId: staffId || undefined,
-        position: position || undefined,
-        department: department || undefined,
-        phone: phone || undefined,
+        staffId: identity.staffId || undefined,
+        position: identity.position || undefined,
+        department: identity.department || undefined,
+        phone: identity.phone || undefined,
       });
     } else if (linkType === "parent") {
       // Option B: always allow signup, store admission numbers for admin to link later
@@ -162,6 +183,11 @@ router.post("/register", authLimiter, async (req, res) => {
       invite.useCount += 1;
     invite.usages.push({ userId: user._id, usedAt: new Date() });
     await invite.save();    }
+    identity.accountUser = user._id;
+    identity.accountStatus = "active";
+    identity.activatedAt = new Date();
+    await identity.save();
+    if (identity.student) await Student.findByIdAndUpdate(identity.student, { accountUser: user._id, accountStatus: "active" });
     const jwtToken = jwt.sign(
       { id: user._id, name: user.name, email: user.email, role: user.role },
       process.env.JWT_SECRET,
@@ -174,6 +200,20 @@ router.post("/register", authLimiter, async (req, res) => {
     });
   } catch (err) {
     console.error("Register error:", err);
+    if (createdUser?._id) {
+      await Promise.allSettled([
+        StudentProfile.deleteMany({ user: createdUser._id }),
+        TeacherProfile.deleteMany({ user: createdUser._id }),
+        StaffProfile.deleteMany({ user: createdUser._id }),
+        ParentProfile.deleteMany({ user: createdUser._id }),
+        User.deleteOne({ _id: createdUser._id }),
+      ]);
+      if (linkedIdentity?.accountUser && String(linkedIdentity.accountUser) === String(createdUser._id)) {
+        linkedIdentity.accountUser = undefined; linkedIdentity.accountStatus = "invited"; linkedIdentity.activatedAt = undefined;
+        await linkedIdentity.save().catch(() => {});
+        if (linkedIdentity.student) await Student.findByIdAndUpdate(linkedIdentity.student, { $unset: { accountUser: 1 }, $set: { accountStatus: "invited" } }).catch(() => {});
+      }
+    }
     return res.status(500).json({ error: "Registration failed" });
   }
 });
@@ -181,11 +221,12 @@ router.post("/register", authLimiter, async (req, res) => {
 // Login
 router.post("/login", authLimiter, async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const normalizedEmail = typeof email === "string" ? email.toLowerCase().trim() : "";
+    const { email, identifier, password } = req.body;
+    const suppliedIdentifier = identifier || email;
+    const normalizedEmail = normalizeIdentifier(suppliedIdentifier);
 
     if (!normalizedEmail || !password || typeof password !== "string") {
-      return res.status(400).json({ error: "Email and password required" });
+      return res.status(400).json({ error: "Email address, admission number, or staff ID and password are required" });
     }
 
     if (!process.env.JWT_SECRET) {
@@ -193,17 +234,15 @@ router.post("/login", authLimiter, async (req, res) => {
       return res.status(500).json({ error: "JWT_SECRET is not set in .env" });
     }
 
-    const user = await User.findOne({ email: normalizedEmail });
-    if (!user) {
-      console.warn(`Login failed: no user found for email=${normalizedEmail}`);
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+    const identity = await findDirectoryIdentity(suppliedIdentifier);
+    const user = identity?.accountUser ? await User.findById(identity.accountUser) : await User.findOne({ $or: [{ email: normalizedEmail }, { admissionNumber: String(suppliedIdentifier).trim() }] });
+    if (!canUseSchoolAccount(user, identity)) return invalidSchoolAccess(res);
 
     const ok = await bcrypt.compare(password, user.passwordHash);
 
     if (!ok) {
       console.warn(`Login failed: incorrect password for email=${normalizedEmail}`);
-      return res.status(401).json({ error: "Invalid credentials" });
+      return invalidSchoolAccess(res);
     }
 
     const token = jwt.sign(
@@ -238,7 +277,7 @@ router.get("/me", async (req, res) => {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findById(payload.id).select("-password");
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user || !user.isActive) return res.status(401).json({ error: "User account is not active" });
 
     return res.json(user);
   } catch (err) {
@@ -250,13 +289,15 @@ router.get("/me", async (req, res) => {
 // Forgot Password - Send reset link
 router.post("/forgot-password", async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, identifier } = req.body;
+    const suppliedIdentifier = identifier || email;
 
-    if (!email) {
-      return res.status(400).json({ error: "Email is required" });
+    if (!suppliedIdentifier) {
+      return res.status(400).json({ error: "Enter your registered email address, admission number, staff ID, or phone number." });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const identity = await findDirectoryIdentity(suppliedIdentifier);
+    const user = identity?.accountUser ? await User.findById(identity.accountUser) : await User.findOne({ $or: [{ email: normalizeIdentifier(suppliedIdentifier) }, { admissionNumber: String(suppliedIdentifier).trim() }] });
     
     // Always return success message (security best practice - don't reveal if email exists)
     if (!user) {
@@ -279,7 +320,7 @@ router.post("/forgot-password", async (req, res) => {
       console.error('[Auth] CRITICAL: FRONTEND_URL environment variable is not set. Password reset emails will contain localhost URLs that will not work in production. Set FRONTEND_URL in your deployment environment.');
     }
     const frontendBase = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
-    const resetUrl = `${frontendBase}/reset-password#token=${resetToken}&email=${encodeURIComponent(email)}`;
+    const resetUrl = `${frontendBase}/reset-password#token=${resetToken}&email=${encodeURIComponent(user.email)}`;
 
     // Send email
     const emailText = `You requested a password reset. Click the link below to reset your password:\n\n${resetUrl}\n\nThis link will expire in 1 hour.\n\nIf you didn't request this, please ignore this email.`;
@@ -307,7 +348,7 @@ router.post("/forgot-password", async (req, res) => {
 
     try {
       await sendEmail(
-        email,
+        user.email,
         "Password Reset Request - KANGARU GIRLS",
         emailText,
         emailHtml
@@ -335,15 +376,16 @@ router.post("/reset-password", async (req, res) => {
       return res.status(400).json({ error: "Email, token, and new password are required" });
     }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: "Password must be at least 6 characters" });
-    }
+    const passwordValidation = validatePasswordStrength(newPassword);
+    if (!passwordValidation.isValid) return res.status(400).json({ error: passwordValidation.message });
 
     const user = await User.findOne({ email: email.toLowerCase() });
     
     if (!user || !user.resetTokenHash || !user.resetTokenExpires) {
       return res.status(400).json({ error: "Invalid or expired reset token" });
     }
+    const identity = SCHOOL_ROLES.has(user.role) ? await DirectoryIdentity.findOne({ accountUser: user._id }) : null;
+    if (!canUseDirectoryRecovery(user, identity)) return res.status(400).json({ error: "Invalid or expired reset token" });
 
     // Check if token is expired
     if (new Date() > user.resetTokenExpires) {
@@ -357,7 +399,7 @@ router.post("/reset-password", async (req, res) => {
     }
 
     // Hash new password and update user
-    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    const newPasswordHash = await bcrypt.hash(newPassword, 12);
     user.passwordHash = newPasswordHash;
     user.resetTokenHash = undefined;
     user.resetTokenExpires = undefined;

@@ -23,6 +23,8 @@ const ExamSchema = new mongoose.Schema(
     pdfUrl: { type: String }, // Backward-compatible URL to exam PDF/resource
     pdfKey: { type: String }, // Cloudinary or S3 key
     attachments: [ExamAttachmentSchema],
+    paperVersionId: { type: mongoose.Schema.Types.ObjectId, ref: "ExamPaperVersion" },
+    paperVersion: { type: Number, min: 1 },
     
     // Exam settings
     duration: { type: Number, required: true }, // minutes
@@ -41,6 +43,7 @@ const ExamSchema = new mongoose.Schema(
     // Scheduling
     scheduledStart: { type: Date },
     scheduledEnd: { type: Date },
+    maxAttempts: { type: Number, default: 1, min: 1, max: 10 },
     instructions: { type: String },
     
     // Metadata

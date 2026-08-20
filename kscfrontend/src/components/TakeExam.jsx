@@ -32,6 +32,7 @@ export default function TakeExam({ user, setRoute }) {
   const [examStarted, setExamStarted] = useState(false);
   const [submittedFiles, setSubmittedFiles] = useState([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [paper, setPaper] = useState(null);
   const [cameraOn, setCameraOn] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
   const videoRef = useRef(null);
@@ -82,7 +83,10 @@ export default function TakeExam({ user, setRoute }) {
       if (!sessionRes.ok) throw new Error("Failed to start exam");
       const sessionData = await sessionRes.json();
       setSession(sessionData.session);
+      setTimeRemaining(Math.max(0, Math.floor((new Date(sessionData.session.expiresAt).getTime() - Date.now()) / 1000)));
       setExamStarted(true);
+      const paperRes = await fetch(`/api/exam-papers/${exam._id}`, { headers: { Authorization: `Bearer ${token}` } });
+      if (paperRes.ok) { const paperData = await paperRes.json(); setPaper(paperData.paper); }
     } catch (err) {
       console.error("Error starting exam:", err);
       alert("Unable to start the exam right now. Please try again.");
@@ -92,12 +96,34 @@ export default function TakeExam({ user, setRoute }) {
   };
 
   useEffect(() => {
-    if (timeRemaining <= 0) return;
-    const timer = setInterval(() => {
-      setTimeRemaining((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
+    if (!session?.expiresAt) return;
+    const updateFromServerClock = () => setTimeRemaining(Math.max(0, Math.floor((new Date(session.expiresAt).getTime() - Date.now()) / 1000)));
+    updateFromServerClock();
+    const timer = setInterval(updateFromServerClock, 1000);
     return () => clearInterval(timer);
-  }, [timeRemaining]);
+  }, [session?.expiresAt]);
+
+  useEffect(() => {
+    if (!session?._id || !examStarted) return;
+    const saveAnswers = async () => {
+      try {
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const payloadAnswers = Object.entries(answers).map(([questionId, answer]) => ({ questionId, answer }));
+        const response = await fetch(`/api/exams/session/${session._id}/answers`, {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ answers: payloadAnswers, answerVersion: session.answerVersion }),
+        });
+        if (!response.ok) return;
+        const saved = await response.json();
+        setSession((previous) => previous ? { ...previous, answerVersion: saved.answerVersion, expiresAt: saved.expiresAt } : previous);
+      } catch (error) {
+        console.warn("Unable to autosave answers; the exam remains open and will retry.");
+      }
+    };
+    const interval = setInterval(saveAnswers, 20_000);
+    return () => clearInterval(interval);
+  }, [session?._id, session?.answerVersion, answers, examStarted]);
 
   useEffect(() => {
     if (!session?._id || !exam) return;
@@ -236,7 +262,7 @@ export default function TakeExam({ user, setRoute }) {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ answers: payloadAnswers, files: submittedFiles }),
+        body: JSON.stringify({ answers: payloadAnswers }),
       });
 
       if (!response.ok) throw new Error("Failed to submit exam");
@@ -265,8 +291,10 @@ export default function TakeExam({ user, setRoute }) {
 
         const res = await fetch(`/api/files`, {
           method: "POST",
+          headers: { Authorization: `Bearer ${localStorage.getItem("token") || sessionStorage.getItem("token") || ""}` },
           body: fd,
         });
+        if (!res.ok) throw new Error("Exam evidence upload was rejected");
         const data = await res.json();
         const fileEntry = Array.isArray(data) ? data[0] : data;
         const meta = fileEntry.file || fileEntry || {};
@@ -327,7 +355,6 @@ export default function TakeExam({ user, setRoute }) {
       if (!socket || !socket.connected) {
         console.log(`[STUDENT] ⚠️ Socket not connected, creating new one...`);
         const token = getToken();
-        console.log(`[STUDENT] 🔑 Token retrieved: ${token ? 'present (' + token.slice(0, 20) + '...)' : 'NULL - THIS WILL FAIL'}`);
         if (!token) {
           console.error(`[STUDENT] ❌ NO TOKEN AVAILABLE - Cannot authenticate with server`);
           throw new Error("Authentication token not found. Please log in again.");
@@ -338,7 +365,7 @@ export default function TakeExam({ user, setRoute }) {
         console.log(`[STUDENT] ✅ Socket already connected`);
       }
 
-      const roomId = exam?._id || session?._id;
+      const roomId = session?._id;
       console.log(`[STUDENT] 📍 Room ID: ${roomId}`);
       if (!roomId) throw new Error("Exam session is not ready yet");
 
@@ -777,6 +804,7 @@ export default function TakeExam({ user, setRoute }) {
         <div style={{ display: "grid", gap: 16 }}>
           <div style={{ background: "#0e0c0c", border: "1px solid #e2e8f0", borderRadius: 12, padding: 16 }}>
             <h3 style={{ marginTop: 0, marginBottom: 12 }}>Exam Resources</h3>
+            {paper && <div style={{ marginBottom: 14, padding: 14, background: "#fff", color: "#0f172a", border: "1px solid #cbd5e1", borderRadius: 8 }}><div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 10 }}><strong>Official question paper</strong><span style={{ fontSize: 12, color: "#475569" }}>Version {paper.version} · read only</span></div><div className="exam-word-paper" dangerouslySetInnerHTML={{ __html: paper.renderedHtml }} />{paper.mediaReferences?.length > 0 && <ul style={{ margin: "12px 0 0", paddingLeft: 18 }}>{paper.mediaReferences.map((media, index) => <li key={`${media.url}-${index}`}><a href={media.url} target="_blank" rel="noreferrer">{media.label || `Approved ${media.type || "resource"}`}</a></li>)}</ul>}</div>}
             {renderResourcePanel()}
             {exam.instructions && (
               <div style={{ marginTop: 12, padding: 12, border: "1px dashed #cbd5e1", borderRadius: 8, background: "#f8fafc" }}>

@@ -49,4 +49,25 @@ export const formLimiter = rateLimit({
   }
 });
 
+// AI endpoints can be expensive even on free provider tiers. The limit is
+// intentionally stricter than ordinary API traffic and can be tuned in env.
+export const aiLimiter = rateLimit({
+  windowMs: Number(process.env.AI_RATE_LIMIT_WINDOW_MS || 60_000),
+  max: Number(process.env.AI_RATE_LIMIT_MAX || 20),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many AI requests. Please wait before trying again." },
+  skip: (req) => process.env.NODE_ENV === "test",
+});
+
+// Protects state-changing assessment operations from retry storms and simple abuse.
+export const examMutationLimiter = rateLimit({
+  windowMs: 60_000,
+  max: Number(process.env.EXAM_MUTATION_RATE_LIMIT_MAX || 60),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many assessment requests. Please wait and retry." },
+  skip: (req) => process.env.NODE_ENV === "test",
+});
+
 export default authLimiter;

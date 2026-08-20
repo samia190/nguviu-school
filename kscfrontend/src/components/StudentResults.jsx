@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import { post } from "../utils/api";
+import { getToken, post, resolveApiUrl } from "../utils/api";
 import { 
   PerformanceDashboard, 
   TrendBadge, 
@@ -24,11 +24,15 @@ const StudentResults = ({ user }) => {
   const [studentData, setStudentData] = useState(null);
   const [results, setResults] = useState([]);
   const [latestResult, setLatestResult] = useState(null);
+  const [revisionMaterials, setRevisionMaterials] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [showDetailedAnalysis, setShowDetailedAnalysis] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedResult, setSelectedResult] = useState(null);
+  const [supportQuestion, setSupportQuestion] = useState("");
+  const [supportReply, setSupportReply] = useState("");
+  const [supportLoading, setSupportLoading] = useState(false);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -50,6 +54,7 @@ const StudentResults = ({ user }) => {
         setStudentData(data.student);
         setResults(data.results || []);
         setLatestResult(data.latestResult || null);
+        setRevisionMaterials(data.materials || []);
         setStep("results");
       } else {
         throw new Error("Invalid response from server");
@@ -64,6 +69,44 @@ const StudentResults = ({ user }) => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const askResultsSupport = async (event) => {
+    event.preventDefault();
+    const question = supportQuestion.trim();
+    if (!question || supportLoading) return;
+    setSupportLoading(true);
+    setSupportReply("");
+    try {
+      const token = getToken();
+      const response = await fetch(resolveApiUrl("/api/ai/results/stream"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ message: question }),
+      });
+      if (!response.ok || !response.body) throw new Error("Results support is unavailable.");
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split(/\r?\n\r?\n/);
+        buffer = events.pop() || "";
+        for (const item of events) {
+          const line = item.split(/\r?\n/).find((entry) => entry.startsWith("data:"));
+          if (!line) continue;
+          const payload = JSON.parse(line.slice(5).trim());
+          if (payload.type === "token" && payload.token) setSupportReply((previous) => previous + payload.token);
+          if (payload.type === "error") throw new Error(payload.message || "Results support could not respond.");
+        }
+      }
+    } catch (err) {
+      setSupportReply(err.message || "Results support could not respond right now. Please try again later.");
+    } finally {
+      setSupportLoading(false);
     }
   };
 
@@ -525,6 +568,22 @@ const StudentResults = ({ user }) => {
           🔒 Lock Results
         </button>
       </div>
+
+      <section style={{ background: "#f3e5f5", border: "1px solid #d1c4e9", borderRadius: "10px", padding: "20px", marginBottom: "25px" }}>
+        <h3 style={{ margin: 0, color: "#5e35b1", fontSize: "18px" }}>🤖 Study support for your published results</h3>
+        <p style={{ margin: "8px 0 14px", color: "#5f5f5f", fontSize: "14px", lineHeight: "1.5" }}>Ask for an explanation, a revision plan, or practice ideas. This support uses only your published results and cannot make health, disciplinary, or final academic decisions.</p>
+        <form onSubmit={askResultsSupport} style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <input value={supportQuestion} onChange={(event) => setSupportQuestion(event.target.value)} disabled={supportLoading} placeholder="For example: Help me make a revision plan for my weaker subjects." style={{ flex: "1 1 300px", padding: "11px 12px", border: "1px solid #b39ddb", borderRadius: "6px", fontSize: "14px" }} />
+          <button type="submit" disabled={!supportQuestion.trim() || supportLoading} style={{ padding: "11px 16px", background: supportLoading ? "#bdbdbd" : "#673ab7", color: "white", border: "none", borderRadius: "6px", cursor: supportLoading ? "not-allowed" : "pointer", fontWeight: "600" }}>{supportLoading ? "Thinking..." : "Ask for study support"}</button>
+        </form>
+        {supportReply && <div style={{ marginTop: "14px", whiteSpace: "pre-wrap", background: "white", borderRadius: "6px", padding: "14px", color: "#333", fontSize: "14px", lineHeight: "1.6" }}>{supportReply}</div>}
+      </section>
+
+      {revisionMaterials.length > 0 && <section style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "10px", padding: "20px", marginBottom: "25px" }}>
+        <h3 style={{ margin: 0, color: "#1d4ed8", fontSize: "18px" }}>📚 Approved revision materials for you</h3>
+        <p style={{ color: "#475569", fontSize: "14px" }}>These school materials match subjects identified as study priorities in your published results. Confirm the best topic order with your teacher.</p>
+        <div style={{ display: "grid", gap: "10px" }}>{revisionMaterials.map((material) => <article key={material.id} style={{ background: "white", padding: "12px", borderRadius: "6px" }}><strong>{material.subject}: {material.title}</strong>{material.topic && <span style={{ color: "#64748b" }}> — {material.topic}</span>}<p style={{ margin: "6px 0", color: "#475569", fontSize: "13px" }}>{material.description}</p>{material.attachments?.map((attachment, index) => <a key={`${material.id}-${index}`} href={attachment.url} target="_blank" rel="noreferrer" style={{ display: "inline-block", marginRight: 10, color: "#1d4ed8", fontSize: "13px" }}>Open {attachment.originalName || "resource"}</a>)}</article>)}</div>
+      </section>}
 
       {results.length === 0 ? (
         <div style={{

@@ -9,20 +9,21 @@ const InviteTokenSchema = new mongoose.Schema(
     linkType: {
       type: String,
       required: true,
-      enum: ["student-CBE", "student-844", "teacher", "staff", "parent"],
+      enum: ["student-CBE", "student-844", "teacher", "staff", "admin", "parent"],
     },
 
     // The role that will be assigned to users who register using this link
     role: {
       type: String,
       required: true,
-      enum: ["student", "teacher", "staff", "parent"],
+      enum: ["student", "teacher", "staff", "admin", "parent"],
     },
 
     // Label for the admin to identify the link (e.g. "Form 3 East — Parents 2025")
     label: { type: String, default: "" },
 
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    directoryIdentity: { type: mongoose.Schema.Types.ObjectId, ref: "DirectoryIdentity", sparse: true, index: true },
 
     expiresAt: { type: Date, required: true },
 

@@ -20,7 +20,7 @@ export const hasOpenAIKey = () => Boolean(OPENAI_API_KEY && OPENAI_API_KEY.lengt
 
 const getProvider = (providerName) => providerFactory.getProvider(providerName || DEFAULT_API_PROVIDER);
 
-const buildMessages = ({ role, conversationHistory = [], config = {}, extraContext, retrievedContext, message, systemPrompt }) => {
+export const buildMessages = ({ role, conversationHistory = [], config = {}, extraContext, retrievedContext, message, systemPrompt }) => {
   const messages = [
     {
       role: "system",
@@ -85,6 +85,139 @@ const getRelevantContext = async (message, provider, limit = 4) => {
     console.error("[AI Service] RAG retrieval error:", error?.message || error);
     return null;
   }
+};
+
+const splitModels = (value) => (value || "").split(",").map((model) => model.trim()).filter(Boolean);
+const providerCircuit = new Map();
+const providerTimeoutMs = Math.min(120_000, Math.max(5_000, Number(process.env.AI_REQUEST_TIMEOUT || 30_000)));
+const circuitCooldownMs = Math.min(600_000, Math.max(10_000, Number(process.env.AI_PROVIDER_COOLDOWN_MS || 60_000)));
+const maxProviderTokens = Math.min(1_000, Math.max(64, Number(process.env.AI_MAX_TOKENS || 500)));
+
+const circuitKey = (provider, model) => `${provider.source}:${model}`;
+const canCallProvider = (key) => {
+  const state = providerCircuit.get(key);
+  return !state || !state.openUntil || state.openUntil <= Date.now();
+};
+const recordProviderFailure = (key) => {
+  const previous = providerCircuit.get(key) || { failures: 0, openUntil: 0 };
+  const failures = previous.failures + 1;
+  providerCircuit.set(key, { failures, openUntil: failures >= 3 ? Date.now() + circuitCooldownMs : 0 });
+};
+const recordProviderSuccess = (key) => providerCircuit.delete(key);
+
+const requestSignalWithTimeout = (parentSignal) => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(new Error("AI provider request timed out")), providerTimeoutMs);
+  const abortParent = () => controller.abort(parentSignal?.reason || new Error("Request aborted"));
+  if (parentSignal?.aborted) abortParent();
+  else parentSignal?.addEventListener("abort", abortParent, { once: true });
+  return {
+    signal: controller.signal,
+    dispose: () => {
+      clearTimeout(timer);
+      parentSignal?.removeEventListener("abort", abortParent);
+    },
+  };
+};
+
+export const getStreamingProviderCandidates = () => {
+  const order = (process.env.AI_PROVIDER_ORDER || "groq,openrouter,nvidia").split(",").map((name) => name.trim().toLowerCase()).filter(Boolean);
+  const providers = {
+    groq: { source: "groq", baseUrl: process.env.GROQ_API_URL || "https://api.groq.com/openai/v1", apiKey: process.env.GROQ_API_KEY || "", models: splitModels(process.env.GROQ_MODEL) },
+    openrouter: { source: "openrouter", baseUrl: process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1", apiKey: process.env.OPENROUTER_API_KEY || "", models: splitModels(process.env.OPENROUTER_MODELS || process.env.OPENROUTER_MODEL) },
+    nvidia: { source: "nvidia", baseUrl: process.env.NVIDIA_API_URL || "", apiKey: process.env.NVIDIA_API_KEY || "", models: splitModels(process.env.NVIDIA_MODEL) },
+  };
+  return order.map((name) => providers[name]).filter((provider) => provider && provider.baseUrl && provider.apiKey && provider.models.length);
+};
+
+const consumeSse = async (stream, onToken) => {
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const events = buffer.split(/\r?\n\r?\n/);
+    buffer = events.pop() || "";
+    for (const event of events) {
+      const line = event.split(/\r?\n/).find((entry) => entry.startsWith("data:"));
+      if (!line) continue;
+      const data = line.slice(5).trim();
+      if (!data || data === "[DONE]") continue;
+      try {
+        const token = JSON.parse(data)?.choices?.[0]?.delta?.content;
+        if (token) onToken(token);
+      } catch {
+        // Ignore provider keep-alives and non-content events.
+      }
+    }
+  }
+};
+
+/** Stream OpenAI-compatible provider output while preserving original role prompts and knowledge fallback. */
+export const streamAIResponse = async (message, role = "user", conversationHistory = [], config = {}, onToken, signal) => {
+  if (!message || typeof message !== "string" || !message.trim()) throw new Error("Message must be a non-empty string");
+  const messages = buildMessages({
+    role,
+    conversationHistory,
+    config,
+    extraContext: config?.contextNotes || null,
+    message: message.trim(),
+    systemPrompt: config?.systemPrompt || getRolePrompt(role),
+  });
+  const failures = [];
+
+  for (const provider of getStreamingProviderCandidates()) {
+    for (const model of provider.models) {
+      const key = circuitKey(provider, model);
+      if (!canCallProvider(key)) {
+        failures.push(`${provider.source}/${model}: circuit open`);
+        continue;
+      }
+      const timedRequest = requestSignalWithTimeout(signal);
+      try {
+        const response = await fetch(`${provider.baseUrl.replace(/\/$/, "")}/chat/completions`, {
+          method: "POST",
+          signal: timedRequest.signal,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${provider.apiKey}`,
+            ...(provider.source === "openrouter" ? { "HTTP-Referer": "https://kangarugirls.sc.ke", "X-Title": "Kangaru Girls Assistant" } : {}),
+          },
+          body: JSON.stringify({ model, messages, stream: true, temperature: config?.temperature ?? 0.2, max_tokens: Math.min(maxProviderTokens, Number(config?.maxTokens || maxProviderTokens)), top_p: config?.topP ?? 0.9 }),
+        });
+        if (!response.ok || !response.body) {
+          failures.push(`${provider.source}/${model}: ${response.status}`);
+          recordProviderFailure(key);
+          continue;
+        }
+        let content = "";
+        await consumeSse(response.body, (token) => { content += token; onToken(token); });
+        if (content.trim()) {
+          recordProviderSuccess(key);
+          return { response: content, source: provider.source, model, timestamp: new Date().toISOString() };
+        }
+        failures.push(`${provider.source}/${model}: empty response`);
+        recordProviderFailure(key);
+      } catch (error) {
+        if (error?.name === "AbortError") throw error;
+        failures.push(`${provider.source}/${model}: ${error?.message || "network failure"}`);
+        recordProviderFailure(key);
+      } finally {
+        timedRequest.dispose();
+      }
+    }
+  }
+
+  const fallback = knowledgeBaseService.generateEnhancedResponse(message, role, {
+    conversationContext: formatHistory(conversationHistory, config?.contextWindow || 8).map((entry) => `${entry.sender}: ${entry.text}`).join("\n"),
+    userId: config?.userId,
+    conversationId: config?.conversationId,
+  });
+  const response = fallback.response || "I am sorry, I could not complete that request right now.";
+  onToken(response);
+  return { response, source: "knowledge-base", model: "offline-fallback", failures, timestamp: fallback.timestamp || new Date().toISOString() };
 };
 
 export const generateAIResponse = async (message, role = "user", conversationHistory = [], config = {}) => {

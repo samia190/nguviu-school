@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { X, FileText, Download, Pencil, CheckCircle2, XCircle } from "lucide-react";
-import { put } from "../utils/api";
+import { get, put } from "../utils/api";
 
 const STATUS_OPTIONS = [
   { value: "pending", label: "Pending" },
@@ -14,6 +14,7 @@ export default function TeacherExamReview({ exam, onClose }) {
   const [error, setError] = useState(null);
   const [editingFileId, setEditingFileId] = useState(null);
   const [editState, setEditState] = useState({ originalName: "", reviewerNotes: "", status: "pending", notes: "" });
+  const [reviewPackage, setReviewPackage] = useState(null);
 
   const loadFiles = async () => {
     if (!exam?._id) return;
@@ -101,6 +102,12 @@ export default function TeacherExamReview({ exam, onClose }) {
     }
   };
 
+  const loadReviewPackage = async (sessionId) => {
+    if (!sessionId) return;
+    try { setError(null); setReviewPackage(await get(`/api/exam-papers/sessions/${sessionId}/review`)); }
+    catch (err) { setError(err?.body?.error || "Unable to load the exact paper and answers."); }
+  };
+
   return (
     <div style={{ marginTop: 36, padding: 24, border: "1px solid #d1d5db", borderRadius: 14, background: "#fff" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
@@ -132,8 +139,11 @@ export default function TeacherExamReview({ exam, onClose }) {
                   <button type="button" onClick={loadFiles} style={{ padding: "10px 16px", background: "#2563eb", color: "white", border: "none", borderRadius: 8, cursor: "pointer" }}>
                     Refresh
                   </button>
+                  {studentKey !== "unknown" && <button type="button" onClick={() => loadReviewPackage(studentKey)} style={{ padding: "10px 16px", background: "#0f766e", color: "white", border: "none", borderRadius: 8, cursor: "pointer" }}>Open exact paper & answers</button>}
                 </div>
               </div>
+
+              {reviewPackage?.session?._id === studentKey && <div style={{ marginBottom: 18, padding: 16, border: "1px solid #99f6e4", borderRadius: 10, background: "#f0fdfa" }}><h4 style={{ marginTop: 0 }}>Paper version {reviewPackage.paper?.version || "legacy"} and saved answers</h4>{reviewPackage.paper?.renderedHtml ? <div dangerouslySetInnerHTML={{ __html: reviewPackage.paper.renderedHtml }} /> : <p>There is no Word-paper snapshot for this legacy session.</p>}<h5>Student answers</h5><ol>{(reviewPackage.session.answers || []).map((answer) => <li key={answer.questionId}>{typeof answer.answer === "string" ? answer.answer : "[Submitted answer]"}</li>)}</ol></div>}
 
               <div style={{ display: "grid", gap: 16 }}>
                 {studentGroup.items.map((file) => {

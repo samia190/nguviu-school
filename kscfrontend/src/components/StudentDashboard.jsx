@@ -8,9 +8,11 @@ export default function StudentDashboard({ user }) {
   const [latestResult, setLatestResult] = useState(null);
   const [trend, setTrend] = useState(null);
   const [stats, setStats] = useState({});
+  const [timetables, setTimetables] = useState([]);
 
   useEffect(() => {
     fetchStudentResults();
+    get("/api/timetables/mine").then((data) => setTimetables(data.timetables || [])).catch(() => setTimetables([]));
   }, [user]);
 
   const fetchStudentResults = async () => {
@@ -77,6 +79,8 @@ export default function StudentDashboard({ user }) {
           Welcome, {user.name}! Track your progress and performance
         </p>
       </div>
+
+      {timetables.length > 0 && <section style={{ background: "#fff", border: "1px solid #ddd6fe", borderRadius: 12, padding: 20, marginBottom: 24 }}><h2 style={{ marginTop: 0 }}>My Class Timetable</h2>{timetables.map((timetable) => <div key={timetable._id} style={{ marginTop: 14 }}><strong>{timetable.term} {timetable.year} · {timetable.class} {timetable.stream}</strong><div style={{ overflowX: "auto", marginTop: 10 }}><table style={{ width: "100%", borderCollapse: "collapse" }}><thead><tr><th>Day</th><th>Time</th><th>Subject</th><th>Teacher</th><th>Room</th></tr></thead><tbody>{timetable.entries.map((entry, index) => <tr key={`${entry.day}-${entry.startTime}-${index}`}><td>{entry.day}</td><td>{entry.startTime}–{entry.endTime}</td><td>{entry.subject}</td><td>{entry.teacherStaffId}</td><td>{entry.room || "—"}</td></tr>)}</tbody></table></div></div>)}</section>}
 
       {error && (
         <div style={{
