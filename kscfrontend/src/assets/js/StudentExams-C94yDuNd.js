@@ -1,0 +1,1 @@
+import{j as t}from"./index-C7bSz-xB.js";import"./vendor-charts-BtUOuRpl.js";import"./vendor-react-DldvXD6N.js";import"./vendor-pdf-Cs2EITz6.js";function o(){return t.jsxs("section",{children:[t.jsx("h2",{children:"Student - Exams"}),t.jsx("p",{children:"Sample content for student page: Exams. Replace with real information later."})]})}export{o as default};

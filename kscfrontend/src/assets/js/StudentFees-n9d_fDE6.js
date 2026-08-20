@@ -1,0 +1,1 @@
+import{j as e}from"./index-C7bSz-xB.js";import"./vendor-charts-BtUOuRpl.js";import"./vendor-react-DldvXD6N.js";import"./vendor-pdf-Cs2EITz6.js";function o(){return e.jsxs("section",{children:[e.jsx("h2",{children:"Student - Fees"}),e.jsx("p",{children:"Sample content for student page: Fees. Replace with real information later."})]})}export{o as default};
